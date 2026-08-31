@@ -1,0 +1,3 @@
+# Generated Claude Design canvas preview (regenerate via the `design` skill from the .dc.html sources)
+design-mockups/*.html
+!design-mockups/*.dc.html
