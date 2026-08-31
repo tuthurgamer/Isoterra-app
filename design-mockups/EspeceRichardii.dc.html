@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Vollkorn:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Special+Elite&display=swap');
+  :root{
+    --ink: oklch(24% 0.035 55); --ink-muted: oklch(45% 0.035 60); --ink-faint: oklch(62% 0.03 65);
+    --paper: oklch(93% 0.025 85); --paper-alt: oklch(89% 0.03 80); --desk: oklch(24% 0.02 60);
+    --rust: oklch(48% 0.13 45); --moss: oklch(46% 0.11 145); --stampred: oklch(46% 0.14 25);
+    --line: oklch(24% 0.035 55 / 0.22); --line-strong: oklch(24% 0.035 55 / 0.45);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Vollkorn', Georgia, serif; color:var(--ink);}
+  a{color:var(--rust);} a:hover{color:var(--stampred);}
+  .grain{position:relative;}
+  .grain::before{content:""; position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity:0.05; mix-blend-mode:multiply; pointer-events:none;}
+  .wordmark{font-family:'IM Fell English SC', Georgia, serif; letter-spacing:0.08em;}
+  .stamp{display:inline-flex; align-items:center; gap:6px; font-family:'Special Elite', 'Courier New', monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; padding:4px 11px; border-radius:999px; border:1.3px solid currentColor; box-shadow:0 0 0 2px var(--paper), 0 0 0 3.2px currentColor; opacity:0.88; white-space:nowrap;}
+  .tab-item{display:flex; flex-direction:column; align-items:center; gap:7px; padding:16px 4px; color:var(--paper-alt); opacity:0.5;}
+  .tab-item.active{background:var(--paper); color:var(--rust); opacity:1; border-radius:10px 0 0 10px; margin-right:-1px; padding-right:14px;}
+  .tab-caption{font-size:9.5px; letter-spacing:0.03em; font-family:'Special Elite', monospace;}
+  .rating-row{display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--line);}
+  .rating-row:last-child{border-bottom:none;}
+  .rating-label{font-style:italic; color:var(--ink-muted); font-size:12px; width:96px; flex-shrink:0; padding-top:2px;}
+  .rating-value{font-size:13px; flex:1;}
+  .d{width:11px; height:11px;}
+</style>
+</helmet>
+
+<div class="grain" style="min-height:2000px; display:flex; background:var(--desk); padding:22px 22px 22px 0;">
+  <nav style="width:88px; display:flex; flex-direction:column; padding-top:30px; flex-shrink:0;">
+    <div class="tab-item"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="13" rx="1.5"/><path d="M8 8V6a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M5 13h14"/></svg><span class="tab-caption">BACS</span></div>
+    <div class="tab-item"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9l7 7-9 9-7-7z"/><circle cx="8" cy="10" r="1.3"/></svg><span class="tab-caption">FICHES</span></div>
+    <div class="tab-item active"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-9-1v13c4-1 7-0.5 9 1c2-1.5 5-2 9-1V5c-4-1-7-0.5-9 1z"/><path d="M12 6v13"/></svg><span class="tab-caption">ESP&#200;CES</span></div>
+    <div class="tab-item"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4c-5 0-11 4-13 11l-1 5 5-1C17 17 21 11 21 6"/><path d="M9 15l-3 3"/></svg><span class="tab-caption">JOURNAL</span></div>
+    <div class="tab-item"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="5" ry="7"/><path d="M4 18c2-2 5-2 8-2s6 0 8 2"/></svg><span class="tab-caption">PONTES</span></div>
+    <div class="tab-item"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M6 21h12"/><path d="M4 7h6M14 7h6"/><path d="M4 7l-2 5a3 3 0 0 0 6 0zM20 7l-2 5a3 3 0 0 0 6 0z"/></svg><span class="tab-caption">VENTE</span></div>
+  </nav>
+
+  <main style="flex:1; background:var(--paper); box-shadow:0 14px 34px rgba(0,0,0,0.4); padding:44px 56px 52px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div style="font-family:'Special Elite',monospace; font-size:11px; color:var(--ink-faint); margin-bottom:4px;">ESP&#200;CES &gt; CENTROBOLUS RICHARDII</div>
+        <div class="wordmark" style="font-size:30px; color:var(--ink);">Guide d'&eacute;levage</div>
+      </div>
+      <div class="stamp" style="color:var(--stampred); transform:rotate(-2deg);">Brouillon &mdash; esp&egrave;ce sensible</div>
+    </div>
+    <div style="border-top:2.5px solid var(--ink); margin-top:10px;"></div>
+    <div style="border-top:1px solid var(--ink); margin-top:3px; margin-bottom:32px;"></div>
+
+    <div style="display:grid; grid-template-columns:300px 1fr; gap:40px;">
+      <div>
+        <div class="wordmark" style="font-size:23px;">Iule rouge et noir</div>
+        <div style="font-style:italic; color:var(--ink-muted); margin-bottom:18px; font-size:14px;">Centrobolus richardii</div>
+        <div style="border:1.5px solid var(--ink); padding:14px; background:var(--paper-alt); margin-bottom:18px;">
+          <div style="border:1px solid var(--line-strong); padding:16px; display:flex; align-items:center; justify-content:center; min-height:170px; background:var(--paper);">
+            <svg viewBox="0 0 48 48" width="140" height="140" fill="none" stroke="var(--ink)" stroke-width="1.4" stroke-linecap="round"><path d="M6 30 Q 12 16, 20 24 T 34 22 Q 40 20 42 14"/><path d="M9 28 L6 33 M12 25 L9 30 M15 23 L13 29 M19 22 L17 28 M23 22 L22 28 M27 21 L27 27 M31 21 L32 27 M35 20 L37 26 M39 17 L41 22"/><path d="M42 14 L45 11 M42 14 L44 16"/></svg>
+          </div>
+          <div style="text-align:center; margin-top:10px; font-family:'Special Elite',monospace; font-size:9.5px; color:var(--ink-muted); letter-spacing:0.03em;">CENTROBOLUS RICHARDII</div>
+        </div>
+        <div style="border:1px solid var(--line); background:var(--paper-alt); padding:16px 18px;">
+          <div class="rating-row"><div class="rating-label">Difficult&eacute;</div><div class="rating-value"><div style="display:flex; gap:3px; margin-bottom:3px;"><svg class="d" viewBox="0 0 10 10"><path d="M5 0L10 5L5 10L0 5Z" fill="var(--ink)"/></svg><svg class="d" viewBox="0 0 10 10"><path d="M5 0L10 5L5 10L0 5Z" fill="var(--ink)"/></svg><svg class="d" viewBox="0 0 10 10"><path d="M5 0L10 5L5 10L0 5Z" fill="var(--ink)"/></svg><svg class="d" viewBox="0 0 10 10"><path d="M5 0L10 5L5 10L0 5Z" fill="var(--ink)"/></svg><svg class="d" viewBox="0 0 10 10"><path d="M5 0L10 5L5 10L0 5Z" fill="none" stroke="var(--ink-faint)" stroke-width="1"/></svg></div>Exigeante, sensible aux &eacute;carts d'humidit&eacute;</div></div>
+          <div class="rating-row"><div class="rating-label">Humidit&eacute;</div><div class="rating-value"><div style="display:flex; gap:3px; margin-bottom:3px;"><svg viewBox="0 0 10 12" width="11" height="13"><path d="M5 0C5 0 9.5 6 9.5 8.5A4.5 4.5 0 0 1 0.5 8.5C0.5 6 5 0 5 0Z" fill="var(--rust)"/></svg><svg viewBox="0 0 10 12" width="11" height="13"><path d="M5 0C5 0 9.5 6 9.5 8.5A4.5 4.5 0 0 1 0.5 8.5C0.5 6 5 0 5 0Z" fill="var(--rust)"/></svg><svg viewBox="0 0 10 12" width="11" height="13"><path d="M5 0C5 0 9.5 6 9.5 8.5A4.5 4.5 0 0 1 0.5 8.5C0.5 6 5 0 5 0Z" fill="var(--rust)"/></svg><svg viewBox="0 0 10 12" width="11" height="13"><path d="M5 0C5 0 9.5 6 9.5 8.5A4.5 4.5 0 0 1 0.5 8.5C0.5 6 5 0 5 0Z" fill="var(--rust)"/></svg></div>75&ndash;90%</div></div>
+          <div class="rating-row"><div class="rating-label">Temp&eacute;rature</div><div class="rating-value" style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V5a2 2 0 1 0-4 0v9a4 4 0 1 0 4 0z"/></svg>24&ndash;27&#176;C</div></div>
+          <div class="rating-row"><div class="rating-label">Sociabilit&eacute;</div><div class="rating-value" style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="10" r="4"/><circle cx="16" cy="12" r="3.2"/></svg>Gr&eacute;gaire, calme</div></div>
+          <div class="rating-row"><div class="rating-label">Alimentation</div><div class="rating-value" style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c8 0 14-6 14-14-8 0-14 6-14 14z"/></svg>D&eacute;tritivore : bois, feuilles</div></div>
+          <div class="rating-row"><div class="rating-label">Vigilance</div><div class="rating-value" style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--stampred)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l10 17H2z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.6" fill="var(--stampred)" stroke="none"/></svg>Tr&egrave;s sensible au dessèchement, m&ecirc;me bref</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="wordmark" style="font-size:18px;">Pr&eacute;sentation</div>
+        <div style="border-top:1px solid var(--line-strong); margin:6px 0 12px;"></div>
+        <div style="font-size:14px; line-height:1.7;">Iule tr&egrave;s color&eacute; (rouge et noir) originaire de la r&eacute;gion malgache/est-africaine, recherch&eacute; pour son aspect. R&eacute;put&eacute; plus exigeant que les Spirostreptus sur la stabilit&eacute; de l'humidit&eacute; &mdash; &agrave; confirmer selon ton propre retour d'exp&eacute;rience.</div>
+
+        <div class="wordmark" style="font-size:18px;">Habitat</div>
+        <div style="border-top:1px solid var(--line-strong); margin:6px 0 12px;"></div>
+        <div style="font-size:14px; line-height:1.7;">Substrat tr&egrave;s humide en permanence, litti&egrave;re &eacute;paisse, bonne circulation d'air malgr&eacute; tout pour &eacute;viter la stagnation. Un vaporisateur ou une brumisation r&eacute;guli&egrave;re est souvent n&eacute;cessaire.</div>
+
+        <div class="wordmark" style="font-size:18px;">Alimentation</div>
+        <div style="border-top:1px solid var(--line-strong); margin:6px 0 12px;"></div>
+        <div style="font-size:14px; line-height:1.7;">Bois tendre en d&eacute;composition, feuilles mortes, calcium en continu.</div>
+
+        <div style="margin-top:30px; border:1.5px solid var(--ink); background:var(--paper-alt); padding:24px 26px;">
+          <div class="wordmark" style="font-size:21px; color:var(--rust);">Reproduction</div>
+          <div style="border-top:1px solid var(--line-strong); margin:8px 0 16px;"></div>
+          <div class="wordmark" style="font-size:14px;">Sexage</div>
+          <div style="font-size:13.5px; line-height:1.6; margin:4px 0 14px;">Gonopodes du m&acirc;le visibles en retournant l'animal adulte.</div>
+          <div class="wordmark" style="font-size:14px;">Conditions favorables</div>
+          <div style="font-size:13.5px; line-height:1.6; margin:4px 0 14px;">Une humidit&eacute; tr&egrave;s stable semble &ecirc;tre le facteur le plus critique &mdash; plus que pour la plupart des autres iules de la collection.</div>
+          <div class="wordmark" style="font-size:14px;">Accouplement et ponte</div>
+          <div style="font-size:13.5px; line-height:1.6; margin:4px 0 14px;">Ponte enfouie, discr&egrave;te, &agrave; ne pas perturber en fouillant le substrat.</div>
+          <div class="wordmark" style="font-size:14px;">Incubation</div>
+          <div style="font-size:13.5px; line-height:1.6; margin:4px 0 14px;">D&eacute;veloppement probablement lent &mdash; peu de retours pr&eacute;cis disponibles, &agrave; documenter au fil de l'&eacute;levage.</div>
+          <div class="wordmark" style="font-size:14px;">Naissance et juv&eacute;niles</div>
+          <div style="font-size:13.5px; line-height:1.6; margin:4px 0 14px;">Juv&eacute;niles probablement tr&egrave;s sensibles aux variations d'humidit&eacute; &mdash; &agrave; surveiller de pr&egrave;s les premi&egrave;res semaines.</div>
+          <div style="margin-top:18px; padding:14px 16px; border:1px solid var(--line-strong); background:oklch(46% 0.14 25 / 0.06);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--stampred)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l10 17H2z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.6" fill="var(--stampred)" stroke="none"/></svg><div class="wordmark" style="font-size:13.5px; color:var(--stampred);">Pi&egrave;ges &agrave; &eacute;viter</div></div>
+            <div style="font-size:13px; line-height:1.6;">Toute chute d'humidit&eacute;, m&ecirc;me br&egrave;ve ; ventilation excessive qui ass&egrave;che le bac ; manipulation trop fr&eacute;quente.</div>
+          </div>
+        </div>
+        <div style="margin-top:18px; font-style:italic; color:var(--ink-muted); font-size:12.5px;">Esp&egrave;ce moins document&eacute;e que les autres iules de la liste &mdash; &agrave; corriger en priorit&eacute; avec ta propre exp&eacute;rience d'&eacute;leveur.</div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

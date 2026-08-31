@@ -1,9 +1,39 @@
 {
-  "artboards": [
-    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 1150 },
-    { "file": "Fiche.dc.html", "x": 1540, "y": 0, "w": 1440, "h": 1150 },
-    { "file": "Journal.dc.html", "x": 3080, "y": 0, "w": 1440, "h": 1150 },
-    { "file": "Espece.dc.html", "x": 4620, "y": 0, "w": 1440, "h": 2200 }
+  "pages": [
+    { "id": "app", "name": "Application" },
+    { "id": "especes", "name": "Guide des espèces" }
   ],
-  "launch": { "view": "canvas" }
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 1150, "page": "app" },
+    { "file": "Fiche.dc.html", "x": 1540, "y": 0, "w": 1440, "h": 1150, "page": "app" },
+    { "file": "Journal.dc.html", "x": 3080, "y": 0, "w": 1440, "h": 1150, "page": "app" },
+    { "file": "Tournee.dc.html", "x": 4620, "y": 0, "w": 1440, "h": 1000, "page": "app" },
+    { "file": "Pontes.dc.html", "x": 6160, "y": 0, "w": 1440, "h": 1000, "page": "app" },
+    { "file": "Vente.dc.html", "x": 7700, "y": 0, "w": 1440, "h": 1150, "page": "app" },
+
+    { "file": "EspeceIndex.dc.html", "x": 0, "y": 0, "w": 1440, "h": 2500, "page": "especes" },
+    { "file": "Espece.dc.html", "x": 1540, "y": 0, "w": 1440, "h": 2200, "page": "especes" },
+    { "file": "EspeceServatius.dc.html", "x": 3080, "y": 0, "w": 1440, "h": 2050, "page": "especes" },
+    { "file": "EspeceTanzania.dc.html", "x": 4620, "y": 0, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceMonilicornis.dc.html", "x": 6160, "y": 0, "w": 1440, "h": 2000, "page": "especes" },
+
+    { "file": "EspeceCaudulanus.dc.html", "x": 0, "y": 2650, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceAoutii.dc.html", "x": 1540, "y": 2650, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceRichardii.dc.html", "x": 3080, "y": 2650, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceOfficinalis.dc.html", "x": 4620, "y": 2650, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceScaber.dc.html", "x": 6160, "y": 2650, "w": 1440, "h": 2000, "page": "especes" },
+
+    { "file": "EspeceMuricatum.dc.html", "x": 0, "y": 5300, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceVulgare.dc.html", "x": 1540, "y": 5300, "w": 1440, "h": 2050, "page": "especes" },
+    { "file": "EspeceLaevis.dc.html", "x": 3080, "y": 5300, "w": 1440, "h": 2050, "page": "especes" },
+    { "file": "EspeceGestroi.dc.html", "x": 4620, "y": 5300, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceFlavoscutatum.dc.html", "x": 6160, "y": 5300, "w": 1440, "h": 2000, "page": "especes" },
+
+    { "file": "EspeceDerbyana.dc.html", "x": 0, "y": 7950, "w": 1440, "h": 2050, "page": "especes" },
+    { "file": "EspeceMarginata.dc.html", "x": 1540, "y": 7950, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceBiguttatus.dc.html", "x": 3080, "y": 7950, "w": 1440, "h": 2050, "page": "especes" },
+    { "file": "EspeceOlegrandjeani.dc.html", "x": 4620, "y": 7950, "w": 1440, "h": 2000, "page": "especes" },
+    { "file": "EspeceFulica.dc.html", "x": 6160, "y": 7950, "w": 1440, "h": 2100, "page": "especes" }
+  ],
+  "launch": { "view": "canvas", "page": "app" }
 }
