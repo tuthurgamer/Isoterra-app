@@ -38,7 +38,7 @@
   <div style="display:grid; grid-template-columns:2.2fr 1fr 1fr 1fr; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); font-size:13.5px;">
     <div>
       <div style="font-weight:600;"><a href="/fiches/<%= bac.id %>" style="color:inherit;"><%= bac.common_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></a></div>
-      <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px;">bac <%= fmt.numTag(bac.id) %></div>
+      <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px;">bac <%= fmt.numTag(bac.bac_id) %></div>
     </div>
     <div><%= bac.for_sale_quantity %></div>
     <div><%= bac.unit_price ? bac.unit_price + ' €' : '—' %></div>
@@ -53,7 +53,7 @@
   <div class="field" style="margin-bottom:0; flex:1; min-width:200px;"><label>Détail</label><input type="text" name="description" placeholder="ex. 5x Dairy Cow" required></div>
   <div class="field" style="margin-bottom:0;">
     <label>Bac lié (optionnel)</label>
-    <select name="bac_id">
+    <select name="bac_species_id">
       <option value="">—</option>
       <% stock.forEach(function(b) { %><option value="<%= b.id %>"><%= b.common_name %><%= b.morph ? ' ' + b.morph : '' %></option><% }); %>
     </select>

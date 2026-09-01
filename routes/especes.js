@@ -28,7 +28,7 @@ router.post('/', (req, res) => {
 router.get('/:id', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
-  const bacs = db.prepare('SELECT id, morph FROM bacs WHERE species_id = ?').all(req.params.id);
+  const bacs = db.prepare('SELECT id, bac_id, morph FROM bac_species WHERE species_id = ?').all(req.params.id);
   res.render('especes/show', { title: sp.common_name, active: 'especes', sp, bacs });
 });
 

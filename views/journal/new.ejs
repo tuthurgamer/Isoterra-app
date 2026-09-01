@@ -4,7 +4,7 @@
   <div>
     <div class="eyebrow">JOURNAL &gt; NOUVELLE ENTRÉE</div>
     <h1>Nouvelle entrée</h1>
-    <div class="subtitle"><%= fmt.numTag(bac.id) %> — <%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
+    <div class="subtitle"><%= fmt.numTag(bacSpecies.bac_id) %> — <%= bacSpecies.morph ? bacSpecies.common_name + ' ' + bacSpecies.morph : bacSpecies.common_name %></div>
   </div>
   <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
 </div>
@@ -12,7 +12,7 @@
 <div class="rule-thin"></div>
 
 <form method="POST" action="/journal" enctype="multipart/form-data" style="max-width:640px;">
-  <input type="hidden" name="bac_id" value="<%= bac.id %>">
+  <input type="hidden" name="fiche_id" value="<%= bacSpecies.id %>">
 
   <div class="field">
     <label>Type d'événement</label>

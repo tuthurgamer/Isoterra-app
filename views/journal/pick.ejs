@@ -3,21 +3,21 @@
 <div class="masthead">
   <div>
     <div class="eyebrow">JOURNAL</div>
-    <h1>Choisir un bac</h1>
+    <h1>Choisir une fiche</h1>
   </div>
 </div>
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
-<% if (bacs.length === 0) { %>
+<% if (fiches.length === 0) { %>
   <p style="font-style:italic; color:var(--ink-muted);">Aucun bac pour l'instant. <a href="/fiches/new">Ajoute-en un</a> avant de journaliser.</p>
 <% } %>
 
 <div style="display:flex; flex-direction:column; gap:2px; max-width:480px;">
-  <% bacs.forEach(function(b) { %>
-    <a href="/journal/new?bac_id=<%= b.id %>" style="display:flex; justify-content:space-between; padding:12px 4px; border-bottom:1px solid var(--line); color:var(--ink);">
-      <span><%= b.morph ? b.common_name + ' ' + b.morph : b.common_name %></span>
-      <span style="font-family:'Special Elite',monospace; font-size:11px; color:var(--ink-muted);"><%= fmt.numTag(b.id) %></span>
+  <% fiches.forEach(function(f) { %>
+    <a href="/journal/new?fiche_id=<%= f.id %>" style="display:flex; justify-content:space-between; padding:12px 4px; border-bottom:1px solid var(--line); color:var(--ink);">
+      <span><%= f.morph ? f.common_name + ' ' + f.morph : f.common_name %></span>
+      <span style="font-family:'Special Elite',monospace; font-size:11px; color:var(--ink-muted);"><%= fmt.numTag(f.bac_id) %></span>
     </a>
   <% }); %>
 </div>

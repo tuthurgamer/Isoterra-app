@@ -6,67 +6,106 @@ function getSpeciesList() {
   return db.prepare('SELECT id, category, common_name, scientific_name FROM species ORDER BY category, common_name').all();
 }
 
+function getBacList() {
+  return db.prepare(`
+    SELECT b.id, b.substrate, GROUP_CONCAT(s.common_name, ', ') AS residents
+    FROM bacs b
+    LEFT JOIN bac_species bs ON bs.bac_id = b.id
+    LEFT JOIN species s ON s.id = bs.species_id
+    GROUP BY b.id
+    ORDER BY b.id
+  `).all();
+}
+
 router.get('/new', (req, res) => {
   res.render('fiches/form', {
     title: 'Nouveau bac', active: 'fiches',
-    bac: {}, speciesList: getSpeciesList(), isNew: true
+    bacSpecies: {}, speciesList: getSpeciesList(), bacList: getBacList(),
+    preselectBacId: req.query.bac_id || '', isNew: true
   });
 });
 
 router.post('/', (req, res) => {
   const b = req.body;
+  let bacId = b.bac_id;
+  if (!bacId) {
+    const bacInfo = db.prepare('INSERT INTO bacs (substrate) VALUES (?)').run(b.substrate || null);
+    bacId = bacInfo.lastInsertRowid;
+  }
   const info = db.prepare(`
-    INSERT INTO bacs (species_id, morph, lineage, population_estimate, substrate, acquisition_date, status)
+    INSERT INTO bac_species (bac_id, species_id, morph, lineage, population_estimate, acquisition_date, status)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(b.species_id, b.morph || null, b.lineage || null, b.population_estimate || null, b.substrate || null, b.acquisition_date || null, b.status || 'actif');
+  `).run(bacId, b.species_id, b.morph || null, b.lineage || null, b.population_estimate || null, b.acquisition_date || null, b.status || 'actif');
   res.redirect('/fiches/' + info.lastInsertRowid);
 });
 
 router.get('/:id', (req, res) => {
-  const bac = db.prepare(`
-    SELECT b.*, s.* , b.id AS id, s.id AS species_id
-    FROM bacs b JOIN species s ON s.id = b.species_id
-    WHERE b.id = ?
+  const bacSpecies = db.prepare(`
+    SELECT bs.*, b.substrate, b.id AS bac_id, s.*, bs.id AS id, s.id AS species_id
+    FROM bac_species bs
+    JOIN bacs b ON b.id = bs.bac_id
+    JOIN species s ON s.id = bs.species_id
+    WHERE bs.id = ?
   `).get(req.params.id);
-  if (!bac) return res.status(404).render('404', { path: req.path });
+  if (!bacSpecies) return res.status(404).render('404', { path: req.path });
 
-  const logs = db.prepare('SELECT * FROM log_entries WHERE bac_id = ? ORDER BY created_at DESC').all(req.params.id);
+  const cohabitants = db.prepare(`
+    SELECT bs.id, s.common_name FROM bac_species bs JOIN species s ON s.id = bs.species_id
+    WHERE bs.bac_id = ? AND bs.id != ?
+  `).all(bacSpecies.bac_id, bacSpecies.id);
+
+  const logs = db.prepare('SELECT * FROM log_entries WHERE bac_species_id = ? ORDER BY created_at DESC').all(req.params.id);
   const lastPhoto = logs.find(l => l.photo_path);
 
-  res.render('fiches/show', { title: bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name, active: 'bacs', bac, logs, lastPhoto });
+  res.render('fiches/show', {
+    title: bacSpecies.morph ? bacSpecies.common_name + ' ' + bacSpecies.morph : bacSpecies.common_name,
+    active: 'bacs', bac: bacSpecies, cohabitants, logs, lastPhoto
+  });
 });
 
 router.get('/:id/edit', (req, res) => {
-  const bac = db.prepare('SELECT * FROM bacs WHERE id = ?').get(req.params.id);
-  if (!bac) return res.status(404).render('404', { path: req.path });
-  res.render('fiches/form', { title: 'Modifier la fiche', active: 'bacs', bac, speciesList: getSpeciesList(), isNew: false });
+  const bacSpecies = db.prepare(`
+    SELECT bs.*, b.substrate FROM bac_species bs JOIN bacs b ON b.id = bs.bac_id WHERE bs.id = ?
+  `).get(req.params.id);
+  if (!bacSpecies) return res.status(404).render('404', { path: req.path });
+  res.render('fiches/form', { title: 'Modifier la fiche', active: 'bacs', bacSpecies, speciesList: getSpeciesList(), bacList: [], preselectBacId: '', isNew: false });
 });
 
 router.post('/:id', (req, res) => {
   const b = req.body;
+  const current = db.prepare('SELECT bac_id FROM bac_species WHERE id = ?').get(req.params.id);
+  if (!current) return res.status(404).render('404', { path: req.path });
+
   db.prepare(`
-    UPDATE bacs SET species_id = ?, morph = ?, lineage = ?, population_estimate = ?, substrate = ?,
+    UPDATE bac_species SET species_id = ?, morph = ?, lineage = ?, population_estimate = ?,
       acquisition_date = ?, status = ?, breeding_stage = ?, for_sale_quantity = ?, unit_price = ?,
       updated_at = datetime('now', 'localtime')
     WHERE id = ?
   `).run(
-    b.species_id, b.morph || null, b.lineage || null, b.population_estimate || null, b.substrate || null,
+    b.species_id, b.morph || null, b.lineage || null, b.population_estimate || null,
     b.acquisition_date || null, b.status || 'actif', b.breeding_stage || null,
     b.for_sale_quantity || 0, b.unit_price || null, req.params.id
   );
+  db.prepare("UPDATE bacs SET substrate = ?, updated_at = datetime('now', 'localtime') WHERE id = ?")
+    .run(b.substrate || null, current.bac_id);
+
   res.redirect('/fiches/' + req.params.id);
 });
 
 router.post('/:id/delete', (req, res) => {
-  db.prepare('DELETE FROM bacs WHERE id = ?').run(req.params.id);
+  const current = db.prepare('SELECT bac_id FROM bac_species WHERE id = ?').get(req.params.id);
+  if (!current) return res.redirect('/');
+  db.prepare('DELETE FROM bac_species WHERE id = ?').run(req.params.id);
+  const remaining = db.prepare('SELECT COUNT(*) AS n FROM bac_species WHERE bac_id = ?').get(current.bac_id).n;
+  if (remaining === 0) db.prepare('DELETE FROM bacs WHERE id = ?').run(current.bac_id);
   res.redirect('/');
 });
 
 router.post('/:id/log/quick', (req, res) => {
   const type = req.query.type || req.body.type;
   if (!type) return res.status(400).send('Type manquant');
-  db.prepare('INSERT INTO log_entries (bac_id, type) VALUES (?, ?)').run(req.params.id, type);
-  db.prepare("UPDATE bacs SET last_checked_at = datetime('now', 'localtime') WHERE id = ?").run(req.params.id);
+  db.prepare('INSERT INTO log_entries (bac_species_id, type) VALUES (?, ?)').run(req.params.id, type);
+  db.prepare("UPDATE bac_species SET last_checked_at = datetime('now', 'localtime') WHERE id = ?").run(req.params.id);
   res.redirect(req.get('Referer') || '/fiches/' + req.params.id);
 });
 

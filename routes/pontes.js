@@ -10,16 +10,16 @@ const STAGES = [
 ];
 
 router.get('/', (req, res) => {
-  const bacs = db.prepare(`
-    SELECT b.*, s.common_name, s.scientific_name, s.category
-    FROM bacs b JOIN species s ON s.id = b.species_id
-    WHERE b.breeding_stage IS NOT NULL
-    ORDER BY b.updated_at DESC
+  const fiches = db.prepare(`
+    SELECT bs.*, bs.id AS id, s.common_name, s.scientific_name, s.category
+    FROM bac_species bs JOIN species s ON s.id = bs.species_id
+    WHERE bs.breeding_stage IS NOT NULL
+    ORDER BY bs.updated_at DESC
   `).all();
 
   const columns = STAGES.map(stage => ({
     ...stage,
-    items: bacs.filter(b => b.breeding_stage === stage.key)
+    items: fiches.filter(f => f.breeding_stage === stage.key)
   }));
 
   res.render('pontes/index', { title: 'Pontes & couvain', active: 'pontes', columns });

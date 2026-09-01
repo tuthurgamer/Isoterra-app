@@ -2,7 +2,7 @@
 
 <div class="masthead">
   <div>
-    <div class="eyebrow">REGISTRE DES BACS &gt; FICHE <%= fmt.numTag(bac.id) %></div>
+    <div class="eyebrow">REGISTRE DES BACS &gt; FICHE <%= fmt.numTag(bac.bac_id) %></div>
     <h1>Fiche de spécimen</h1>
   </div>
   <div style="display:flex; gap:8px; align-items:center;">
@@ -37,10 +37,19 @@
         <span class="stamp <%= fmt.STATUS_CLASSES[bac.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[bac.status] || bac.status %></span>
         <% if (bac.breeding_stage) { %><span class="stamp stamp--rust"><%= fmt.BREEDING_LABELS[bac.breeding_stage] %></span><% } %>
       </div>
+      <div style="color:var(--ink-muted); font-style:italic;">Cohabite avec</div>
+      <div>
+        <% if (cohabitants.length === 0) { %>
+          <span style="color:var(--ink-faint);">— bac mono-espèce</span>
+        <% } else { %>
+          <% cohabitants.forEach(function(c, i) { %><a href="/fiches/<%= c.id %>"><%= c.common_name %></a><%= i < cohabitants.length - 1 ? ', ' : '' %><% }); %>
+        <% } %>
+        <a href="/fiches/new?bac_id=<%= bac.bac_id %>" class="btn-quiet" style="padding:0 0 0 8px;">+ ajouter une espèce ici</a>
+      </div>
     </div>
 
     <div style="margin-top:22px; display:flex; gap:10px;">
-      <a href="/journal/new?bac_id=<%= bac.id %>" class="btn">+ Nouvelle entrée</a>
+      <a href="/journal/new?fiche_id=<%= bac.id %>" class="btn">+ Nouvelle entrée</a>
       <form method="POST" action="/fiches/<%= bac.id %>/delete" onsubmit="return confirm('Supprimer definitivement cette fiche et son journal ?');">
         <button type="submit" class="btn-quiet">Supprimer la fiche</button>
       </form>

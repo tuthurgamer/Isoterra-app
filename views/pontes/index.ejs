@@ -22,7 +22,7 @@
       <% col.items.forEach(function(bac) { %>
         <a href="/fiches/<%= bac.id %>" style="display:block; background:var(--paper-alt); border:1px solid var(--line); padding:14px; margin-bottom:12px; color:var(--ink);">
           <div style="font-weight:600; font-size:14px;"><%= bac.common_name %><%= bac.morph ? ' ' + bac.morph : '' %></div>
-          <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px; margin-bottom:8px;"><%= bac.scientific_name %> — bac <%= fmt.numTag(bac.id) %></div>
+          <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px; margin-bottom:8px;"><%= bac.scientific_name %> — bac <%= fmt.numTag(bac.bac_id) %></div>
           <div style="font-family:'Special Elite',monospace; font-size:10px; color:var(--ink-muted);">màj <%= fmt.relative(bac.updated_at) %></div>
         </a>
       <% }); %>

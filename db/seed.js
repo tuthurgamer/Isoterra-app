@@ -312,40 +312,73 @@ for (const sp of species) {
   speciesIds[sp.scientific_name] = info.lastInsertRowid;
 }
 
-const insertBac = db.prepare(`
-  INSERT INTO bacs (species_id, morph, lineage, population_estimate, substrate, acquisition_date, status, breeding_stage, for_sale_quantity, unit_price, last_checked_at)
-  VALUES (:species_id, :morph, :lineage, :population_estimate, :substrate, :acquisition_date, :status, :breeding_stage, :for_sale_quantity, :unit_price, :last_checked_at)
+const insertBac = db.prepare('INSERT INTO bacs (substrate) VALUES (?)');
+
+const insertBacSpecies = db.prepare(`
+  INSERT INTO bac_species (bac_id, species_id, morph, lineage, population_estimate, acquisition_date, status, breeding_stage, for_sale_quantity, unit_price, last_checked_at)
+  VALUES (:bac_id, :species_id, :morph, :lineage, :population_estimate, :acquisition_date, :status, :breeding_stage, :for_sale_quantity, :unit_price, :last_checked_at)
 `);
 
+// Each bac has a shared substrate and one or more species living in it.
+// Bacs 0-9 are single-species; the last one is a real cohabitation
+// example (isopod cleanup crew alongside a millipede colony).
 const sampleBacs = [
-  { species_id: speciesIds['Tonkinbolus caudulanus'], morph: null, lineage: null, population_estimate: '~24 individus', substrate: 'Terreau de feuilles et fibre de coco', acquisition_date: '2025-04-10', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null, last_checked_at: null },
-  { species_id: speciesIds['Porcellio scaber'], morph: 'Lava', lineage: "F3 — issue du groupe fondateur A2", population_estimate: '~38 individus, dont 6 subadultes', substrate: 'Terreau feuilles et écorce', acquisition_date: '2025-03-12', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null, last_checked_at: null },
-  { species_id: speciesIds['Geosesarma riani'], morph: null, lineage: null, population_estimate: '9 individus', substrate: 'Fibre de coco et sphaigne', acquisition_date: '2025-02-01', status: 'actif', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null, last_checked_at: null },
-  { species_id: speciesIds['Pachnoda marginata'], morph: null, lineage: null, population_estimate: '17 larves', substrate: 'Flake soil (terreau de feuilles fermenté)', acquisition_date: '2025-01-20', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null, last_checked_at: null },
-  { species_id: speciesIds['Porcellio laevis'], morph: 'Dairy Cow', lineage: null, population_estimate: '~45 individus', substrate: 'Terreau humide et aéré', acquisition_date: '2024-11-05', status: 'vente', breeding_stage: null, for_sale_quantity: 15, unit_price: 8, last_checked_at: null },
-  { species_id: speciesIds['Porcellio laevis'], morph: 'Orange Koi', lineage: null, population_estimate: '6 juvéniles', substrate: 'Terreau humide et aéré', acquisition_date: '2025-08-28', status: 'actif', breeding_stage: null, for_sale_quantity: 6, unit_price: 10, last_checked_at: null },
-  { species_id: speciesIds['Armadillidium vulgare'], morph: 'Albinos', lineage: null, population_estimate: '~20 individus', substrate: 'Terreau calcaire', acquisition_date: '2025-05-15', status: 'vente', breeding_stage: null, for_sale_quantity: 4, unit_price: 12, last_checked_at: null },
-  { species_id: speciesIds['Anadenobolus monilicornis'], morph: null, lineage: null, population_estimate: '~20 individus', substrate: 'Fibre de coco', acquisition_date: '2024-09-01', status: 'vente', breeding_stage: null, for_sale_quantity: 20, unit_price: 5, last_checked_at: null },
-  { species_id: speciesIds['Platymeris biguttatus'], morph: null, lineage: null, population_estimate: '11 individus', substrate: 'Substrat sec, écorces', acquisition_date: '2025-06-01', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null, last_checked_at: null },
-  { species_id: speciesIds['Lissachatina fulica'], morph: 'Jade White', lineage: null, population_estimate: '14 individus', substrate: 'Tourbe et terreau', acquisition_date: '2025-03-01', status: 'reproduction', breeding_stage: 'ponte', for_sale_quantity: 8, unit_price: 15, last_checked_at: null }
+  { substrate: 'Terreau de feuilles et fibre de coco', entries: [
+    { species_id: speciesIds['Tonkinbolus caudulanus'], morph: null, lineage: null, population_estimate: '~24 individus', acquisition_date: '2025-04-10', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null }
+  ]},
+  { substrate: 'Terreau feuilles et écorce', entries: [
+    { species_id: speciesIds['Porcellio scaber'], morph: 'Lava', lineage: "F3 — issue du groupe fondateur A2", population_estimate: '~38 individus, dont 6 subadultes', acquisition_date: '2025-03-12', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
+  ]},
+  { substrate: 'Fibre de coco et sphaigne', entries: [
+    { species_id: speciesIds['Geosesarma riani'], morph: null, lineage: null, population_estimate: '9 individus', acquisition_date: '2025-02-01', status: 'actif', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
+  ]},
+  { substrate: 'Flake soil (terreau de feuilles fermenté)', entries: [
+    { species_id: speciesIds['Pachnoda marginata'], morph: null, lineage: null, population_estimate: '17 larves', acquisition_date: '2025-01-20', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
+  ]},
+  { substrate: 'Terreau humide et aéré', entries: [
+    { species_id: speciesIds['Porcellio laevis'], morph: 'Dairy Cow', lineage: null, population_estimate: '~45 individus', acquisition_date: '2024-11-05', status: 'vente', breeding_stage: null, for_sale_quantity: 15, unit_price: 8 }
+  ]},
+  { substrate: 'Terreau humide et aéré', entries: [
+    { species_id: speciesIds['Porcellio laevis'], morph: 'Orange Koi', lineage: null, population_estimate: '6 juvéniles', acquisition_date: '2025-08-28', status: 'actif', breeding_stage: null, for_sale_quantity: 6, unit_price: 10 }
+  ]},
+  { substrate: 'Terreau calcaire', entries: [
+    { species_id: speciesIds['Armadillidium vulgare'], morph: 'Albinos', lineage: null, population_estimate: '~20 individus', acquisition_date: '2025-05-15', status: 'vente', breeding_stage: null, for_sale_quantity: 4, unit_price: 12 }
+  ]},
+  { substrate: 'Fibre de coco', entries: [
+    { species_id: speciesIds['Anadenobolus monilicornis'], morph: null, lineage: null, population_estimate: '~20 individus', acquisition_date: '2024-09-01', status: 'vente', breeding_stage: null, for_sale_quantity: 20, unit_price: 5 }
+  ]},
+  { substrate: 'Substrat sec, écorces', entries: [
+    { species_id: speciesIds['Platymeris biguttatus'], morph: null, lineage: null, population_estimate: '11 individus', acquisition_date: '2025-06-01', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null }
+  ]},
+  { substrate: 'Tourbe et terreau', entries: [
+    { species_id: speciesIds['Lissachatina fulica'], morph: 'Jade White', lineage: null, population_estimate: '14 individus', acquisition_date: '2025-03-01', status: 'reproduction', breeding_stage: 'ponte', for_sale_quantity: 8, unit_price: 15 }
+  ]},
+  { substrate: 'Terreau de feuilles et fibre de coco — bac mixte cloportes / iules', entries: [
+    { species_id: speciesIds['Armadillidium vulgare'], morph: null, lineage: null, population_estimate: '~15 individus', acquisition_date: '2025-07-01', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null },
+    { species_id: speciesIds['Anadenobolus monilicornis'], morph: null, lineage: null, population_estimate: '~10 individus', acquisition_date: '2025-07-01', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null }
+  ]}
 ];
 
-const bacIds = [];
+const bacSpeciesIds = [];
 for (const bac of sampleBacs) {
-  const info = insertBac.run(bac);
-  bacIds.push(info.lastInsertRowid);
+  const bacInfo = insertBac.run(bac.substrate);
+  for (const entry of bac.entries) {
+    const info = insertBacSpecies.run({ bac_id: bacInfo.lastInsertRowid, last_checked_at: null, ...entry });
+    bacSpeciesIds.push(info.lastInsertRowid);
+  }
 }
 
 const insertLog = db.prepare(`
-  INSERT INTO log_entries (bac_id, type, note, created_at) VALUES (:bac_id, :type, :note, :created_at)
+  INSERT INTO log_entries (bac_species_id, type, note, created_at) VALUES (:bac_species_id, :type, :note, :created_at)
 `);
 
 const sampleLogs = [
-  { bac_id: bacIds[1], type: 'mue', note: 'Mue groupée, 4 individus repérés', created_at: '2026-08-28 10:00:00' },
-  { bac_id: bacIds[1], type: 'observation', note: 'Exuvie retrouvée côté humide', created_at: '2026-08-14 09:00:00' },
-  { bac_id: bacIds[1], type: 'ponte', note: 'Ponte confirmée, marsupium visible', created_at: '2026-08-02 09:00:00' },
-  { bac_id: bacIds[2], type: 'observation', note: "Femelle porteuse toujours en incubation, aucun signe de stress.", created_at: '2026-08-25 18:30:00' },
-  { bac_id: bacIds[0], type: 'nourrissage', note: null, created_at: '2026-08-29 08:00:00' }
+  { bac_species_id: bacSpeciesIds[1], type: 'mue', note: 'Mue groupée, 4 individus repérés', created_at: '2026-08-28 10:00:00' },
+  { bac_species_id: bacSpeciesIds[1], type: 'observation', note: 'Exuvie retrouvée côté humide', created_at: '2026-08-14 09:00:00' },
+  { bac_species_id: bacSpeciesIds[1], type: 'ponte', note: 'Ponte confirmée, marsupium visible', created_at: '2026-08-02 09:00:00' },
+  { bac_species_id: bacSpeciesIds[2], type: 'observation', note: "Femelle porteuse toujours en incubation, aucun signe de stress.", created_at: '2026-08-25 18:30:00' },
+  { bac_species_id: bacSpeciesIds[0], type: 'nourrissage', note: null, created_at: '2026-08-29 08:00:00' },
+  { bac_species_id: bacSpeciesIds[11], type: 'observation', note: 'Bac mixte stable, aucune interaction agressive observée entre les deux espèces.', created_at: '2026-08-30 09:00:00' }
 ];
 
 for (const log of sampleLogs) {
@@ -353,10 +386,10 @@ for (const log of sampleLogs) {
 }
 
 const insertOrder = db.prepare(`
-  INSERT INTO orders (customer_name, description, bac_id, status) VALUES (?, ?, ?, ?)
+  INSERT INTO orders (customer_name, description, bac_species_id, status) VALUES (?, ?, ?, ?)
 `);
 
-insertOrder.run('Julie M.', '5x Porcellio laevis Dairy Cow', bacIds[4], 'en_preparation');
-insertOrder.run('Marc D.', '10x Anadenobolus monilicornis', bacIds[7], 'expedie');
+insertOrder.run('Julie M.', '5x Porcellio laevis Dairy Cow', bacSpeciesIds[4], 'en_preparation');
+insertOrder.run('Marc D.', '10x Anadenobolus monilicornis', bacSpeciesIds[7], 'expedie');
 
-console.log(`Seeded ${species.length} species, ${sampleBacs.length} bacs, ${sampleLogs.length} log entries, 2 orders.`);
+console.log(`Seeded ${species.length} species, ${sampleBacs.length} bacs (${bacSpeciesIds.length} fiches), ${sampleLogs.length} log entries, 2 orders.`);

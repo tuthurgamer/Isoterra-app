@@ -19,7 +19,8 @@
     <div class="row" style="grid-template-columns:150px 1fr 160px 100px;">
       <div class="date"><%= fmt.dateShort(log.created_at) %></div>
       <div>
-        <a href="/fiches/<%= log.bac_id %>" style="color:var(--ink);"><%= log.morph ? log.common_name + ' ' + log.morph : log.common_name %></a>
+        <a href="/fiches/<%= log.bac_species_id %>" style="color:var(--ink);"><%= log.morph ? log.common_name + ' ' + log.morph : log.common_name %></a>
+        <span style="font-family:'Special Elite',monospace; font-size:10px; color:var(--ink-faint);"><%= fmt.numTag(log.bac_id) %></span>
         <% if (log.note) { %><div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-top:2px;"><%= log.note %></div><% } %>
       </div>
       <div style="font-style:italic; color:var(--ink-muted);"><%= fmt.LOG_TYPE_LABELS[log.type] || log.type %></div>

@@ -49,12 +49,15 @@
     <div class="specimen-card">
       <div style="display:flex; justify-content:space-between; align-items:flex-start;">
         <a class="icon" href="/fiches/<%= bac.id %>"><%- icons.species(bac.category) %></a>
-        <div class="tag"><%= fmt.numTag(bac.id) %></div>
+        <div class="tag"><%= fmt.numTag(bac.bac_id) %></div>
       </div>
       <a href="/fiches/<%= bac.id %>" style="color:inherit;">
         <div class="name"><%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
         <div class="sci"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
       </a>
+      <% if (bac.cohabitants.length) { %>
+        <div style="font-size:11px; font-style:italic; color:var(--ink-faint);">cohabite avec <%= bac.cohabitants.join(', ') %></div>
+      <% } %>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <div class="stamp <%= fmt.STATUS_CLASSES[bac.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[bac.status] || bac.status %></div>
         <% if (bac.vigilance && bac.vigilance !== 'Aucune') { %>

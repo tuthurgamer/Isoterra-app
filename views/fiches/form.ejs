@@ -9,7 +9,20 @@
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
-<form method="POST" action="<%= isNew ? '/fiches' : '/fiches/' + bac.id %>" style="max-width:560px;">
+<form method="POST" action="<%= isNew ? '/fiches' : '/fiches/' + bacSpecies.id %>" style="max-width:560px;">
+
+  <% if (isNew && bacList.length > 0) { %>
+  <div class="field">
+    <label>Bac</label>
+    <select name="bac_id">
+      <option value="">— Nouveau bac —</option>
+      <% bacList.forEach(function(b) { %>
+        <option value="<%= b.id %>" <%= String(preselectBacId) === String(b.id) ? 'selected' : '' %>><%= fmt.numTag(b.id) %> — <%= b.residents || 'vide' %> (<%= b.substrate || 'substrat non précisé' %>)</option>
+      <% }); %>
+    </select>
+  </div>
+  <% } %>
+
   <div class="field">
     <label>Espèce</label>
     <select name="species_id" required>
@@ -17,7 +30,7 @@
       <% let currentCat = null; %>
       <% speciesList.forEach(function(sp) { %>
         <% if (sp.category !== currentCat) { if (currentCat !== null) { %></optgroup><% } %><optgroup label="<%= sp.category %>"><% currentCat = sp.category; } %>
-        <option value="<%= sp.id %>" <%= String(bac.species_id) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
+        <option value="<%= sp.id %>" <%= String(bacSpecies.species_id) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
       <% }); %>
       <% if (currentCat !== null) { %></optgroup><% } %>
     </select>
@@ -25,35 +38,35 @@
 
   <div class="field">
     <label>Morph (optionnel)</label>
-    <input type="text" name="morph" value="<%= bac.morph || '' %>" placeholder="ex. Dairy Cow">
+    <input type="text" name="morph" value="<%= bacSpecies.morph || '' %>" placeholder="ex. Dairy Cow">
   </div>
 
   <div class="field">
     <label>Lignée</label>
-    <input type="text" name="lineage" value="<%= bac.lineage || '' %>" placeholder="ex. F3 — groupe fondateur A2">
+    <input type="text" name="lineage" value="<%= bacSpecies.lineage || '' %>" placeholder="ex. F3 — groupe fondateur A2">
   </div>
 
   <div class="field">
     <label>Population (estimation)</label>
-    <input type="text" name="population_estimate" value="<%= bac.population_estimate || '' %>" placeholder="ex. ~38 individus">
+    <input type="text" name="population_estimate" value="<%= bacSpecies.population_estimate || '' %>" placeholder="ex. ~38 individus">
   </div>
 
   <div class="field">
-    <label>Substrat</label>
-    <input type="text" name="substrate" value="<%= bac.substrate || '' %>" placeholder="ex. Terreau feuilles et écorce">
+    <label>Substrat<% if (isNew && bacList.length > 0) { %> (ignoré si tu ajoutes à un bac existant)<% } %></label>
+    <input type="text" name="substrate" value="<%= bacSpecies.substrate || '' %>" placeholder="ex. Terreau feuilles et écorce">
   </div>
 
   <div class="field">
     <label>Date d'acquisition</label>
-    <input type="date" name="acquisition_date" value="<%= bac.acquisition_date || '' %>">
+    <input type="date" name="acquisition_date" value="<%= bacSpecies.acquisition_date || '' %>">
   </div>
 
   <div class="field">
     <label>Statut</label>
     <select name="status">
-      <option value="actif" <%= bac.status === 'actif' ? 'selected' : '' %>>Actif</option>
-      <option value="reproduction" <%= bac.status === 'reproduction' ? 'selected' : '' %>>Reproduction</option>
-      <option value="vente" <%= bac.status === 'vente' ? 'selected' : '' %>>En vente</option>
+      <option value="actif" <%= bacSpecies.status === 'actif' ? 'selected' : '' %>>Actif</option>
+      <option value="reproduction" <%= bacSpecies.status === 'reproduction' ? 'selected' : '' %>>Reproduction</option>
+      <option value="vente" <%= bacSpecies.status === 'vente' ? 'selected' : '' %>>En vente</option>
     </select>
   </div>
 
@@ -62,21 +75,21 @@
     <label>Étape de reproduction (pour le suivi des pontes)</label>
     <select name="breeding_stage">
       <option value="">— aucune —</option>
-      <option value="accouplement" <%= bac.breeding_stage === 'accouplement' ? 'selected' : '' %>>Accouplement observé</option>
-      <option value="ponte" <%= bac.breeding_stage === 'ponte' ? 'selected' : '' %>>Ponte confirmée</option>
-      <option value="incubation" <%= bac.breeding_stage === 'incubation' ? 'selected' : '' %>>Incubation</option>
-      <option value="naissance" <%= bac.breeding_stage === 'naissance' ? 'selected' : '' %>>Naissances récentes</option>
+      <option value="accouplement" <%= bacSpecies.breeding_stage === 'accouplement' ? 'selected' : '' %>>Accouplement observé</option>
+      <option value="ponte" <%= bacSpecies.breeding_stage === 'ponte' ? 'selected' : '' %>>Ponte confirmée</option>
+      <option value="incubation" <%= bacSpecies.breeding_stage === 'incubation' ? 'selected' : '' %>>Incubation</option>
+      <option value="naissance" <%= bacSpecies.breeding_stage === 'naissance' ? 'selected' : '' %>>Naissances récentes</option>
     </select>
   </div>
 
   <div class="field">
     <label>Quantité disponible à la vente</label>
-    <input type="number" name="for_sale_quantity" min="0" value="<%= bac.for_sale_quantity || 0 %>">
+    <input type="number" name="for_sale_quantity" min="0" value="<%= bacSpecies.for_sale_quantity || 0 %>">
   </div>
 
   <div class="field">
     <label>Prix unitaire (€)</label>
-    <input type="number" step="0.5" min="0" name="unit_price" value="<%= bac.unit_price || '' %>">
+    <input type="number" step="0.5" min="0" name="unit_price" value="<%= bacSpecies.unit_price || '' %>">
   </div>
   <% } %>
 
