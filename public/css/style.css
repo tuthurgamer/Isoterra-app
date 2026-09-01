@@ -406,9 +406,10 @@ input, textarea, select, button {
 
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .grid-2col { display: grid; grid-template-columns: 300px 1fr; gap: 40px; }
+.grid-2col--even { grid-template-columns: 1.4fr 1fr; }
 @media (max-width: 900px) {
   .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .grid-2col { grid-template-columns: 1fr; }
+  .grid-2col, .grid-2col--even { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .grid-3 { grid-template-columns: 1fr; }
