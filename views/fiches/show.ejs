@@ -42,7 +42,7 @@
         <% if (cohabitants.length === 0) { %>
           <span style="color:var(--ink-faint);">— bac mono-espèce</span>
         <% } else { %>
-          <% cohabitants.forEach(function(c, i) { %><a href="/fiches/<%= c.id %>"><%= c.common_name %></a><%= i < cohabitants.length - 1 ? ', ' : '' %><% }); %>
+          <% cohabitants.forEach(function(c, i) { %><a href="/fiches/<%= c.id %>"><%= c.common_name %></a> <span class="stamp <%= c.compat.verdictClass %>" style="font-size:9px; padding:2px 7px;"><%= c.compat.total %>%</span><%= i < cohabitants.length - 1 ? ', ' : '' %><% }); %>
         <% } %>
         <a href="/fiches/new?bac_id=<%= bac.bac_id %>" class="btn-quiet" style="padding:0 0 0 8px;">+ ajouter une espèce ici</a>
       </div>

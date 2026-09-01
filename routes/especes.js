@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
+const { computeCompatibility } = require('../views/helpers/compatibility');
 
 const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', autre: 'Autres espèces' };
 const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'autre'];
@@ -18,6 +19,23 @@ router.get('/', (req, res) => {
 
 router.get('/new', (req, res) => {
   res.render('especes/form', { title: 'Nouvelle espèce', active: 'especes', sp: {}, isNew: true });
+});
+
+router.get('/compatibilite', (req, res) => {
+  const speciesList = db.prepare('SELECT id, category, common_name, scientific_name FROM species ORDER BY category, common_name').all();
+  const aId = req.query.a;
+  const bId = req.query.b;
+  let result = null;
+  let spA = null, spB = null;
+  if (aId && bId && aId !== bId) {
+    spA = db.prepare('SELECT * FROM species WHERE id = ?').get(aId);
+    spB = db.prepare('SELECT * FROM species WHERE id = ?').get(bId);
+    if (spA && spB) result = computeCompatibility(spA, spB);
+  }
+  res.render('especes/compatibilite', {
+    title: 'Compatibilité entre espèces', active: 'especes',
+    speciesList, aId: aId || '', bId: bId || '', spA, spB, result
+  });
 });
 
 router.post('/', (req, res) => {

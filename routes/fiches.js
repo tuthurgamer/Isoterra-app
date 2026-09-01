@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
+const { computeCompatibility } = require('../views/helpers/compatibility');
 
 function getSpeciesList() {
-  return db.prepare('SELECT id, category, common_name, scientific_name FROM species ORDER BY category, common_name').all();
+  return db.prepare('SELECT * FROM species ORDER BY category, common_name').all();
 }
 
 function getBacList() {
@@ -18,10 +19,35 @@ function getBacList() {
 }
 
 router.get('/new', (req, res) => {
+  const bacId = req.query.bac_id;
+  const speciesList = getSpeciesList();
+  let occupants = [];
+  let compatRanked = null;
+
+  if (bacId) {
+    occupants = db.prepare(`
+      SELECT s.* FROM bac_species bs JOIN species s ON s.id = bs.species_id WHERE bs.bac_id = ?
+    `).all(bacId);
+    if (occupants.length > 0) {
+      const occupantIds = new Set(occupants.map(o => o.id));
+      compatRanked = speciesList
+        .filter(sp => !occupantIds.has(sp.id))
+        .map(sp => {
+          let worst = null;
+          for (const occ of occupants) {
+            const c = computeCompatibility(sp, occ);
+            if (worst === null || c.total < worst.total) worst = c;
+          }
+          return { species: sp, compat: worst };
+        })
+        .sort((a, b) => b.compat.total - a.compat.total);
+    }
+  }
+
   res.render('fiches/form', {
     title: 'Nouveau bac', active: 'fiches',
-    bacSpecies: {}, speciesList: getSpeciesList(), bacList: getBacList(),
-    preselectBacId: req.query.bac_id || '', isNew: true
+    bacSpecies: {}, speciesList, bacList: getBacList(),
+    preselectBacId: bacId || '', isNew: true, occupants, compatRanked
   });
 });
 
@@ -50,9 +76,10 @@ router.get('/:id', (req, res) => {
   if (!bacSpecies) return res.status(404).render('404', { path: req.path });
 
   const cohabitants = db.prepare(`
-    SELECT bs.id, s.common_name FROM bac_species bs JOIN species s ON s.id = bs.species_id
+    SELECT s.*, bs.id AS id FROM bac_species bs JOIN species s ON s.id = bs.species_id
     WHERE bs.bac_id = ? AND bs.id != ?
   `).all(bacSpecies.bac_id, bacSpecies.id);
+  for (const c of cohabitants) c.compat = computeCompatibility(bacSpecies, c);
 
   const logs = db.prepare('SELECT * FROM log_entries WHERE bac_species_id = ? ORDER BY created_at DESC').all(req.params.id);
   const lastPhoto = logs.find(l => l.photo_path);
@@ -68,7 +95,7 @@ router.get('/:id/edit', (req, res) => {
     SELECT bs.*, b.substrate FROM bac_species bs JOIN bacs b ON b.id = bs.bac_id WHERE bs.id = ?
   `).get(req.params.id);
   if (!bacSpecies) return res.status(404).render('404', { path: req.path });
-  res.render('fiches/form', { title: 'Modifier la fiche', active: 'bacs', bacSpecies, speciesList: getSpeciesList(), bacList: [], preselectBacId: '', isNew: false });
+  res.render('fiches/form', { title: 'Modifier la fiche', active: 'bacs', bacSpecies, speciesList: getSpeciesList(), bacList: [], preselectBacId: '', isNew: false, occupants: [], compatRanked: null });
 });
 
 router.post('/:id', (req, res) => {

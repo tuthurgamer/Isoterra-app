@@ -1,0 +1,80 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">ESPÈCES &gt; COMPATIBILITÉ</div>
+    <h1>Créateur de groupe</h1>
+    <div class="subtitle">Estimation de compatibilité entre deux espèces pour la cohabitation</div>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<form method="GET" action="/especes/compatibilite" style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-bottom:32px;">
+  <div class="field" style="margin-bottom:0; min-width:240px;">
+    <label>Espèce A</label>
+    <select name="a">
+      <option value="">— choisir —</option>
+      <% let catA = null; %>
+      <% speciesList.forEach(function(sp) { %>
+        <% if (sp.category !== catA) { if (catA !== null) { %></optgroup><% } %><optgroup label="<%= sp.category %>"><% catA = sp.category; } %>
+        <option value="<%= sp.id %>" <%= String(aId) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
+      <% }); %>
+      <% if (catA !== null) { %></optgroup><% } %>
+    </select>
+  </div>
+
+  <div class="field" style="margin-bottom:0; min-width:240px;">
+    <label>Espèce B</label>
+    <select name="b">
+      <option value="">— choisir —</option>
+      <% let catB = null; %>
+      <% speciesList.forEach(function(sp) { %>
+        <% if (sp.category !== catB) { if (catB !== null) { %></optgroup><% } %><optgroup label="<%= sp.category %>"><% catB = sp.category; } %>
+        <option value="<%= sp.id %>" <%= String(bId) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
+      <% }); %>
+      <% if (catB !== null) { %></optgroup><% } %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn" style="padding:10px 22px;">Comparer</button>
+</form>
+
+<% if (aId && bId && aId === bId) { %>
+  <p style="font-style:italic; color:var(--stampred);">Choisis deux espèces différentes.</p>
+<% } %>
+
+<% if (result) { %>
+  <div style="border:1.5px solid var(--ink); background:var(--paper-alt); padding:28px 32px; max-width:640px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <div class="wordmark" style="font-size:15px;"><%= spA.common_name %> &times; <%= spB.common_name %></div>
+      <div class="wordmark" style="font-size:34px; color:<%= result.total >= 75 ? 'var(--moss)' : result.total >= 50 ? 'var(--rust)' : 'var(--stampred)' %>;"><%= result.total %>%</div>
+    </div>
+    <div style="margin-bottom:20px;"><span class="stamp <%= result.verdictClass %>"><%= result.verdict %></span></div>
+
+    <div style="border-top:1px solid var(--line-strong); padding-top:16px;">
+      <% result.criteria.forEach(function(c) { %>
+        <div class="rating-row">
+          <div class="rating-label"><%= c.label %></div>
+          <div class="rating-value" style="display:flex; align-items:center; gap:10px;">
+            <div style="flex:1; height:8px; background:var(--paper); border:1px solid var(--line-strong); position:relative;">
+              <div style="position:absolute; inset:0; width:<%= result.breakdown[c.key] %>%; background:<%= result.breakdown[c.key] >= 75 ? 'var(--moss)' : result.breakdown[c.key] >= 50 ? 'var(--rust)' : 'var(--stampred)' %>;"></div>
+            </div>
+            <span style="font-family:'Special Elite',monospace; font-size:11px; width:38px; text-align:right;"><%= result.breakdown[c.key] %>%</span>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <% if (result.notes.length) { %>
+      <div class="pitfalls" style="margin-top:20px;">
+        <div class="head"><%- icons.warning() %><h4>À surveiller</h4></div>
+        <% result.notes.forEach(function(n) { %><p><%= n %></p><% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="draft-note">Estimation indicative à partir de l'humidité, la température, le comportement et l'alimentation renseignés dans les guides — elle ne remplace pas l'observation directe des animaux une fois réunis.</div>
+<% } %>
+
+<%- include('../partials/footer') %>
