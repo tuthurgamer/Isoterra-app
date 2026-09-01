@@ -1,0 +1,104 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">ESPÈCES &gt; <%= sp.scientific_name.toUpperCase() %></div>
+    <h1>Guide d'élevage</h1>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <% if (sp.is_draft) { %><div class="stamp stamp--red">Brouillon — à affiner</div><% } %>
+    <a href="/especes/<%= sp.id %>/edit" class="stamp stamp--muted">Modifier</a>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<div class="grid-2col">
+  <div>
+    <div class="wordmark" style="font-size:24px;"><%= sp.common_name %></div>
+    <div style="font-style:italic; color:var(--ink-muted); margin-bottom:18px; font-size:14px;"><%= sp.scientific_name %></div>
+
+    <div class="plate-frame">
+      <div class="inner"><%- icons.species(sp.category, 100) %></div>
+      <div class="caption"><%= sp.scientific_name.toUpperCase() %></div>
+    </div>
+
+    <div class="ratings-box">
+      <div class="rating-row">
+        <div class="rating-label">Difficulté</div>
+        <div class="rating-value"><%- icons.ratingDiamonds(sp.difficulty) %></div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Humidité</div>
+        <div class="rating-value">
+          <%- icons.humidityDroplets(sp.humidity_min || 0, sp.humidity_max || 0) %>
+          <% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %>%<% } %>
+        </div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Température</div>
+        <div class="rating-value" style="display:flex; align-items:center; gap:8px;">
+          <%- icons.thermometer() %>
+          <% if (sp.temp_min) { %><%= sp.temp_min %>–<%= sp.temp_max %>°C<% } else { %>—<% } %>
+        </div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Sociabilité</div>
+        <div class="rating-value" style="display:flex; align-items:center; gap:8px;"><%- icons.group() %> <%= sp.sociability || '—' %></div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Alimentation</div>
+        <div class="rating-value" style="display:flex; align-items:center; gap:8px;"><%- icons.leaf() %> <%= sp.diet_summary || '—' %></div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Vigilance</div>
+        <div class="rating-value" style="display:flex; align-items:center; gap:8px;">
+          <%- icons.warning(sp.vigilance && sp.vigilance !== 'Aucune' ? 'var(--stampred)' : 'var(--ink-faint)') %>
+          <%= sp.vigilance || 'Aucune' %>
+        </div>
+      </div>
+    </div>
+
+    <% if (bacs.length) { %>
+      <div style="margin-top:18px; font-size:12.5px; color:var(--ink-muted);">
+        Élevé dans : <% bacs.forEach(function(b, i) { %><a href="/fiches/<%= b.id %>"><%= b.morph || fmt.numTag(b.id) %></a><%= i < bacs.length - 1 ? ', ' : '' %><% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <div>
+    <div class="wordmark" style="font-size:18px;">Présentation</div>
+    <div style="border-top:1px solid var(--line-strong); margin:6px 0 12px;"></div>
+    <div style="font-size:14px; line-height:1.7;"><%= sp.presentation || '—' %></div>
+
+    <div class="wordmark" style="font-size:18px;">Habitat</div>
+    <div style="border-top:1px solid var(--line-strong); margin:6px 0 12px;"></div>
+    <div style="font-size:14px; line-height:1.7;"><%= sp.habitat || '—' %></div>
+
+    <div class="wordmark" style="font-size:18px;">Alimentation</div>
+    <div style="border-top:1px solid var(--line-strong); margin:6px 0 12px;"></div>
+    <div style="font-size:14px; line-height:1.7;"><%= sp.feeding_detail || '—' %></div>
+
+    <div class="repro-box">
+      <h3>Reproduction</h3>
+      <div class="rule"></div>
+
+      <div class="repro-field"><h4>Sexage</h4><p><%= sp.repro_sexing || '—' %></p></div>
+      <div class="repro-field"><h4>Conditions favorables</h4><p><%= sp.repro_conditions || '—' %></p></div>
+      <div class="repro-field"><h4>Accouplement et ponte</h4><p><%= sp.repro_mating || '—' %></p></div>
+      <div class="repro-field"><h4>Incubation</h4><p><%= sp.repro_incubation || '—' %></p></div>
+      <div class="repro-field"><h4>Naissance et juvéniles</h4><p><%= sp.repro_juveniles || '—' %></p></div>
+
+      <% if (sp.repro_pitfalls) { %>
+      <div class="pitfalls">
+        <div class="head"><%- icons.warning() %><h4>Pièges à éviter</h4></div>
+        <p><%= sp.repro_pitfalls %></p>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="draft-note">Cette fiche est un point de départ général — à corriger et compléter avec ta propre expérience d'éleveur.</div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

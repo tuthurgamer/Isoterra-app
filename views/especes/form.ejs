@@ -1,0 +1,79 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">ESPÈCES</div>
+    <h1><%= isNew ? 'Nouvelle espèce' : 'Modifier ' + sp.common_name %></h1>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<form method="POST" action="<%= isNew ? '/especes' : '/especes/' + sp.id %>" style="max-width:680px;">
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 20px;">
+    <div class="field">
+      <label>Nom commun</label>
+      <input type="text" name="common_name" value="<%= sp.common_name || '' %>" required>
+    </div>
+    <div class="field">
+      <label>Nom scientifique</label>
+      <input type="text" name="scientific_name" value="<%= sp.scientific_name || '' %>" required>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Catégorie</label>
+    <select name="category">
+      <% ['iule','cloporte','cetoine','autre'].forEach(function(c) { %>
+        <option value="<%= c %>" <%= sp.category === c ? 'selected' : '' %>><%= c %></option>
+      <% }); %>
+    </select>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 20px;">
+    <div class="field">
+      <label>Difficulté (1-5)</label>
+      <input type="number" name="difficulty" min="1" max="5" value="<%= sp.difficulty || 3 %>">
+    </div>
+    <div class="field">
+      <label>Humidité min-max (%)</label>
+      <div style="display:flex; gap:6px;">
+        <input type="number" name="humidity_min" value="<%= sp.humidity_min || '' %>">
+        <input type="number" name="humidity_max" value="<%= sp.humidity_max || '' %>">
+      </div>
+    </div>
+    <div class="field">
+      <label>Température min-max (°C)</label>
+      <div style="display:flex; gap:6px;">
+        <input type="number" name="temp_min" value="<%= sp.temp_min || '' %>">
+        <input type="number" name="temp_max" value="<%= sp.temp_max || '' %>">
+      </div>
+    </div>
+  </div>
+
+  <div class="field"><label>Sociabilité</label><input type="text" name="sociability" value="<%= sp.sociability || '' %>"></div>
+  <div class="field"><label>Alimentation (résumé)</label><input type="text" name="diet_summary" value="<%= sp.diet_summary || '' %>"></div>
+  <div class="field"><label>Vigilance</label><input type="text" name="vigilance" value="<%= sp.vigilance || '' %>" placeholder="Aucune, si rien de particulier"></div>
+
+  <div class="field"><label>Présentation</label><textarea name="presentation"><%= sp.presentation || '' %></textarea></div>
+  <div class="field"><label>Habitat</label><textarea name="habitat"><%= sp.habitat || '' %></textarea></div>
+  <div class="field"><label>Alimentation (détail)</label><textarea name="feeding_detail"><%= sp.feeding_detail || '' %></textarea></div>
+
+  <div class="section-title"><h2>Reproduction</h2><div class="rule"></div></div>
+
+  <div class="field"><label>Sexage</label><textarea name="repro_sexing"><%= sp.repro_sexing || '' %></textarea></div>
+  <div class="field"><label>Conditions favorables</label><textarea name="repro_conditions"><%= sp.repro_conditions || '' %></textarea></div>
+  <div class="field"><label>Accouplement et ponte</label><textarea name="repro_mating"><%= sp.repro_mating || '' %></textarea></div>
+  <div class="field"><label>Incubation</label><textarea name="repro_incubation"><%= sp.repro_incubation || '' %></textarea></div>
+  <div class="field"><label>Naissance et juvéniles</label><textarea name="repro_juveniles"><%= sp.repro_juveniles || '' %></textarea></div>
+  <div class="field"><label>Pièges à éviter</label><textarea name="repro_pitfalls"><%= sp.repro_pitfalls || '' %></textarea></div>
+
+  <div class="field">
+    <label><input type="checkbox" name="is_draft" <%= (sp.is_draft === undefined || sp.is_draft) ? 'checked' : '' %> style="width:auto; margin-right:6px;">Marquer comme brouillon à affiner</label>
+  </div>
+
+  <button type="submit" class="btn"><%= isNew ? 'Créer la fiche' : 'Enregistrer' %></button>
+</form>
+
+<%- include('../partials/footer') %>

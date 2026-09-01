@@ -1,0 +1,16 @@
+{
+  "name": "Isoterra — Carnet d'élevage",
+  "short_name": "Isoterra",
+  "description": "Carnet d'élevage et registre professionnel pour arthropodes",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#2a2018",
+  "theme_color": "#2a2018",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "icons": [
+    { "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

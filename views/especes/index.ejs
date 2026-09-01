@@ -1,0 +1,37 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">ESPÈCES</div>
+    <h1>Guide des espèces</h1>
+    <div class="subtitle"><%= total %> fiches — organisées comme tu les penses</div>
+  </div>
+  <a href="/especes/new" class="stamp stamp--muted">+ nouvelle espèce</a>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<% byCategory.forEach(function(group) { %>
+  <div class="section-title" style="margin-top:34px;">
+    <%- icons.species(group.key, 24) %>
+    <h2><%= group.label %></h2>
+    <div class="rule"></div>
+    <div class="count"><%= group.items.length %></div>
+  </div>
+
+  <% group.items.forEach(function(sp) { %>
+    <a href="/especes/<%= sp.id %>" style="display:grid; grid-template-columns:30px 2.1fr 1fr 0.9fr; align-items:center; gap:14px; padding:9px 0; border-bottom:1px solid var(--line); color:var(--ink);">
+      <span style="color:var(--ink-faint);"><%- icons.species(sp.category, 22) %></span>
+      <span>
+        <span style="font-weight:600; font-size:13.5px;"><%= sp.common_name %></span><br>
+        <span style="font-style:italic; color:var(--ink-muted); font-size:11.5px;"><%= sp.scientific_name %></span>
+      </span>
+      <span><%- icons.ratingDiamonds(sp.difficulty) %></span>
+      <span style="font-family:'Special Elite',monospace; font-size:11px; color:var(--ink-muted);">
+        <% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %>%<% } else { %>—<% } %>
+      </span>
+    </a>
+  <% }); %>
+<% }); %>
+
+<%- include('../partials/footer') %>

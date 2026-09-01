@@ -1,3 +1,10 @@
 # Generated Claude Design canvas preview (regenerate via the `design` skill from the .dc.html sources)
 design-mockups/*.html
 !design-mockups/*.dc.html
+
+# App runtime
+node_modules/
+data/*.db
+data/*.db-*
+public/uploads/*
+!public/uploads/.gitkeep

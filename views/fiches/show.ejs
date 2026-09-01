@@ -1,0 +1,86 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">REGISTRE DES BACS &gt; FICHE <%= fmt.numTag(bac.id) %></div>
+    <h1>Fiche de spécimen</h1>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <a href="/fiches/<%= bac.id %>/edit" class="stamp stamp--muted">Modifier</a>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<div class="grid-2col" style="margin-bottom:36px;">
+  <div>
+    <div class="plate-frame">
+      <div class="inner"><%- icons.species(bac.category, 100) %></div>
+      <div class="caption"><%= bac.scientific_name.toUpperCase() %><%= bac.morph ? ' "' + bac.morph.toUpperCase() + '"' : '' %></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="wordmark" style="font-size:27px;"><%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
+    <div style="font-style:italic; color:var(--ink-muted); margin-bottom:18px; font-size:15px;">
+      <%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %>
+      &mdash; <a href="/especes/<%= bac.species_id %>">voir le guide d'élevage</a>
+    </div>
+
+    <div style="display:grid; grid-template-columns:150px 1fr; row-gap:12px; font-size:14px; border-top:1px solid var(--line); padding-top:16px;">
+      <div style="color:var(--ink-muted); font-style:italic;">Lignée</div><div><%= bac.lineage || '—' %></div>
+      <div style="color:var(--ink-muted); font-style:italic;">Acquisition</div><div><%= bac.acquisition_date ? fmt.dateFr(bac.acquisition_date) : '—' %></div>
+      <div style="color:var(--ink-muted); font-style:italic;">Population</div><div><%= bac.population_estimate || '—' %></div>
+      <div style="color:var(--ink-muted); font-style:italic;">Substrat</div><div><%= bac.substrate || '—' %></div>
+      <div style="color:var(--ink-muted); font-style:italic;">Statut</div>
+      <div>
+        <span class="stamp <%= fmt.STATUS_CLASSES[bac.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[bac.status] || bac.status %></span>
+        <% if (bac.breeding_stage) { %><span class="stamp stamp--rust"><%= fmt.BREEDING_LABELS[bac.breeding_stage] %></span><% } %>
+      </div>
+    </div>
+
+    <div style="margin-top:22px; display:flex; gap:10px;">
+      <a href="/journal/new?bac_id=<%= bac.id %>" class="btn">+ Nouvelle entrée</a>
+      <form method="POST" action="/fiches/<%= bac.id %>/delete" onsubmit="return confirm('Supprimer definitivement cette fiche et son journal ?');">
+        <button type="submit" class="btn-quiet">Supprimer la fiche</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2col">
+  <div>
+    <div class="section-title"><h2>Journal</h2><div class="rule"></div></div>
+    <% if (logs.length === 0) { %>
+      <p style="font-style:italic; color:var(--ink-muted); font-size:13.5px;">Aucune entrée pour l'instant.</p>
+    <% } else { %>
+      <div class="ledger">
+        <div class="head"><div>DATE</div><div>REMARQUE</div><div>TYPE</div></div>
+        <% logs.forEach(function(log) { %>
+          <div class="row">
+            <div class="date"><%= fmt.dateShort(log.created_at) %></div>
+            <div><%= log.note || '—' %></div>
+            <div style="font-style:italic; color:var(--ink-muted);"><%= fmt.LOG_TYPE_LABELS[log.type] || log.type %></div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <div>
+    <div class="section-title"><h2>Photo</h2><div class="rule"></div></div>
+    <% if (lastPhoto) { %>
+      <div class="photo-slot"><img src="<%= lastPhoto.photo_path %>" alt="Photo la plus récente"></div>
+    <% } else { %>
+      <div class="photo-slot" style="min-height:130px;">
+        <div class="corner" style="top:-1px; left:-1px; border-width:2px 0 0 2px;"></div>
+        <div class="corner" style="top:-1px; right:-1px; border-width:2px 2px 0 0;"></div>
+        <div class="corner" style="bottom:-1px; left:-1px; border-width:0 0 2px 2px;"></div>
+        <div class="corner" style="bottom:-1px; right:-1px; border-width:0 2px 2px 0;"></div>
+        <div class="hint">aucune photo — ajoute-en une depuis une nouvelle entrée</div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

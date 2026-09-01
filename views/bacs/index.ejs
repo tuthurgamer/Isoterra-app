@@ -1,0 +1,83 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="wordmark" style="font-size:34px; color:var(--ink);">ISOTERRA</div>
+    <div class="subtitle">Carnet d'élevage et registre professionnel</div>
+  </div>
+  <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<div style="display:flex; gap:18px; margin-bottom:38px; flex-wrap:wrap;">
+  <div class="label-tag" style="transform:rotate(-1deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--rust);"><%= stats.total %></div>
+    <div class="lbl">bacs actifs</div>
+  </div>
+  <div class="label-tag" style="transform:rotate(0.8deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--moss);"><%= stats.muesThisWeek %></div>
+    <div class="lbl">mues cette semaine</div>
+  </div>
+  <div class="label-tag" style="transform:rotate(-0.5deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--rust);"><%= stats.pontesEnCours %></div>
+    <div class="lbl">pontes en cours</div>
+  </div>
+  <div class="label-tag" style="transform:rotate(1.1deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--stampred);"><%= stats.aSurveiller %></div>
+    <div class="lbl">à surveiller</div>
+  </div>
+</div>
+
+<div class="section-title">
+  <h2>Registre des bacs</h2>
+  <div class="rule"></div>
+  <a href="/fiches/new" class="btn-quiet">+ nouveau bac</a>
+  <div class="count"><%= bacs.length %> fiches</div>
+</div>
+
+<% if (bacs.length === 0) { %>
+  <p style="font-style:italic; color:var(--ink-muted);">Aucun bac pour l'instant. <a href="/fiches/new">Ajoute le premier</a>.</p>
+<% } %>
+
+<div class="grid-3">
+  <% bacs.forEach(function(bac) { %>
+    <div class="specimen-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <a class="icon" href="/fiches/<%= bac.id %>"><%- icons.species(bac.category) %></a>
+        <div class="tag"><%= fmt.numTag(bac.id) %></div>
+      </div>
+      <a href="/fiches/<%= bac.id %>" style="color:inherit;">
+        <div class="name"><%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
+        <div class="sci"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
+      </a>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div class="stamp <%= fmt.STATUS_CLASSES[bac.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[bac.status] || bac.status %></div>
+        <% if (bac.vigilance && bac.vigilance !== 'Aucune') { %>
+          <div class="stamp stamp--red">Vigilance</div>
+        <% } %>
+      </div>
+
+      <div style="display:flex; gap:6px;">
+        <% ['nourrissage','nettoyage','mue','observation'].forEach(function(t) { %>
+          <form method="POST" action="/fiches/<%= bac.id %>/log/quick?type=<%= t %>" style="flex:1;">
+            <button type="submit" class="btn-quiet" style="width:100%; justify-content:center; border:1px solid var(--line); padding:8px 4px;" title="<%= fmt.LOG_TYPE_LABELS[t] %>">
+              <%- icons.action(t) %>
+            </button>
+          </form>
+        <% }); %>
+      </div>
+
+      <div class="foot">
+        <span><%= bac.population_estimate || '—' %></span>
+        <span>obs. <%= fmt.relative(bac.last_log_at) %></span>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('../partials/footer') %>

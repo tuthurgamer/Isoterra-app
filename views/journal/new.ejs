@@ -1,0 +1,43 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">JOURNAL &gt; NOUVELLE ENTRÉE</div>
+    <h1>Nouvelle entrée</h1>
+    <div class="subtitle"><%= fmt.numTag(bac.id) %> — <%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
+  </div>
+  <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<form method="POST" action="/journal" enctype="multipart/form-data" style="max-width:640px;">
+  <input type="hidden" name="bac_id" value="<%= bac.id %>">
+
+  <div class="field">
+    <label>Type d'événement</label>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <% const types = ['nourrissage','nettoyage','mue','ponte','observation','vente']; %>
+      <% types.forEach(function(t, i) { %>
+        <label class="stamp stamp-toggle <%= i === 4 ? 'selected stamp--rust' : 'stamp--muted' %>" style="cursor:pointer;">
+          <input type="radio" name="type" value="<%= t %>" <%= i === 4 ? 'checked' : '' %> style="margin-right:4px;">
+          <%= fmt.LOG_TYPE_LABELS[t] %>
+        </label>
+      <% }); %>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Description</label>
+    <textarea name="note" class="ruled" style="min-height:150px;" placeholder="Ce que tu as observé..."></textarea>
+  </div>
+
+  <div class="field">
+    <label>Photo (optionnel — elle compte à elle seule comme observation)</label>
+    <input type="file" name="photo" accept="image/*" capture="environment">
+  </div>
+
+  <button type="submit" class="btn">Consigner l'entrée</button>
+</form>
+
+<%- include('../partials/footer') %>

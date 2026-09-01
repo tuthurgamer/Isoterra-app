@@ -1,0 +1,29 @@
+{
+  "name": "isoterra-app",
+  "version": "1.0.0",
+  "description": "Carnet d'elevage et registre professionnel pour Isoterra",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuthurgamer/Isoterra-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tuthurgamer/Isoterra-app/issues"
+  },
+  "homepage": "https://github.com/tuthurgamer/Isoterra-app#readme",
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "multer": "^2.3.0"
+  }
+}

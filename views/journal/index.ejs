@@ -1,0 +1,31 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">JOURNAL</div>
+    <h1>Toutes les entrées</h1>
+  </div>
+  <a href="/journal/new" class="btn">+ Nouvelle entrée</a>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<% if (logs.length === 0) { %>
+  <p style="font-style:italic; color:var(--ink-muted);">Rien de consigné pour l'instant.</p>
+<% } %>
+
+<div class="ledger">
+  <% logs.forEach(function(log) { %>
+    <div class="row" style="grid-template-columns:150px 1fr 160px 100px;">
+      <div class="date"><%= fmt.dateShort(log.created_at) %></div>
+      <div>
+        <a href="/fiches/<%= log.bac_id %>" style="color:var(--ink);"><%= log.morph ? log.common_name + ' ' + log.morph : log.common_name %></a>
+        <% if (log.note) { %><div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-top:2px;"><%= log.note %></div><% } %>
+      </div>
+      <div style="font-style:italic; color:var(--ink-muted);"><%= fmt.LOG_TYPE_LABELS[log.type] || log.type %></div>
+      <div><% if (log.photo_path) { %><a href="<%= log.photo_path %>" target="_blank" style="font-size:11px;">photo</a><% } %></div>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('../partials/footer') %>

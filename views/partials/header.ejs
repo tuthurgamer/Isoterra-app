@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= typeof title !== 'undefined' ? title + ' — Isoterra' : 'Isoterra' %></title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2a2018">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <% if (typeof noNav === 'undefined' || !noNav) { %>
+  <nav class="tab-strip">
+    <a class="tab-item <%= active === 'bacs' ? 'active' : '' %>" href="/">
+      <%- icons.nav('bacs') %>
+      <span class="tab-caption">BACS</span>
+    </a>
+    <a class="tab-item <%= active === 'fiches' ? 'active' : '' %>" href="/fiches/new" title="Ajouter un bac">
+      <%- icons.nav('fiches') %>
+      <span class="tab-caption">FICHES</span>
+    </a>
+    <a class="tab-item <%= active === 'especes' ? 'active' : '' %>" href="/especes">
+      <%- icons.nav('especes') %>
+      <span class="tab-caption">ESPÈCES</span>
+    </a>
+    <a class="tab-item <%= active === 'journal' ? 'active' : '' %>" href="/journal">
+      <%- icons.nav('journal') %>
+      <span class="tab-caption">JOURNAL</span>
+    </a>
+    <a class="tab-item <%= active === 'pontes' ? 'active' : '' %>" href="/pontes">
+      <%- icons.nav('pontes') %>
+      <span class="tab-caption">PONTES</span>
+    </a>
+    <a class="tab-item <%= active === 'vente' ? 'active' : '' %>" href="/vente">
+      <%- icons.nav('vente') %>
+      <span class="tab-caption">VENTE</span>
+    </a>
+  </nav>
+  <% } %>
+  <main class="paper-main">

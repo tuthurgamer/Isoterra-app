@@ -1,0 +1,15 @@
+<%- include('partials/header', { title: 'Introuvable', active: null, noNav: false }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">ERREUR</div>
+    <h1>Page introuvable</h1>
+    <div class="subtitle"><%= path %> n'existe pas (ou plus).</div>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<p><a href="/">Retour au registre des bacs</a></p>
+
+<%- include('partials/footer') %>

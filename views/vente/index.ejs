@@ -1,0 +1,80 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">GESTION COMMERCIALE — ISOTERRA</div>
+    <h1>Stock &amp; ventes</h1>
+  </div>
+  <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<div style="display:flex; gap:18px; margin-bottom:38px; flex-wrap:wrap;">
+  <div class="label-tag" style="transform:rotate(-1deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--rust);"><%= stats.stockTotal %></div>
+    <div class="lbl">individus en stock</div>
+  </div>
+  <div class="label-tag" style="transform:rotate(0.8deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--moss);"><%= stats.ordersOpen %></div>
+    <div class="lbl">commandes en cours</div>
+  </div>
+  <div class="label-tag" style="transform:rotate(-0.5deg);">
+    <div class="pin"></div>
+    <div class="num" style="color:var(--rust);"><%= stats.revenueMonth %>&nbsp;€</div>
+    <div class="lbl">ventes du mois</div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Disponible à la vente</h2><div class="rule"></div></div>
+
+<% if (stock.length === 0) { %>
+  <p style="font-style:italic; color:var(--ink-muted); font-size:13.5px;">Rien en vente pour l'instant — marque un bac comme disponible depuis sa fiche.</p>
+<% } %>
+
+<% stock.forEach(function(bac) { %>
+  <div style="display:grid; grid-template-columns:2.2fr 1fr 1fr 1fr; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); font-size:13.5px;">
+    <div>
+      <div style="font-weight:600;"><a href="/fiches/<%= bac.id %>" style="color:inherit;"><%= bac.common_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></a></div>
+      <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px;">bac <%= fmt.numTag(bac.id) %></div>
+    </div>
+    <div><%= bac.for_sale_quantity %></div>
+    <div><%= bac.unit_price ? bac.unit_price + ' €' : '—' %></div>
+    <div><span class="stamp stamp--moss">Disponible</span></div>
+  </div>
+<% }); %>
+
+<div class="section-title" style="margin-top:32px;"><h2>Commandes</h2><div class="rule"></div></div>
+
+<form method="POST" action="/vente/orders" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:24px;">
+  <div class="field" style="margin-bottom:0;"><label>Client</label><input type="text" name="customer_name" required></div>
+  <div class="field" style="margin-bottom:0; flex:1; min-width:200px;"><label>Détail</label><input type="text" name="description" placeholder="ex. 5x Dairy Cow" required></div>
+  <div class="field" style="margin-bottom:0;">
+    <label>Bac lié (optionnel)</label>
+    <select name="bac_id">
+      <option value="">—</option>
+      <% stock.forEach(function(b) { %><option value="<%= b.id %>"><%= b.common_name %><%= b.morph ? ' ' + b.morph : '' %></option><% }); %>
+    </select>
+  </div>
+  <button type="submit" class="btn" style="padding:10px 20px;">Ajouter</button>
+</form>
+
+<div style="display:flex; gap:16px; flex-wrap:wrap;">
+  <% orders.forEach(function(order) { %>
+    <div style="flex:1; min-width:220px; background:var(--paper-alt); border:1px solid var(--line); padding:16px 18px;">
+      <div style="font-weight:600; font-size:14px;"><%= order.customer_name %></div>
+      <div style="font-size:13px; color:var(--ink-muted); margin:4px 0 10px;"><%= order.description %></div>
+      <form method="POST" action="/vente/orders/<%= order.id %>/status" style="display:inline;">
+        <select name="status" onchange="this.form.submit()" class="stamp <%= fmt.ORDER_STATUS_CLASSES[order.status] %>" style="border:1.3px solid currentColor; appearance:none; -webkit-appearance:none;">
+          <% Object.entries(fmt.ORDER_STATUS_LABELS).forEach(function([key, label]) { %>
+            <option value="<%= key %>" <%= order.status === key ? 'selected' : '' %>><%= label %></option>
+          <% }); %>
+        </select>
+      </form>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('../partials/footer') %>
