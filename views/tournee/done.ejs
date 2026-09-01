@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tournée — Isoterra</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2a2018">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div style="min-height:100vh; background:var(--desk); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 24px; text-align:center;">
+  <div style="background:var(--paper); border:1.5px solid var(--ink); box-shadow:0 18px 40px rgba(0,0,0,0.45); padding:48px 40px; max-width:440px;">
+    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--moss)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:18px;"><path d="M5 13l4 4L19 7"/></svg>
+    <div class="wordmark" style="font-size:24px; margin-bottom:10px;">
+      <% if (empty) { %>Rien à faire<% } else { %>Tournée terminée<% } %>
+    </div>
+    <div style="font-style:italic; color:var(--ink-muted); font-size:14px; margin-bottom:26px;">
+      <% if (empty) { %>
+        Aucun bac pour l'instant. Ajoute ta première fiche pour commencer.
+      <% } else { %>
+        <%= total %> bac<%= total > 1 ? 's' : '' %> vérifié<%= total > 1 ? 's' : '' %>. À demain.
+      <% } %>
+    </div>
+    <a href="/" class="btn">Retour au registre</a>
+  </div>
+</div>
+</body>
+</html>

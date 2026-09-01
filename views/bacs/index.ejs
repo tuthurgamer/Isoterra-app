@@ -33,6 +33,18 @@
   </div>
 </div>
 
+<% if (bacs.length > 0) { %>
+<div style="display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--ink); background:var(--paper-alt); padding:16px 22px; margin-bottom:34px;">
+  <div>
+    <div class="wordmark" style="font-size:16px; color:var(--ink);">La tournée du jour</div>
+    <div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-top:2px;"><%= bacs.length %> bac<%= bacs.length > 1 ? 's' : '' %> à parcourir — un tap par bac</div>
+  </div>
+  <a href="/tournee" style="display:inline-flex; align-items:center; justify-content:center; padding:12px 26px; border:2px solid var(--rust); border-radius:6px; box-shadow:0 0 0 3px var(--paper-alt), 0 0 0 4.5px var(--rust); transform:rotate(-1.5deg); font-family:'IM Fell English SC',serif; letter-spacing:0.06em; color:var(--rust); font-size:14px; white-space:nowrap; text-decoration:none;">
+    Commencer la tournée
+  </a>
+</div>
+<% } %>
+
 <div class="section-title">
   <h2>Registre des bacs</h2>
   <div class="rule"></div>
