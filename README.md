@@ -21,6 +21,10 @@ Il te faut **Node.js version 22.5.0 ou plus récente** (l'appli utilise le modul
 - Windows : ouvre le dossier `Isoterra-app` dans l'explorateur de fichiers, puis clique droit → "Ouvrir dans le terminal" (ou PowerShell).
 - Mac : ouvre l'app "Terminal", puis tape `cd ` (avec l'espace) et glisse le dossier `Isoterra-app` dedans, puis Entrée.
 
+### Windows : lancement en un double-clic
+
+Le fichier **`Demarrer-Isoterra.bat`** à la racine du projet fait tout automatiquement : installation des dépendances au premier lancement, création de la base si besoin, démarrage du serveur, et ouverture du navigateur sur `http://localhost:3000`. Double-clique dessus à chaque fois que tu veux lancer l'appli — Node.js doit juste être installé au préalable (étape ci-dessus). Une fenêtre "Isoterra - serveur" s'ouvre : c'est le serveur qui tourne, ne la ferme pas tant que tu utilises l'appli.
+
 ## 2. Installation (à faire une seule fois)
 
 Dans le terminal, à la racine du dossier `Isoterra-app` :
