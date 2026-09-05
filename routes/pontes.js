@@ -11,7 +11,7 @@ const STAGES = [
 
 router.get('/', (req, res) => {
   const fiches = db.prepare(`
-    SELECT bs.*, bs.id AS id, s.common_name, s.scientific_name, s.category
+    SELECT bs.*, bs.id AS id, s.scientific_name, s.category
     FROM bac_species bs JOIN species s ON s.id = bs.species_id
     WHERE bs.breeding_stage IS NOT NULL
     ORDER BY bs.updated_at DESC

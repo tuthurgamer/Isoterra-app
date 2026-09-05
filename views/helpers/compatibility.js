@@ -29,7 +29,7 @@ function dietScore(a, b, notes) {
   const aPred = /prédateur/i.test(a.diet_summary || '');
   const bPred = /prédateur/i.test(b.diet_summary || '');
   if (aPred || bPred) {
-    const predator = aPred ? a.common_name : b.common_name;
+    const predator = aPred ? a.scientific_name : b.scientific_name;
     notes.push(`${predator} est une espèce prédatrice : risque réel qu'elle chasse l'autre espèce. Cohabitation déconseillée.`);
     return 10;
   }

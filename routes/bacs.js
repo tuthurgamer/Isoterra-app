@@ -5,7 +5,7 @@ const db = require('../db/db');
 router.get('/', (req, res) => {
   const rows = db.prepare(`
     SELECT bs.*, bs.id AS id, b.id AS bac_id, b.substrate,
-           s.common_name, s.scientific_name, s.category, s.difficulty, s.vigilance
+           s.scientific_name, s.category, s.difficulty, s.vigilance
     FROM bac_species bs
     JOIN bacs b ON b.id = bs.bac_id
     JOIN species s ON s.id = bs.species_id
@@ -27,7 +27,7 @@ router.get('/', (req, res) => {
 
   for (const bac of rows) {
     bac.last_log_at = lastLogMap.get(bac.id) || null;
-    bac.cohabitants = byBac.get(bac.bac_id).filter(r => r.id !== bac.id).map(r => r.common_name);
+    bac.cohabitants = byBac.get(bac.bac_id).filter(r => r.id !== bac.id).map(r => r.scientific_name);
   }
 
   const stats = {

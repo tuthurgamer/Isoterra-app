@@ -18,7 +18,7 @@
       <% let catA = null; %>
       <% speciesList.forEach(function(sp) { %>
         <% if (sp.category !== catA) { if (catA !== null) { %></optgroup><% } %><optgroup label="<%= sp.category %>"><% catA = sp.category; } %>
-        <option value="<%= sp.id %>" <%= String(aId) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
+        <option value="<%= sp.id %>" <%= String(aId) === String(sp.id) ? 'selected' : '' %>><%= sp.scientific_name %></option>
       <% }); %>
       <% if (catA !== null) { %></optgroup><% } %>
     </select>
@@ -31,7 +31,7 @@
       <% let catB = null; %>
       <% speciesList.forEach(function(sp) { %>
         <% if (sp.category !== catB) { if (catB !== null) { %></optgroup><% } %><optgroup label="<%= sp.category %>"><% catB = sp.category; } %>
-        <option value="<%= sp.id %>" <%= String(bId) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
+        <option value="<%= sp.id %>" <%= String(bId) === String(sp.id) ? 'selected' : '' %>><%= sp.scientific_name %></option>
       <% }); %>
       <% if (catB !== null) { %></optgroup><% } %>
     </select>
@@ -47,7 +47,7 @@
 <% if (result) { %>
   <div style="border:1.5px solid var(--ink); background:var(--paper-alt); padding:28px 32px; max-width:640px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-      <div class="wordmark" style="font-size:15px;"><%= spA.common_name %> &times; <%= spB.common_name %></div>
+      <div class="wordmark" style="font-size:15px; font-style:italic;"><%= spA.scientific_name %> &times; <%= spB.scientific_name %></div>
       <div class="wordmark" style="font-size:34px; color:<%= result.total >= 75 ? 'var(--moss)' : result.total >= 50 ? 'var(--rust)' : 'var(--stampred)' %>;"><%= result.total %>%</div>
     </div>
     <div style="margin-bottom:20px;"><span class="stamp <%= result.verdictClass %>"><%= result.verdict %></span></div>

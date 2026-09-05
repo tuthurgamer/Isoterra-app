@@ -21,10 +21,9 @@
   </div>
 
   <div>
-    <div class="wordmark" style="font-size:27px;"><%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
-    <div style="font-style:italic; color:var(--ink-muted); margin-bottom:18px; font-size:15px;">
-      <%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %>
-      &mdash; <a href="/especes/<%= bac.species_id %>">voir le guide d'élevage</a>
+    <div class="wordmark" style="font-size:27px; font-style:italic;"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
+    <div style="color:var(--ink-muted); margin-bottom:18px; font-size:15px;">
+      <a href="/especes/<%= bac.species_id %>">voir le guide d'élevage</a>
     </div>
 
     <div style="display:grid; grid-template-columns:150px 1fr; row-gap:12px; font-size:14px; border-top:1px solid var(--line); padding-top:16px;">
@@ -42,7 +41,7 @@
         <% if (cohabitants.length === 0) { %>
           <span style="color:var(--ink-faint);">— bac mono-espèce</span>
         <% } else { %>
-          <% cohabitants.forEach(function(c, i) { %><a href="/fiches/<%= c.id %>"><%= c.common_name %></a> <span class="stamp <%= c.compat.verdictClass %>" style="font-size:9px; padding:2px 7px;"><%= c.compat.total %>%</span><%= i < cohabitants.length - 1 ? ', ' : '' %><% }); %>
+          <% cohabitants.forEach(function(c, i) { %><a href="/fiches/<%= c.id %>" style="font-style:italic;"><%= c.scientific_name %></a> <span class="stamp <%= c.compat.verdictClass %>" style="font-size:9px; padding:2px 7px;"><%= c.compat.total %>%</span><%= i < cohabitants.length - 1 ? ', ' : '' %><% }); %>
         <% } %>
         <a href="/fiches/new?bac_id=<%= bac.bac_id %>" class="btn-quiet" style="padding:0 0 0 8px;">+ ajouter une espèce ici</a>
       </div>

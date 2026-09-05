@@ -26,7 +26,7 @@ const upload = multer({
 
 router.get('/', (req, res) => {
   const logs = db.prepare(`
-    SELECT l.*, bs.bac_id, bs.morph, s.common_name, s.scientific_name, s.category
+    SELECT l.*, bs.bac_id, bs.morph, s.scientific_name, s.category
     FROM log_entries l
     JOIN bac_species bs ON bs.id = l.bac_species_id
     JOIN species s ON s.id = bs.species_id
@@ -40,14 +40,14 @@ router.get('/new', (req, res) => {
   const ficheId = req.query.fiche_id;
   if (!ficheId) {
     const fiches = db.prepare(`
-      SELECT bs.id, bs.bac_id, bs.morph, s.common_name
+      SELECT bs.id, bs.bac_id, bs.morph, s.scientific_name
       FROM bac_species bs JOIN species s ON s.id = bs.species_id
-      ORDER BY s.common_name
+      ORDER BY s.scientific_name
     `).all();
     return res.render('journal/pick', { title: 'Nouvelle entrée', active: 'journal', fiches });
   }
   const bacSpecies = db.prepare(`
-    SELECT bs.*, s.common_name, s.scientific_name FROM bac_species bs JOIN species s ON s.id = bs.species_id WHERE bs.id = ?
+    SELECT bs.*, s.scientific_name FROM bac_species bs JOIN species s ON s.id = bs.species_id WHERE bs.id = ?
   `).get(ficheId);
   if (!bacSpecies) return res.status(404).render('404', { path: req.path });
   res.render('journal/new', { title: 'Nouvelle entrée', active: 'journal', bacSpecies });

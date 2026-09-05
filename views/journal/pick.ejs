@@ -16,7 +16,7 @@
 <div style="display:flex; flex-direction:column; gap:2px; max-width:480px;">
   <% fiches.forEach(function(f) { %>
     <a href="/journal/new?fiche_id=<%= f.id %>" style="display:flex; justify-content:space-between; padding:12px 4px; border-bottom:1px solid var(--line); color:var(--ink);">
-      <span><%= f.morph ? f.common_name + ' ' + f.morph : f.common_name %></span>
+      <span style="font-style:italic;"><%= f.scientific_name %><%= f.morph ? " '" + f.morph + "'" : '' %></span>
       <span style="font-family:'Special Elite',monospace; font-size:11px; color:var(--ink-muted);"><%= fmt.numTag(f.bac_id) %></span>
     </a>
   <% }); %>

@@ -7,7 +7,7 @@ const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoi
 const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'autre'];
 
 router.get('/', (req, res) => {
-  const all = db.prepare('SELECT * FROM species ORDER BY common_name').all();
+  const all = db.prepare('SELECT * FROM species ORDER BY scientific_name').all();
   const byCategory = CATEGORY_ORDER.map(cat => ({
     key: cat,
     label: CATEGORY_LABELS[cat],
@@ -22,7 +22,7 @@ router.get('/new', (req, res) => {
 });
 
 router.get('/compatibilite', (req, res) => {
-  const speciesList = db.prepare('SELECT id, category, common_name, scientific_name FROM species ORDER BY category, common_name').all();
+  const speciesList = db.prepare('SELECT id, category, scientific_name FROM species ORDER BY category, scientific_name').all();
   const aId = req.query.a;
   const bId = req.query.b;
   let result = null;
@@ -47,13 +47,13 @@ router.get('/:id', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
   const bacs = db.prepare('SELECT id, bac_id, morph FROM bac_species WHERE species_id = ?').all(req.params.id);
-  res.render('especes/show', { title: sp.common_name, active: 'especes', sp, bacs });
+  res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs });
 });
 
 router.get('/:id/edit', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
-  res.render('especes/form', { title: 'Modifier ' + sp.common_name, active: 'especes', sp, isNew: false });
+  res.render('especes/form', { title: 'Modifier ' + sp.scientific_name, active: 'especes', sp, isNew: false });
 });
 
 router.post('/:id', (req, res) => {

@@ -34,8 +34,7 @@
         <a href="/fiches/<%= fiche.id %>" style="color:var(--rust);"><%- icons.species(fiche.category, 42) %></a>
         <div style="font-family:'Special Elite',monospace; font-size:10px; color:var(--ink-faint);"><%= fmt.numTag(fiche.bac_id) %></div>
       </div>
-      <div class="wordmark" style="font-size:22px;"><%= fiche.morph ? fiche.common_name + ' ' + fiche.morph : fiche.common_name %></div>
-      <div style="font-style:italic; color:var(--ink-muted); font-size:13.5px; margin-bottom:6px;"><%= fiche.scientific_name %><%= fiche.morph ? " '" + fiche.morph + "'" : '' %></div>
+      <div class="wordmark" style="font-size:22px; font-style:italic; margin-bottom:6px;"><%= fiche.scientific_name %><%= fiche.morph ? " '" + fiche.morph + "'" : '' %></div>
       <div style="font-family:'Special Elite',monospace; font-size:10.5px; color:var(--ink-faint); margin-bottom:22px;">dernière vérification : <%= fmt.relative(fiche.last_checked_at) %></div>
 
       <div style="display:flex; gap:10px; margin-bottom:14px;">

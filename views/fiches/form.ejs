@@ -14,11 +14,11 @@
     <div class="wordmark" style="font-size:15px; margin-bottom:4px;">Compatibilité avec ce bac</div>
     <div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-bottom:14px;">
       Occupant<%= occupants.length > 1 ? 's' : '' %> actuel<%= occupants.length > 1 ? 's' : '' %> :
-      <%= occupants.map(function(o) { return o.common_name; }).join(', ') %>
+      <%= occupants.map(function(o) { return o.scientific_name; }).join(', ') %>
     </div>
     <% compatRanked.slice(0, 8).forEach(function(r) { %>
       <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;">
-        <span><%= r.species.common_name %> <span style="font-style:italic; color:var(--ink-muted); font-size:11.5px;">(<%= r.species.scientific_name %>)</span></span>
+        <span style="font-style:italic;"><%= r.species.scientific_name %></span>
         <span class="stamp <%= r.compat.verdictClass %>" style="font-size:9.5px; padding:2px 8px;"><%= r.compat.total %>%</span>
       </div>
     <% }); %>
@@ -47,7 +47,7 @@
       <% let currentCat = null; %>
       <% speciesList.forEach(function(sp) { %>
         <% if (sp.category !== currentCat) { if (currentCat !== null) { %></optgroup><% } %><optgroup label="<%= sp.category %>"><% currentCat = sp.category; } %>
-        <option value="<%= sp.id %>" <%= String(bacSpecies.species_id) === String(sp.id) ? 'selected' : '' %>><%= sp.common_name %> (<%= sp.scientific_name %>)</option>
+        <option value="<%= sp.id %>" <%= String(bacSpecies.species_id) === String(sp.id) ? 'selected' : '' %>><%= sp.scientific_name %></option>
       <% }); %>
       <% if (currentCat !== null) { %></optgroup><% } %>
     </select>

@@ -4,7 +4,7 @@ const db = require('../db/db');
 
 router.get('/', (req, res) => {
   const stock = db.prepare(`
-    SELECT bs.*, bs.id AS id, s.common_name, s.scientific_name, s.category
+    SELECT bs.*, bs.id AS id, s.scientific_name, s.category
     FROM bac_species bs JOIN species s ON s.id = bs.species_id
     WHERE bs.for_sale_quantity > 0
     ORDER BY bs.updated_at DESC

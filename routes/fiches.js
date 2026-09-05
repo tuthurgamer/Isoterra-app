@@ -4,12 +4,12 @@ const db = require('../db/db');
 const { computeCompatibility } = require('../views/helpers/compatibility');
 
 function getSpeciesList() {
-  return db.prepare('SELECT * FROM species ORDER BY category, common_name').all();
+  return db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all();
 }
 
 function getBacList() {
   return db.prepare(`
-    SELECT b.id, b.substrate, GROUP_CONCAT(s.common_name, ', ') AS residents
+    SELECT b.id, b.substrate, GROUP_CONCAT(s.scientific_name, ', ') AS residents
     FROM bacs b
     LEFT JOIN bac_species bs ON bs.bac_id = b.id
     LEFT JOIN species s ON s.id = bs.species_id
@@ -85,7 +85,7 @@ router.get('/:id', (req, res) => {
   const lastPhoto = logs.find(l => l.photo_path);
 
   res.render('fiches/show', {
-    title: bacSpecies.morph ? bacSpecies.common_name + ' ' + bacSpecies.morph : bacSpecies.common_name,
+    title: bacSpecies.morph ? bacSpecies.scientific_name + " '" + bacSpecies.morph + "'" : bacSpecies.scientific_name,
     active: 'bacs', bac: bacSpecies, cohabitants, logs, lastPhoto
   });
 });

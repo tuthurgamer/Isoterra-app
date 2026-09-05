@@ -4,7 +4,7 @@
   <div>
     <div class="eyebrow">JOURNAL &gt; NOUVELLE ENTRÉE</div>
     <h1>Nouvelle entrée</h1>
-    <div class="subtitle"><%= fmt.numTag(bacSpecies.bac_id) %> — <%= bacSpecies.morph ? bacSpecies.common_name + ' ' + bacSpecies.morph : bacSpecies.common_name %></div>
+    <div class="subtitle"><%= fmt.numTag(bacSpecies.bac_id) %> — <span style="font-style:italic;"><%= bacSpecies.scientific_name %><%= bacSpecies.morph ? " '" + bacSpecies.morph + "'" : '' %></span></div>
   </div>
   <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
 </div>

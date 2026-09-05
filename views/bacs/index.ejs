@@ -64,8 +64,7 @@
         <div class="tag"><%= fmt.numTag(bac.bac_id) %></div>
       </div>
       <a href="/fiches/<%= bac.id %>" style="color:inherit;">
-        <div class="name"><%= bac.morph ? bac.common_name + ' ' + bac.morph : bac.common_name %></div>
-        <div class="sci"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
+        <div class="name" style="font-style:italic;"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
       </a>
       <% if (bac.cohabitants.length) { %>
         <div style="font-size:11px; font-style:italic; color:var(--ink-faint);">cohabite avec <%= bac.cohabitants.join(', ') %></div>
