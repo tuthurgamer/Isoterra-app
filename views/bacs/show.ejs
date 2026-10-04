@@ -1,0 +1,298 @@
+<%- include('../partials/header', { title, active }) %>
+
+<%
+  var mixed = fiches.length > 1;
+  var first = fiches[0];
+  var nameOf = function (f) { return f.scientific_name + (f.morph ? " '" + f.morph + "'" : ''); };
+  var plural = function (n, word) { return n + ' ' + word + (n > 1 ? 's' : ''); };
+  var allPics = fiches.map(function (f) { return icons.pic(f); }).join('|');
+  var w = compat && compat.weakest;
+  var speciesOptions = function (selectedId) {
+    var out = '';
+    var cat = null;
+    speciesList.forEach(function (sp) {
+      if (sp.category !== cat) {
+        if (cat !== null) out += '</optgroup>';
+        out += '<optgroup label="' + fmt.escape(fmt.CATEGORY_LABELS[sp.category] || sp.category) + '">';
+        cat = sp.category;
+      }
+      out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '"' + (sp.id === selectedId ? ' selected' : '') + '>'
+        + fmt.escape(sp.scientific_name) + '</option>';
+    });
+    return out + (cat !== null ? '</optgroup>' : '');
+  };
+  var careItems = [['feed', 'nourrissage'], ['mist', 'pulverisation']];
+  var noteTypes = [['observation', 'Observation'], ['ponte', 'Ponte'], ['vente', 'Vente'], ['nourrissage', 'Nourrissage'], ['nettoyage', 'Nettoyage'], ['pulverisation', 'Pulvérisation']];
+%>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">REGISTRE DES BACS &gt; <%= fmt.numTag(bac.id).toUpperCase() %><%= bac.name ? ' — ' + bac.name.toUpperCase() : '' %></div>
+    <% if (mixed || !first) { %>
+      <h1>Bac<%= mixed ? ' mixte' : '' %> <%= fmt.numTag(bac.id) %></h1>
+    <% } else { %>
+      <h1 class="hub-title--species"><%= nameOf(first) %></h1>
+    <% } %>
+    <div class="subtitle">
+      <%= mixed ? plural(fiches.length, 'espèce') : 'Bac ' + fmt.numTag(bac.id) %><%= bac.substrate ? ' · ' + bac.substrate : '' %>
+    </div>
+  </div>
+  <a href="#reglages" class="settings-btn"><%- icons.gear(18) %><span>Réglages</span></a>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<% if (bacCare) { %>
+  <section class="hub-care<%= bacCare.level ? ' level-' + bacCare.level : '' %>" data-bac="<%= bac.id %>" aria-label="Soins du bac">
+    <div class="hub-care__status">
+      <span class="level-pill<%= bacCare.level ? ' level-pill--' + bacCare.level : '' %>" data-level-pill<%= bacCare.level ? '' : ' hidden' %>><%= bacCare.label || '' %></span>
+      <div class="care-row">
+        <% careItems.forEach(function (c) { var item = bacCare[c[0]]; %>
+          <div class="care-item<%= item.level ? ' care-item--' + item.level : '' %>" data-care="<%= c[0] %>">
+            <%- icons.action(c[1]) %>
+            <span class="care-item__text"><%= item.text %></span>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <div class="quick-actions hub-actions">
+      <% [['nourrissage', 'Nourri'], ['nettoyage', 'Nettoyé'], ['pulverisation', 'Pulvérisé'], ['observation', 'RAS']].forEach(function (a) { %>
+        <form method="POST" action="/bacs/<%= bac.id %>/log/quick?type=<%= a[0] %>" data-quicklog data-label="<%= fmt.LOG_TYPE_LABELS[a[0]] %><%= mixed ? ' (tout le bac)' : '' %>">
+          <button type="submit" class="btn-quiet" title="<%= fmt.LOG_TYPE_LABELS[a[0]] %>">
+            <%- icons.action(a[0]) %>
+            <span class="qa-label"><%= a[1] %></span>
+          </button>
+        </form>
+      <% }); %>
+    </div>
+    <% if (mixed) { %><p class="hub-care__shared">Chaque bouton compte pour les <%= fiches.length %> espèces du bac.</p><% } %>
+  </section>
+<% } %>
+
+<section class="hub-section" id="note">
+  <div class="section-title"><h2>Ajouter une note ou une photo</h2><div class="rule"></div></div>
+  <form method="POST" action="/bacs/<%= bac.id %>/note" enctype="multipart/form-data" class="hub-note">
+    <div class="type-chips">
+      <% noteTypes.forEach(function (t, i) { %>
+        <label class="sheet-toggle"><input type="radio" name="type" value="<%= t[0] %>"<%= i === 0 ? ' checked' : '' %>><span><%= t[1] %></span></label>
+      <% }); %>
+    </div>
+    <% if (mixed) { %>
+      <div class="field">
+        <label>Concerne</label>
+        <select name="fiche_id" data-picker>
+          <option value="" data-pics="<%= allPics %>">Tout le bac</option>
+          <% fiches.forEach(function (f) { %>
+            <option value="<%= f.id %>" data-pics="<%= icons.pic(f) %>"><%= nameOf(f) %></option>
+          <% }); %>
+        </select>
+      </div>
+    <% } %>
+    <div class="field">
+      <textarea name="note" aria-label="Note" placeholder="Ce que tu as observé, fait ou vendu…"></textarea>
+    </div>
+    <div class="hub-note__foot">
+      <label class="hub-photo">
+        <input type="file" name="photo" accept="image/*" data-photo-input>
+        <span data-photo-label>+ Ajouter une photo</span>
+      </label>
+      <button type="submit" class="btn">Enregistrer</button>
+    </div>
+  </form>
+</section>
+
+<section class="hub-section" id="animaux">
+  <div class="section-title">
+    <h2>Les animaux</h2><div class="rule"></div>
+    <% if (compat) { %>
+      <a class="stamp <%= compat.verdictClass %>" href="/especes/compatibilite?mode=paire&a=<%= w.a.id %>&b=<%= w.b.id %>" title="<%= compat.verdict %>">Compatibilité <%= compat.score %> %</a>
+    <% } %>
+  </div>
+  <% if (compat && compat.score < 70 && compat.notes.length) { %>
+    <p class="bac-card__note hub-compat-note"><%= compat.notes[0] %></p>
+  <% } %>
+
+  <% fiches.forEach(function (f) { var hasVigilance = f.vigilance && f.vigilance !== 'Aucune'; %>
+    <article class="hub-animal" id="fiche-<%= f.id %>">
+      <div class="hub-animal__head">
+        <a class="hub-animal__icon" href="/especes/<%= f.species_id %>" aria-label="Guide de <%= nameOf(f) %>"><%- icons.species(f, 96) %></a>
+        <div class="hub-animal__main">
+          <div class="hub-animal__name"><%= nameOf(f) %></div>
+          <div class="hub-animal__stamps">
+            <span class="stamp stamp--sm <%= fmt.STATUS_CLASSES[f.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[f.status] || f.status %></span>
+            <% if (f.breeding_stage) { %><span class="stamp stamp--sm stamp--rust"><%= fmt.BREEDING_LABELS[f.breeding_stage] %></span><% } %>
+            <% if (hasVigilance) { %><span class="stamp stamp--sm stamp--red">Vigilance</span><% } %>
+          </div>
+        </div>
+      </div>
+
+      <dl class="hub-animal__facts">
+        <div><dt>Population</dt><dd><%= f.population_estimate || '—' %></dd></div>
+        <div><dt>Lignée</dt><dd><%= f.lineage || '—' %></dd></div>
+        <div><dt>Arrivée</dt><dd><%= f.acquisition_date ? fmt.dateFr(f.acquisition_date) : '—' %></dd></div>
+        <div><dt>En vente</dt><dd><%= f.for_sale_quantity ? f.for_sale_quantity + (f.unit_price ? ' × ' + f.unit_price + ' €' : '') : '—' %></dd></div>
+        <div class="hub-animal__wide">
+          <dt>Rythme de soins</dt>
+          <dd>
+            <%= f.care.feed.every ? 'nourrir tous les ' + f.care.feed.every + ' j' : 'nourrir : pas d\'alerte' %>
+            · <%= f.care.mist.every ? 'pulvériser tous les ' + f.care.mist.every + ' j' : 'pulvériser : pas d\'alerte' %>
+            <% if (f.care.feed.ownRhythm || f.care.mist.ownRhythm) { %><span class="care-rhythm">(propre à ce bac)</span><% } %>
+          </dd>
+        </div>
+      </dl>
+      <% if (hasVigilance) { %><p class="hub-animal__vigilance"><%= f.vigilance %></p><% } %>
+
+      <div class="hub-animal__links">
+        <a href="/especes/<%= f.species_id %>">Guide d'élevage</a>
+        <a href="/especes/<%= f.species_id %>/fiche-client?fiche=<%= f.id %>">Fiche client</a>
+      </div>
+
+      <details class="hub-edit" id="modifier-<%= f.id %>">
+        <summary>Modifier ces animaux</summary>
+        <form method="POST" action="/fiches/<%= f.id %>" class="hub-edit__form">
+          <div class="field">
+            <label>Espèce</label>
+            <select name="species_id" required data-picker><%- speciesOptions(f.species_id) %></select>
+          </div>
+          <div class="form-grid-2">
+            <div class="field"><label>Morph (optionnel)</label><input type="text" name="morph" value="<%= f.morph || '' %>"></div>
+            <div class="field"><label>Lignée</label><input type="text" name="lineage" value="<%= f.lineage || '' %>" placeholder="ex. F3"></div>
+          </div>
+          <div class="form-grid-2">
+            <div class="field"><label>Population (estimation)</label><input type="text" name="population_estimate" value="<%= f.population_estimate || '' %>" placeholder="ex. ~38 individus"></div>
+            <div class="field"><label>Date d'arrivée</label><input type="date" name="acquisition_date" value="<%= f.acquisition_date || '' %>"></div>
+          </div>
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Statut</label>
+              <select name="status">
+                <% Object.entries(fmt.STATUS_LABELS).forEach(function (s) { %>
+                  <option value="<%= s[0] %>"<%= f.status === s[0] ? ' selected' : '' %>><%= s[1] %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="field">
+              <label>Reproduction</label>
+              <select name="breeding_stage">
+                <option value="">— aucune —</option>
+                <% Object.entries(fmt.BREEDING_LABELS).forEach(function (e) { %>
+                  <option value="<%= e[0] %>"<%= f.breeding_stage === e[0] ? ' selected' : '' %>><%= e[1] %></option>
+                <% }); %>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="field"><label>Quantité à vendre</label><input type="number" name="for_sale_quantity" min="0" value="<%= f.for_sale_quantity || 0 %>"></div>
+            <div class="field"><label>Prix unitaire (€)</label><input type="number" name="unit_price" min="0" step="0.5" value="<%= f.unit_price || '' %>"></div>
+          </div>
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Nourrir tous les … jours</label>
+              <input type="number" name="feed_every_days" min="1" max="90" value="<%= f.feed_every_days || '' %>" placeholder="<%= f.species_feed ? f.species_feed + ' (espèce)' : '' %>">
+            </div>
+            <div class="field">
+              <label>Pulvériser tous les … jours</label>
+              <input type="number" name="mist_every_days" min="1" max="90" value="<%= f.mist_every_days || '' %>" placeholder="<%= f.species_mist ? f.species_mist + ' (espèce)' : '' %>">
+            </div>
+          </div>
+          <p class="field-hint">Un rythme laissé vide suit celui de l'espèce.</p>
+          <button type="submit" class="btn">Enregistrer</button>
+        </form>
+        <% if (mixed) { %>
+          <form method="POST" action="/fiches/<%= f.id %>/delete" class="hub-edit__remove"
+                onsubmit="return confirm('Retirer <%= f.scientific_name.replace(/[\x27"]/g, '') %> du bac et effacer son journal ? C\'est irréversible.');">
+            <button type="submit" class="btn-danger">Retirer cette espèce du bac</button>
+          </form>
+        <% } %>
+      </details>
+    </article>
+  <% }); %>
+
+  <a class="add-species" href="/fiches/new?bac_id=<%= bac.id %>">+ Ajouter une espèce dans ce bac</a>
+</section>
+
+<section class="hub-section" id="journal">
+  <div class="section-title"><h2>Journal du bac</h2><div class="rule"></div><div class="count"><%= plural(journalCount.entries, 'entrée') %></div></div>
+  <% if (!journal.length) { %>
+    <p class="empty-hint">Rien de noté pour l'instant.</p>
+  <% } %>
+  <ol class="hub-journal">
+    <% journal.forEach(function (e) {
+         var who = mixed ? (e.species.length === fiches.length ? 'tout le bac' : e.species.map(nameOf).join(', ')) : null; %>
+      <li class="hub-journal__item">
+        <div class="hub-journal__when"><span><%= fmt.relative(e.created_at) %></span><small><%= fmt.dateShort(e.created_at) %></small></div>
+        <div class="hub-journal__what">
+          <div class="hub-journal__type"><%- icons.action(e.type) %><strong><%= fmt.LOG_TYPE_LABELS[e.type] || e.type %></strong><% if (who) { %><em><%= who %></em><% } %></div>
+          <% if (e.note) { %><p><%= e.note %></p><% } %>
+          <% if (e.photo_path) { %>
+            <a href="<%= e.photo_path %>" target="_blank" class="hub-journal__photo"><img src="<%= e.photo_path %>" alt="Photo du <%= fmt.dateShort(e.created_at) %>" loading="lazy"></a>
+          <% } %>
+        </div>
+      </li>
+    <% }); %>
+  </ol>
+</section>
+
+<section class="hub-section" id="reglages">
+  <details class="hub-settings">
+    <summary>Réglages du bac</summary>
+    <form method="POST" action="/bacs/<%= bac.id %>/settings" class="hub-settings__form">
+      <div class="form-grid-2">
+        <div class="field"><label>Nom du bac (optionnel)</label><input type="text" name="bac_name" value="<%= bac.name || '' %>" maxlength="60" placeholder="ex. Rack A · étagère 2"></div>
+        <div class="field"><label>Substrat</label><input type="text" name="substrate" value="<%= bac.substrate || '' %>" placeholder="ex. Terreau feuilles et écorce"></div>
+      </div>
+      <button type="submit" class="btn">Enregistrer</button>
+    </form>
+    <% if (first) { %>
+      <div class="danger-zone">
+        <h2>Zone de danger</h2>
+        <div class="danger-action">
+          <div>
+            <div class="danger-action__title">Supprimer <%= mixed ? 'tout le bac' : 'ce bac' %></div>
+            <div class="danger-action__desc">
+              Efface définitivement le bac <%= fmt.numTag(bac.id) %><%= mixed ? ' avec ses ' + fiches.length + ' espèces' : '' %>, <%= plural(journalCount.entries, 'entrée') %> de journal<% if (journalCount.photos) { %> et <%= plural(journalCount.photos, 'photo') %><% } %>. Les commandes liées sont conservées.
+            </div>
+          </div>
+          <form method="POST" action="/fiches/<%= first.id %>/delete-bac" onsubmit="return confirm('Supprimer définitivement le bac <%= fmt.numTag(bac.id) %> et tout son journal ? C\'est irréversible.');">
+            <button type="submit" class="btn-danger">Supprimer</button>
+          </form>
+        </div>
+      </div>
+    <% } %>
+  </details>
+</section>
+
+<script>
+  (function () {
+    // A link to #reglages or #modifier-12 opens that panel.
+    function openTarget() {
+      var id = location.hash.slice(1);
+      var el = id && document.getElementById(id);
+      if (!el) return;
+      var details = el.tagName === 'DETAILS' ? el : el.querySelector('details');
+      if (details && (id === 'reglages' || id.indexOf('modifier-') === 0)) details.open = true;
+      el.scrollIntoView({ block: 'start' });
+    }
+    window.addEventListener('hashchange', openTarget);
+    document.addEventListener('DOMContentLoaded', openTarget);
+
+    // The chosen photo shows its name in place of the button's text.
+    var photo = document.querySelector('[data-photo-input]');
+    photo.addEventListener('change', function () {
+      document.querySelector('[data-photo-label]').textContent = photo.files.length ? 'Photo : ' + photo.files[0].name : '+ Ajouter une photo';
+    });
+
+    <% if (notice) { %>
+    // What the last action did, as a short toast; the URL forgets it.
+    document.addEventListener('DOMContentLoaded', function () {
+      var toast = document.getElementById('toast');
+      toast.textContent = <%- JSON.stringify(notice).replace(/</g, '\\u003c') %>;
+      toast.hidden = false;
+      setTimeout(function () { toast.hidden = true; }, 2600);
+      history.replaceState(null, '', location.pathname + location.hash);
+    });
+    <% } %>
+  })();
+</script>
+
+<%- include('../partials/footer') %>

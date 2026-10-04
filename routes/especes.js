@@ -1,10 +1,48 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('node:path');
+const fs = require('node:fs');
 const db = require('../db/db');
-const { computeCompatibility } = require('../views/helpers/compatibility');
+const { computeCompatibility, evaluateGroup, bestGroups } = require('../lib/compatibility');
+const { TRAIT_OPTIONS, defaultTraits, binomial } = require('../db/trait-defaults');
+const { getSettings, setSetting } = require('../lib/settings');
+const { processIcon, thumbPath } = require('../lib/icon-image');
 
 const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', autre: 'Autres espèces' };
 const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'autre'];
+
+const iconDir = path.join(__dirname, '..', 'public', 'uploads', 'species-icons');
+const iconOriginalsDir = path.join(__dirname, '..', 'data', 'icon-originals');
+fs.mkdirSync(iconDir, { recursive: true });
+
+const uploadIcon = multer({
+  storage: multer.diskStorage({
+    destination: iconDir,
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || '.png';
+      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
+    }
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => cb(null, /^image\//.test(file.mimetype))
+});
+
+// Best-effort cleanup when an icon is replaced or removed — never block the
+// request on it, a leftover file in uploads/ isn't worth a 500.
+function deleteIconFile(iconPath) {
+  if (!iconPath) return;
+  const file = path.join(__dirname, '..', 'public', iconPath);
+  for (const f of [file, thumbPath(file), path.join(iconOriginalsDir, path.basename(file))]) {
+    fs.unlink(f, () => {});
+  }
+}
+
+// Trims and resizes the fresh upload, returning its public path.
+function storeIcon(file) {
+  processIcon(file.path, iconOriginalsDir);
+  return '/uploads/species-icons/' + file.filename;
+}
 
 router.get('/', (req, res) => {
   const all = db.prepare('SELECT * FROM species ORDER BY scientific_name').all();
@@ -18,28 +56,72 @@ router.get('/', (req, res) => {
 });
 
 router.get('/new', (req, res) => {
-  res.render('especes/form', { title: 'Nouvelle espèce', active: 'especes', sp: {}, isNew: true });
+  res.render('especes/form', { title: 'Nouvelle espèce', active: 'especes', sp: {}, isNew: true, traitOptions: TRAIT_OPTIONS });
 });
 
+// Comparator, three modes: every partner of one species ranked, the detail
+// of one pair, and the best groups for a multi-species bac.
 router.get('/compatibilite', (req, res) => {
-  const speciesList = db.prepare('SELECT id, category, scientific_name FROM species ORDER BY category, scientific_name').all();
-  const aId = req.query.a;
-  const bId = req.query.b;
-  let result = null;
-  let spA = null, spB = null;
-  if (aId && bId && aId !== bId) {
-    spA = db.prepare('SELECT * FROM species WHERE id = ?').get(aId);
-    spB = db.prepare('SELECT * FROM species WHERE id = ?').get(bId);
-    if (spA && spB) result = computeCompatibility(spA, spB);
+  const all = db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all();
+  const byId = new Map(all.map((s) => [String(s.id), s]));
+  const a = byId.get(String(req.query.a || '')) || null;
+  const b = byId.get(String(req.query.b || '')) || null;
+  let mode = req.query.mode || (a && b ? 'paire' : 'espece');
+  if (!['espece', 'paire', 'groupes'].includes(mode)) mode = 'espece';
+  const view = { title: "Comparateur d'espèces", active: 'especes', mode, speciesList: all, a, b };
+
+  if (mode === 'espece' && a) {
+    view.partners = all
+      .filter((s) => s.id !== a.id)
+      .map((s) => ({ species: s, result: computeCompatibility(a, s) }))
+      .sort((x, y) => y.result.total - x.result.total);
   }
-  res.render('especes/compatibilite', {
-    title: 'Compatibilité entre espèces', active: 'especes',
-    speciesList, aId: aId || '', bId: bId || '', spA, spB, result
+  if (mode === 'paire' && a && b && a.id !== b.id) {
+    view.result = computeCompatibility(a, b);
+  }
+  if (mode === 'groupes') {
+    // Checkboxes come with a hidden "0" before them, so unticked is explicit.
+    const ticked = (name, byDefault) => (req.query[name] === undefined ? byDefault : [].concat(req.query[name]).includes('1'));
+    const size = Math.min(4, Math.max(2, parseInt(req.query.taille, 10) || 3));
+    const mustHave = byId.get(String(req.query.inclure || '')) || null;
+    const onlyKept = ticked('elevage', false);
+    const mixedOnly = ticked('mixte', true);
+    let pool = all;
+    if (onlyKept) {
+      const kept = new Set(db.prepare('SELECT DISTINCT species_id FROM bac_species').all().map((r) => r.species_id));
+      pool = all.filter((s) => kept.has(s.id) || (mustHave && s.id === mustHave.id));
+    }
+    view.groups = bestGroups(pool, { size, mustInclude: mustHave && mustHave.id, mixedOnly, limit: 12 });
+    Object.assign(view, { size, mustHave, onlyKept, mixedOnly });
+  }
+  res.render('especes/comparateur', view);
+});
+
+// Live check for the new-bac form: how well a set of species gets along.
+router.get('/compatibilite/groupe.json', (req, res) => {
+  const ids = String(req.query.ids || '').split(',').map(Number).filter(Boolean);
+  if (new Set(ids).size !== ids.length) {
+    return res.json({ duplicate: true });
+  }
+  const rows = ids.length ? db.prepare(`SELECT * FROM species WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids) : [];
+  const species = ids.map((id) => rows.find((r) => r.id === id)).filter(Boolean);
+  const group = species.length >= 2 ? evaluateGroup(species) : null;
+  if (!group) return res.json({ group: null });
+  res.json({
+    group: {
+      score: group.score, verdict: group.verdict, verdictClass: group.verdictClass, common: group.common,
+      notes: group.notes.slice(0, 4), strengths: group.strengths.slice(0, 2),
+      weakest: species.length > 2 ? {
+        a: group.weakest.a.scientific_name, b: group.weakest.b.scientific_name,
+        aId: group.weakest.a.id, bId: group.weakest.b.id, total: group.weakest.result.total
+      } : null
+    }
   });
 });
 
-router.post('/', (req, res) => {
-  const info = insertOrUpdate(req.body);
+router.post('/', uploadIcon.single('icon'), (req, res) => {
+  const iconPath = req.file ? storeIcon(req.file) : null;
+  const info = insertOrUpdate(req.body, null, iconPath);
   res.redirect('/especes/' + info.id);
 });
 
@@ -47,21 +129,73 @@ router.get('/:id', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
   const bacs = db.prepare('SELECT id, bac_id, morph FROM bac_species WHERE species_id = ?').all(req.params.id);
-  res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs });
+  res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs, traitOptions: TRAIT_OPTIONS });
 });
 
 router.get('/:id/edit', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
-  res.render('especes/form', { title: 'Modifier ' + sp.scientific_name, active: 'especes', sp, isNew: false });
+  res.render('especes/form', { title: 'Modifier ' + sp.scientific_name, active: 'especes', sp, isNew: false, traitOptions: TRAIT_OPTIONS });
 });
 
-router.post('/:id', (req, res) => {
-  insertOrUpdate(req.body, req.params.id);
+// Good tankmates named on a customer sheet: the guide's best matches, one per
+// species (morphs merged), leaving out predators and anything below 85 %.
+function goodPartners(sp, others) {
+  const best = new Map();
+  for (const other of others) {
+    const name = binomial(other.scientific_name);
+    if (other.diet_type === 'predateur' || name === binomial(sp.scientific_name)) continue;
+    const total = computeCompatibility(sp, other).total;
+    if (total >= 85 && total > (best.get(name) || 0)) best.set(name, total);
+  }
+  return [...best.entries()].sort((x, y) => y[1] - x[1]).slice(0, 4).map(([name]) => name);
+}
+
+// Care sheet for a buyer: the guide's fiche on one printable page, to print
+// or save as PDF and send. ?fiche= adds that bac's lineage.
+router.get('/:id/fiche-client', (req, res) => {
+  const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
+  if (!sp) return res.status(404).render('404', { path: req.path });
+  const fiche = req.query.fiche
+    ? db.prepare('SELECT id, bac_id, lineage FROM bac_species WHERE id = ? AND species_id = ?').get(req.query.fiche, sp.id) || null
+    : null;
+  const others = db.prepare('SELECT * FROM species WHERE id != ?').all(sp.id);
+  res.render('especes/fiche-client', {
+    title: 'Fiche élevage - ' + sp.scientific_name.replace(/"/g, ''),
+    sp, fiche, traitOptions: TRAIT_OPTIONS, settings: getSettings(),
+    partners: sp.diet_type === 'predateur' ? null : goodPartners(sp, others),
+    selfUrl: '/especes/' + sp.id + '/fiche-client' + (fiche ? '?fiche=' + fiche.id : ''),
+    backUrl: fiche ? '/fiches/' + fiche.id : '/especes/' + sp.id
+  });
+});
+
+// The breeder's name and contact printed at the foot of every customer sheet.
+router.post('/fiche-client/eleveur', (req, res) => {
+  const b = req.body || {};
+  setSetting('breeder_name', String(b.breeder_name || '').trim().slice(0, 80));
+  setSetting('breeder_contact', String(b.breeder_contact || '').trim().slice(0, 160));
+  const back = String(b.back || '');
+  res.redirect(/^\/especes\/\d+\/fiche-client(\?fiche=\d+)?$/.test(back) ? back : '/especes');
+});
+
+router.post('/:id', uploadIcon.single('icon'), (req, res) => {
+  const current = db.prepare('SELECT icon_path FROM species WHERE id = ?').get(req.params.id);
+  let iconPath = current ? current.icon_path : null;
+  if (req.file) {
+    deleteIconFile(iconPath);
+    iconPath = storeIcon(req.file);
+  } else if (req.body && req.body.remove_icon) {
+    deleteIconFile(iconPath);
+    iconPath = null;
+  }
+  insertOrUpdate(req.body, req.params.id, iconPath);
   res.redirect('/especes/' + req.params.id);
 });
 
-function insertOrUpdate(b, id) {
+function insertOrUpdate(b, id, iconPath) {
+  // A trait left on "— choisir —" takes the usual value for the category.
+  const traits = defaultTraits({ category: b.category, scientific_name: b.scientific_name });
+  const trait = (key) => (TRAIT_OPTIONS[key].some(([value]) => value === b[key]) ? b[key] : traits[key]);
   const fields = {
     category: b.category, common_name: b.common_name, scientific_name: b.scientific_name,
     difficulty: Number(b.difficulty) || 3,
@@ -72,6 +206,11 @@ function insertOrUpdate(b, id) {
     repro_sexing: b.repro_sexing || null, repro_conditions: b.repro_conditions || null,
     repro_mating: b.repro_mating || null, repro_incubation: b.repro_incubation || null,
     repro_juveniles: b.repro_juveniles || null, repro_pitfalls: b.repro_pitfalls || null,
+    icon_path: iconPath,
+    feed_every_days: Number(b.feed_every_days) || null,
+    mist_every_days: Number(b.mist_every_days) || null,
+    diet_type: trait('diet_type'), size_class: trait('size_class'),
+    niche: trait('niche'), substrate_type: trait('substrate_type'),
     is_draft: b.is_draft ? 1 : 0
   };
   if (id) {
@@ -82,6 +221,8 @@ function insertOrUpdate(b, id) {
         vigilance=:vigilance, presentation=:presentation, habitat=:habitat, feeding_detail=:feeding_detail,
         repro_sexing=:repro_sexing, repro_conditions=:repro_conditions, repro_mating=:repro_mating,
         repro_incubation=:repro_incubation, repro_juveniles=:repro_juveniles, repro_pitfalls=:repro_pitfalls,
+        icon_path=:icon_path, feed_every_days=:feed_every_days, mist_every_days=:mist_every_days,
+        diet_type=:diet_type, size_class=:size_class, niche=:niche, substrate_type=:substrate_type,
         is_draft=:is_draft, updated_at=datetime('now','localtime')
       WHERE id=:id
     `).run({ ...fields, id });
@@ -90,10 +231,12 @@ function insertOrUpdate(b, id) {
   const info = db.prepare(`
     INSERT INTO species (category, common_name, scientific_name, difficulty, humidity_min, humidity_max,
       temp_min, temp_max, sociability, diet_summary, vigilance, presentation, habitat, feeding_detail,
-      repro_sexing, repro_conditions, repro_mating, repro_incubation, repro_juveniles, repro_pitfalls, is_draft)
+      repro_sexing, repro_conditions, repro_mating, repro_incubation, repro_juveniles, repro_pitfalls,
+      icon_path, feed_every_days, mist_every_days, diet_type, size_class, niche, substrate_type, is_draft)
     VALUES (:category, :common_name, :scientific_name, :difficulty, :humidity_min, :humidity_max,
       :temp_min, :temp_max, :sociability, :diet_summary, :vigilance, :presentation, :habitat, :feeding_detail,
-      :repro_sexing, :repro_conditions, :repro_mating, :repro_incubation, :repro_juveniles, :repro_pitfalls, :is_draft)
+      :repro_sexing, :repro_conditions, :repro_mating, :repro_incubation, :repro_juveniles, :repro_pitfalls,
+      :icon_path, :feed_every_days, :mist_every_days, :diet_type, :size_class, :niche, :substrate_type, :is_draft)
   `).run(fields);
   return { id: info.lastInsertRowid };
 }

@@ -1,0 +1,180 @@
+<%- include('../partials/header', { title, active }) %>
+
+<%
+  var scoreColor = function (n) { return n >= 70 ? 'var(--moss)' : n >= 50 ? 'var(--rust)' : 'var(--stampred)'; };
+  var range = function (r, unit) { return r ? (r[0] === r[1] ? r[0] : r[0] + '–' + r[1]) + unit : null; };
+  var speciesSelect = function (name, selected, placeholder) {
+    var out = '<select name="' + name + '" data-picker><option value="">' + placeholder + '</option>';
+    var cat = null;
+    speciesList.forEach(function (sp) {
+      if (sp.category !== cat) { if (cat !== null) out += '</optgroup>'; out += '<optgroup label="' + fmt.escape(fmt.CATEGORY_LABELS[sp.category] || sp.category) + '">'; cat = sp.category; }
+      out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '"' + (selected && selected.id === sp.id ? ' selected' : '') + '>' + fmt.escape(sp.scientific_name) + '</option>';
+    });
+    return out + (cat !== null ? '</optgroup>' : '') + '</select>';
+  };
+%>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">ESPÈCES &gt; COMPARATEUR</div>
+    <h1>Comparateur d'espèces</h1>
+    <div class="subtitle">Qui peut vivre avec qui, et les meilleurs groupes pour un bac multi-espèce</div>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<nav class="mode-tabs">
+  <a href="/especes/compatibilite?mode=espece<%= a ? '&a=' + a.id : '' %>" class="<%= mode === 'espece' ? 'active' : '' %>">Par espèce</a>
+  <a href="/especes/compatibilite?mode=paire<%= a ? '&a=' + a.id : '' %><%= b ? '&b=' + b.id : '' %>" class="<%= mode === 'paire' ? 'active' : '' %>">Deux espèces</a>
+  <a href="/especes/compatibilite?mode=groupes<%= a ? '&inclure=' + a.id : '' %>" class="<%= mode === 'groupes' ? 'active' : '' %>">Meilleurs groupes</a>
+</nav>
+
+<% if (mode === 'espece') { %>
+
+  <form method="GET" action="/especes/compatibilite" class="compare-form">
+    <input type="hidden" name="mode" value="espece">
+    <div class="field">
+      <label>Espèce à comparer avec toutes les autres</label>
+      <%- speciesSelect('a', a, '— choisir —') %>
+    </div>
+    <button type="submit" class="btn">Voir</button>
+  </form>
+
+  <% if (a) { %>
+    <div class="section-title"><h2>Avec <%= a.scientific_name %></h2><div class="rule"></div></div>
+    <div class="partner-list">
+      <% partners.forEach(function (p) { var r = p.result; %>
+        <a class="partner-row" href="/especes/compatibilite?mode=paire&a=<%= a.id %>&b=<%= p.species.id %>">
+          <span class="partner-row__icon"><%- icons.species(p.species, 48) %></span>
+          <span class="partner-row__main">
+            <span class="partner-row__name"><%= p.species.scientific_name %></span>
+            <span class="partner-row__note"><%= r.notes[0] || r.strengths[0] || '' %></span>
+          </span>
+          <span class="partner-row__score" style="color:<%= scoreColor(r.total) %>;"><%= r.total %> %</span>
+        </a>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="empty-hint">Choisis une espèce : elle sera comparée à toutes les autres de ton guide, de la plus compatible à la moins compatible.</p>
+  <% } %>
+
+<% } else if (mode === 'paire') { %>
+
+  <form method="GET" action="/especes/compatibilite" class="compare-form compare-form--pair">
+    <input type="hidden" name="mode" value="paire">
+    <div class="field"><label>Espèce A</label><%- speciesSelect('a', a, '— choisir —') %></div>
+    <div class="field"><label>Espèce B</label><%- speciesSelect('b', b, '— choisir —') %></div>
+    <button type="submit" class="btn">Comparer</button>
+  </form>
+
+  <% if (a && b && a.id === b.id) { %>
+    <p class="empty-hint" style="color:var(--stampred);">Choisis deux espèces différentes.</p>
+  <% } %>
+
+  <% if (typeof result !== 'undefined' && result) { %>
+    <div class="pair-card">
+      <div class="pair-card__head">
+        <div class="pair-card__species">
+          <span><%- icons.species(a, 56) %><%= a.scientific_name %></span>
+          <span class="pair-card__x">×</span>
+          <span><%- icons.species(b, 56) %><%= b.scientific_name %></span>
+        </div>
+        <div class="pair-card__score" style="color:<%= scoreColor(result.total) %>;"><%= result.total %> %</div>
+      </div>
+      <div><span class="stamp <%= result.verdictClass %>"><%= result.verdict %></span></div>
+
+      <div class="pair-card__bars">
+        <% result.criteria.forEach(function (c) { var v = result.breakdown[c.key]; %>
+          <div class="crit-row">
+            <div class="crit-row__label"><%= c.label %></div>
+            <div class="crit-row__bar"><div style="width:<%= v %>%; background:<%= scoreColor(v) %>;"></div></div>
+            <div class="crit-row__value"><%= v %> %</div>
+          </div>
+        <% }); %>
+      </div>
+
+      <div class="common-box">
+        <div class="common-box__title">Conditions communes</div>
+        <div>Température : <strong><%= range(result.common.temp, ' °C') || 'aucune' %></strong></div>
+        <div>Hygrométrie : <strong><%= range(result.common.humidity, ' %') || 'aucune' %></strong></div>
+      </div>
+
+      <% if (result.strengths.length) { %>
+        <ul class="reason-list reason-list--good"><% result.strengths.forEach(function (s) { %><li><%= s %></li><% }); %></ul>
+      <% } %>
+      <% if (result.notes.length) { %>
+        <ul class="reason-list reason-list--warn"><% result.notes.forEach(function (n) { %><li><%= n %></li><% }); %></ul>
+      <% } %>
+
+      <% if (result.total >= 50) { %>
+        <a class="btn pair-card__create" href="/fiches/new?species=<%= a.id %>,<%= b.id %>">Créer un bac avec ces deux espèces</a>
+      <% } %>
+    </div>
+  <% } %>
+
+<% } else { %>
+
+  <form method="GET" action="/especes/compatibilite" class="compare-form compare-form--groups">
+    <input type="hidden" name="mode" value="groupes">
+    <div class="field">
+      <label>Nombre d'espèces dans le bac</label>
+      <div class="size-choice">
+        <% [2, 3, 4].forEach(function (n) { %>
+          <label class="size-choice__opt"><input type="radio" name="taille" value="<%= n %>" <%= size === n ? 'checked' : '' %>><span><%= n %></span></label>
+        <% }); %>
+      </div>
+    </div>
+    <div class="field">
+      <label>Doit contenir (optionnel)</label>
+      <%- speciesSelect('inclure', mustHave, '— n\'importe quelle espèce —') %>
+    </div>
+    <label class="check-line"><input type="hidden" name="elevage" value="0"><input type="checkbox" name="elevage" value="1" <%= onlyKept ? 'checked' : '' %>> Seulement les espèces que j'ai en bac</label>
+    <label class="check-line"><input type="hidden" name="mixte" value="0"><input type="checkbox" name="mixte" value="1" <%= mixedOnly ? 'checked' : '' %>> Mélanger des familles différentes (iules, cloportes…)</label>
+    <button type="submit" class="btn">Trouver les meilleurs groupes</button>
+  </form>
+
+  <% if (!groups.length) { %>
+    <p class="empty-hint">Aucun groupe viable avec ces critères. Essaie moins d'espèces, ou décoche un filtre.</p>
+  <% } %>
+
+  <div class="group-list">
+    <% groups.forEach(function (g, i) { %>
+      <div class="group-card">
+        <div class="group-card__head">
+          <span class="group-card__rank">n° <%= i + 1 %></span>
+          <span class="stamp <%= g.verdictClass %>"><%= g.verdict %></span>
+          <span class="group-card__score" style="color:<%= scoreColor(g.score) %>;"><%= g.score %> %</span>
+        </div>
+        <ul class="group-card__species">
+          <% g.species.forEach(function (s) { %>
+            <li><a href="/especes/<%= s.id %>"><%- icons.species(s, 48) %><span><%= s.scientific_name %></span></a></li>
+          <% }); %>
+        </ul>
+        <% if (g.alsoWith.length) { %>
+          <div class="group-card__also">Marche aussi avec : <%= g.alsoWith.join(', ') %></div>
+        <% } %>
+        <div class="group-card__cond">
+          <%= range(g.common.temp, ' °C') || 'température ?' %> · <%= range(g.common.humidity, ' %') || 'hygrométrie ?' %>
+        </div>
+        <% if (g.notes.length) { %>
+          <ul class="reason-list reason-list--warn"><% g.notes.slice(0, 2).forEach(function (n) { %><li><%= n %></li><% }); %></ul>
+        <% } else if (g.strengths.length) { %>
+          <ul class="reason-list reason-list--good"><li><%= g.strengths[0] %></li></ul>
+        <% } %>
+        <details class="group-card__pairs">
+          <summary>Détail des paires</summary>
+          <% g.pairs.forEach(function (p) { %>
+            <a href="/especes/compatibilite?mode=paire&a=<%= p.a.id %>&b=<%= p.b.id %>"><%= p.a.scientific_name %> × <%= p.b.scientific_name %> <strong style="color:<%= scoreColor(p.result.total) %>;"><%= p.result.total %> %</strong></a>
+          <% }); %>
+        </details>
+        <a class="btn group-card__create" href="/fiches/new?species=<%= g.species.map(function (s) { return s.id; }).join(',') %>">Créer ce bac</a>
+      </div>
+    <% }); %>
+  </div>
+
+<% } %>
+
+<p class="draft-note">Estimation indicative à partir de la température, l'hygrométrie, le comportement, l'alimentation et l'installation renseignés dans le guide des espèces : l'observation des animaux une fois réunis a toujours le dernier mot.</p>
+
+<%- include('../partials/footer') %>

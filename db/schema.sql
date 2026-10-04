@@ -20,6 +20,13 @@ CREATE TABLE IF NOT EXISTS species (
   repro_incubation TEXT,
   repro_juveniles TEXT,
   repro_pitfalls TEXT,
+  icon_path TEXT,
+  feed_every_days INTEGER,
+  mist_every_days INTEGER,
+  diet_type TEXT,
+  size_class TEXT,
+  niche TEXT,
+  substrate_type TEXT,
   is_draft INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
@@ -52,6 +59,8 @@ CREATE TABLE IF NOT EXISTS bac_species (
   for_sale_quantity INTEGER NOT NULL DEFAULT 0,
   unit_price REAL,
   last_checked_at TEXT,
+  feed_every_days INTEGER,  -- per-bac override of the species rhythm (NULL = species)
+  mist_every_days INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
@@ -72,6 +81,12 @@ CREATE TABLE IF NOT EXISTS orders (
   bac_species_id INTEGER REFERENCES bac_species(id) ON DELETE SET NULL,
   status TEXT NOT NULL DEFAULT 'en_preparation',
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+-- App-wide preferences, e.g. the breeder's name printed on customer sheets.
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_bac_species_bac ON bac_species(bac_id);

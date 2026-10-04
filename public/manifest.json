@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Isoterra — Carnet d'élevage",
   "short_name": "Isoterra",
   "description": "Carnet d'élevage et registre professionnel pour arthropodes",
@@ -9,8 +10,32 @@
   "theme_color": "#2a2018",
   "orientation": "portrait-primary",
   "lang": "fr",
+  "categories": ["productivity", "lifestyle"],
   "icons": [
     { "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Commencer la tournée",
+      "short_name": "Tournée",
+      "url": "/tournee",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Nouvelle entrée de journal",
+      "short_name": "Journal",
+      "url": "/journal/new",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Registre des bacs",
+      "short_name": "Bacs",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

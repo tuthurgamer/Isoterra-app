@@ -92,6 +92,21 @@ const species = [
     repro_pitfalls: "Toute chute d'humidité, même brève ; ventilation excessive qui assèche le bac ; manipulation trop fréquente."
   },
   {
+    category: 'iule', common_name: 'Iule dragon rose', scientific_name: 'Desmoxytes planata',
+    difficulty: 3, humidity_min: 75, humidity_max: 90, temp_min: 22, temp_max: 27,
+    sociability: 'Grégaire, discret', diet_summary: 'Détritivore : feuilles, bois pourri',
+    vigilance: "Sécrète du cyanure en défense (odeur d'amande) — se laver les mains",
+    presentation: "Petit mille-pattes plat (ordre des Polydesmida) vendu sous le nom de « Pink Dragon » : corps rose vif hérissé d'expansions latérales pointues qui lui donnent son allure de petit dragon. Adulte vers 3 cm. Originaire des îles Andaman, il a été disséminé par l'homme dans une grande partie des tropiques (Thaïlande, Sri Lanka, Java, Seychelles…). Timide et plutôt nocturne, il vit dans la litière et le bois pourri au lieu de s'enfouir profondément comme les grands iules.",
+    habitat: "Pas besoin d'un grand bac : 5 à 10 cm de terreau de feuilles et fibre de coco, une épaisse couche de feuilles mortes de feuillus et des morceaux de bois pourri blanc, avec de la mousse d'un côté. Le substrat doit rester humide au toucher en permanence sans être détrempé, avec un peu d'aération pour éviter l'air stagnant. Une source de calcium (os de seiche râpé) aide aux mues.",
+    feeding_detail: "Feuilles mortes et bois pourri à volonté : c'est la base de son alimentation. En complément, légumes (courgette, carotte, champignons) et fruits en petites quantités, et un peu de protéines de temps en temps (croquette pour poisson). Retirer ce qui moisit.",
+    repro_sexing: "Comme chez tous les Polydesmida, le mâle adulte porte une paire de gonopodes à la place des pattes du 7e anneau, visibles en retournant délicatement l'animal (une loupe aide vu la petite taille). La femelle garde des pattes normales à cet endroit.",
+    repro_conditions: "Un groupe d'une dizaine d'individus au moins, une humidité élevée et stable, de la litière et du bois pourri en abondance. Un bac établi et peu dérangé reproduit bien mieux qu'un bac récent.",
+    repro_mating: "Le mâle enlace la femelle ventre contre ventre. Elle pond ensuite ses œufs en petits groupes dans le substrat humide ou le bois pourri.",
+    repro_incubation: "Développement anamorphe : les jeunes naissent avec peu d'anneaux et de pattes et en gagnent à chaque mue, sur plusieurs mues jusqu'à l'âge adulte.",
+    repro_juveniles: "Minuscules à la naissance (la taille d'un grain de riz) et pâles, ils prennent leur couleur rose en grandissant, cachés dans la litière et le bois pourri. Maturité au bout de plusieurs mois, pour une durée de vie de l'ordre de deux ans.",
+    repro_pitfalls: "Un substrat qui sèche, même brièvement (les juvéniles y sont très sensibles), fouiller la litière pour chercher les jeunes, un bac confiné qui moisit, et le voisinage d'espèces prédatrices."
+  },
+  {
     category: 'cloporte', common_name: 'Armadillo commun', scientific_name: 'Armadillo officinalis',
     difficulty: 2, humidity_min: 60, humidity_max: 75, temp_min: 18, temp_max: 25,
     sociability: 'Grégaire, en colonie', diet_summary: 'Détritivore : feuilles, bois',
@@ -107,11 +122,11 @@ const species = [
     repro_pitfalls: "Substrat trop humide en permanence (contrairement aux espèces tropicales), manque de calcium pour la carapace."
   },
   {
-    category: 'cloporte', common_name: 'Cloporte rugueux', scientific_name: 'Porcellio scaber',
+    category: 'cloporte', common_name: "Cloporte rugueux 'Lava'", scientific_name: 'Porcellio scaber "Lava"',
     difficulty: 1, humidity_min: 60, humidity_max: 75, temp_min: 20, temp_max: 25,
     sociability: 'Très grégaire', diet_summary: 'Détritivore peu sélectif',
     vigilance: 'Aucune',
-    presentation: "L'un des cloportes les plus communs et les plus tolérants du hobby. Le morph \"Lava\" (noir tacheté de rouge) est une variation de couleur recherchée sur cette espèce par ailleurs très banale à l'état sauvage.",
+    presentation: "Morph de Porcellio scaber sélectionné pour sa robe noire tachetée de rouge/orangé, en contraste avec la forme sauvage brun-gris terne et banale de l'espèce. Aussi robuste et tolérant que le type sauvage — un excellent morph d'entrée pour découvrir l'élevage de cloportes sans sacrifier l'esthétique.",
     habitat: "Peu exigeant : substrat classique (terreau, fibre de coco), feuilles mortes, bois. Tolère une gamme d'humidité assez large, idéal comme première espèce.",
     feeding_detail: "Mange presque tout ce qui se décompose : feuilles, bois, légumes. Un ajout de protéine (paillettes de poisson) stimule la reproduction.",
     repro_sexing: "Difficile à l'œil nu comme chez tous les cloportes ; on suit surtout la croissance globale de la population.",
@@ -119,7 +134,7 @@ const species = [
     repro_mating: "La femelle porte les œufs dans un marsupium ventral, visible en renflement blanchâtre.",
     repro_incubation: "Les mancae sortent directement formées du marsupium, pas de stade larvaire externe.",
     repro_juveniles: "Croissance rapide et bonne survie en colonie ; c'est souvent l'espèce qui explose en population le plus vite du bac.",
-    repro_pitfalls: "Mélanger avec d'autres morphs de la même espèce si tu veux garder les lignées pures — le croisement est facile et rapide vu la vigueur de l'espèce."
+    repro_pitfalls: "Mélanger avec des individus sauvages (gris/bruns) ou un autre morph : le croisement est facile et rapide vu la vigueur de l'espèce, et dilue vite la sélection Lava si tu veux garder une lignée pure."
   },
   {
     category: 'cloporte', common_name: 'Cloporte hérissé beige', scientific_name: 'Cristarmadillidium muricatum',
@@ -141,7 +156,7 @@ const species = [
     difficulty: 1, humidity_min: 55, humidity_max: 70, temp_min: 18, temp_max: 25,
     sociability: 'Très grégaire', diet_summary: 'Détritivore peu sélectif',
     vigilance: 'Aucune',
-    presentation: "Le cloporte le plus commun d'Europe, capable de s'enrouler en boule parfaite. Base de référence du hobby, support de très nombreux morphs de couleur dont \"St Lucia\" (petit point rouge) et \"Albinos\" (blanc translucide) de la collection.",
+    presentation: "Le cloporte le plus commun d'Europe, capable de s'enrouler en boule parfaite. Base de référence du hobby. Cette fiche couvre la forme sauvage (grise/marbrée) ; les morphs \"St Lucia\" et \"Albinos\" de la collection ont chacun leur propre fiche détaillée.",
     habitat: "Substrat classique, moins humide que les espèces tropicales, avec zone plus sèche et zone plus humide pour laisser le choix aux animaux. Calcaire apprécié (coquille d'œuf, craie).",
     feeding_detail: "Feuilles mortes variées, bois, légumes, calcium régulier pour l'\"Albinos\" en particulier (carapace plus fragile).",
     repro_sexing: "Difficile à l'œil nu ; on se fie à la croissance de la colonie plutôt qu'à l'identification de couples.",
@@ -149,14 +164,44 @@ const species = [
     repro_mating: "Marsupium ventral chez la femelle porteuse, comme chez tous les cloportes.",
     repro_incubation: "Développement direct, mancae déjà formés à la sortie du marsupium.",
     repro_juveniles: "Très bonne survie, croissance rapide. Le morph \"Albinos\" (sans pigmentation) demande une attention un peu plus soutenue au calcium disponible.",
-    repro_pitfalls: "Mélanger \"St Lucia\" et \"Albinos\" dans un même bac (perte des lignées pures par croisement), substrat trop humide en permanence."
+    repro_pitfalls: "Mélanger cette forme sauvage avec les morphs St Lucia ou Albinos dans un même bac de reproduction (perte des lignées pures par croisement), substrat trop humide en permanence."
   },
   {
-    category: 'cloporte', common_name: 'Cloporte géant', scientific_name: 'Porcellio laevis',
+    category: 'cloporte', common_name: "Cloporte commun 'St Lucia'", scientific_name: 'Armadillidium vulgare "St Lucia"',
+    difficulty: 1, humidity_min: 55, humidity_max: 70, temp_min: 18, temp_max: 25,
+    sociability: 'Très grégaire', diet_summary: 'Détritivore peu sélectif',
+    vigilance: 'Aucune',
+    presentation: "Morph d'Armadillidium vulgare marqué d'un petit point rouge-orangé sur le dos, sur fond gris classique de l'espèce. Aussi facile et robuste que la forme sauvage — un excellent premier morph coloré pour qui débute avec cette espèce de référence.",
+    habitat: "Substrat classique, moins humide que les espèces tropicales, avec zone plus sèche et zone plus humide pour laisser le choix aux animaux. Calcaire apprécié (coquille d'œuf, craie).",
+    feeding_detail: "Feuilles mortes variées, bois, légumes, calcium régulier.",
+    repro_sexing: "Difficile à l'œil nu ; on se fie à la croissance de la colonie plutôt qu'à l'identification de couples.",
+    repro_conditions: "Extrêmement facile à reproduire dès que le bac est stable ; l'espèce est souvent utilisée comme \"témoin\" pour valider qu'un nouveau bac fonctionne bien avant d'y placer des morphs plus fragiles.",
+    repro_mating: "Marsupium ventral chez la femelle porteuse, comme chez tous les cloportes.",
+    repro_incubation: "Développement direct, mancae déjà formés à la sortie du marsupium.",
+    repro_juveniles: "Très bonne survie, croissance rapide.",
+    repro_pitfalls: "Mélanger avec la forme sauvage ou le morph Albinos dans le même bac de reproduction : la marque St Lucia se dilue vite par croisement."
+  },
+  {
+    category: 'cloporte', common_name: "Cloporte commun 'Albinos'", scientific_name: 'Armadillidium vulgare "Albinos"',
+    difficulty: 1, humidity_min: 55, humidity_max: 70, temp_min: 18, temp_max: 25,
+    sociability: 'Très grégaire', diet_summary: 'Détritivore peu sélectif',
+    vigilance: 'Aucune',
+    presentation: "Morph totalement dépigmenté d'Armadillidium vulgare, à la carapace blanc translucide qui laisse deviner les organes internes par transparence. Aussi facile à élever que la forme sauvage, mais la carapace plus fine le rend plus sensible au manque de calcium et à une lumière directe trop forte.",
+    habitat: "Substrat classique, moins humide que les espèces tropicales, avec zone plus sèche et zone plus humide. Calcaire apprécié (coquille d'œuf, craie). Éviter une exposition prolongée à une lumière vive, la carapace dépigmentée protégeant moins l'animal.",
+    feeding_detail: "Feuilles mortes variées, bois, légumes, et calcium en plus grande quantité que pour la forme sauvage — la carapace translucide est plus fragile.",
+    repro_sexing: "Difficile à l'œil nu ; on se fie à la croissance de la colonie plutôt qu'à l'identification de couples.",
+    repro_conditions: "Facile à reproduire dès que le bac est stable, à condition de ne jamais laisser manquer le calcium.",
+    repro_mating: "Marsupium ventral chez la femelle porteuse, comme chez tous les cloportes.",
+    repro_incubation: "Développement direct, mancae déjà formés à la sortie du marsupium.",
+    repro_juveniles: "Bonne survie, croissance rapide, mais demande une attention un peu plus soutenue au calcium disponible que la forme sauvage.",
+    repro_pitfalls: "Manque de calcium (la carapace fine de ce morph est plus fragile que la forme sauvage), le mélanger avec la forme sauvage ou St Lucia dans un bac de reproduction (perte de la lignée pure Albinos)."
+  },
+  {
+    category: 'cloporte', common_name: "Cloporte géant 'Orange'", scientific_name: 'Porcellio laevis "Orange"',
     difficulty: 1, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 27,
     sociability: 'Très grégaire, colonies denses', diet_summary: 'Détritivore vorace',
     vigilance: "Surveiller surtout l'espace disponible",
-    presentation: "Un des plus grands cloportes du hobby, et sans doute le plus rapide à se reproduire. Base de nombreux morphs vivement colorés (Orange, Orange Koi, Dairy Cow) très demandés à la vente.",
+    presentation: "Morph uni orange vif de Porcellio laevis, l'un des plus grands cloportes du hobby et sans doute le plus rapide à se reproduire. Couleur intense et homogène sur tout le corps — souvent le morph d'appel pour découvrir l'espèce avant de viser les motifs plus travaillés (Orange Koi, Dairy Cow).",
     habitat: "Substrat humide et aéré, grand volume conseillé vu la vitesse de croissance de la colonie. Bonne ventilation malgré l'humidité pour éviter les moisissures liées à la forte densité de population.",
     feeding_detail: "Mange abondamment et vite : feuilles, bois, légumes, protéine régulière. Anticiper la consommation vu la taille des colonies.",
     repro_sexing: "Difficile à l'œil nu comme chez tous les cloportes ; inutile ici de toute façon vu la vitesse de reproduction en colonie.",
@@ -164,7 +209,37 @@ const species = [
     repro_mating: "Marsupium ventral chez la femelle, très fréquemment observable vu le rythme de reproduction élevé.",
     repro_incubation: "Développement direct, cycle particulièrement rapide pour un cloporte.",
     repro_juveniles: "Excellente survie, croissance très rapide. Cette espèce peut vite saturer un bac si la population n'est pas régulièrement répartie ou vendue.",
-    repro_pitfalls: "Mélanger les morphs Orange/Orange Koi/Dairy Cow entre eux (croisement rapide vu la vitesse de reproduction), sous-estimer l'espace nécessaire à moyen terme."
+    repro_pitfalls: "Le croiser avec Orange Koi ou Dairy Cow dilue la couleur unie en une génération vu la vitesse de reproduction — isoler la lignée si tu veux la garder pure. Sous-estimer l'espace nécessaire à moyen terme."
+  },
+  {
+    category: 'cloporte', common_name: "Cloporte géant 'Orange Koi'", scientific_name: 'Porcellio laevis "Orange Koi"',
+    difficulty: 1, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 27,
+    sociability: 'Très grégaire, colonies denses', diet_summary: 'Détritivore vorace',
+    vigilance: "Surveiller surtout l'espace disponible",
+    presentation: "Morph de Porcellio laevis au patron marbré blanc et orange rappelant la robe d'un poisson koï — l'un des motifs les plus demandés du genre. Aussi vigoureux et rapide à se reproduire que le reste de l'espèce, avec en plus la variabilité individuelle du motif qui rend chaque animal un peu unique.",
+    habitat: "Substrat humide et aéré, grand volume conseillé vu la vitesse de croissance de la colonie. Bonne ventilation malgré l'humidité pour éviter les moisissures liées à la forte densité de population.",
+    feeding_detail: "Mange abondamment et vite : feuilles, bois, légumes, protéine régulière. Anticiper la consommation vu la taille des colonies.",
+    repro_sexing: "Difficile à l'œil nu comme chez tous les cloportes ; inutile ici de toute façon vu la vitesse de reproduction en colonie.",
+    repro_conditions: "Se reproduit très facilement : chaleur, humidité et nourriture abondante suffisent. Le vrai défi est souvent de gérer la population plutôt que de la stimuler.",
+    repro_mating: "Marsupium ventral chez la femelle, très fréquemment observable vu le rythme de reproduction élevé.",
+    repro_incubation: "Développement direct, cycle particulièrement rapide pour un cloporte.",
+    repro_juveniles: "Excellente survie, croissance très rapide. Cette espèce peut vite saturer un bac si la population n'est pas régulièrement répartie ou vendue.",
+    repro_pitfalls: "Le motif marbré varie beaucoup d'un individu à l'autre : sélectionner les reproducteurs les plus marqués si tu vises une lignée à fort contraste. Le croiser avec Orange ou Dairy Cow dilue le motif Koi en une génération."
+  },
+  {
+    category: 'cloporte', common_name: "Cloporte géant 'Dairy Cow'", scientific_name: 'Porcellio laevis "Dairy Cow"',
+    difficulty: 1, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 27,
+    sociability: 'Très grégaire, colonies denses', diet_summary: 'Détritivore vorace',
+    vigilance: "Surveiller surtout l'espace disponible",
+    presentation: "Morph de Porcellio laevis au patron noir et blanc tacheté façon vache laitière (d'où le nom), très recherché à la vente pour son fort contraste. Partage la vigueur et la vitesse de reproduction record de l'espèce, ce qui en fait un des morphs les plus rentables à produire en volume.",
+    habitat: "Substrat humide et aéré, grand volume conseillé vu la vitesse de croissance de la colonie. Bonne ventilation malgré l'humidité pour éviter les moisissures liées à la forte densité de population.",
+    feeding_detail: "Mange abondamment et vite : feuilles, bois, légumes, protéine régulière. Anticiper la consommation vu la taille des colonies.",
+    repro_sexing: "Difficile à l'œil nu comme chez tous les cloportes ; inutile ici de toute façon vu la vitesse de reproduction en colonie.",
+    repro_conditions: "Se reproduit très facilement : chaleur, humidité et nourriture abondante suffisent. Le vrai défi est souvent de gérer la population plutôt que de la stimuler.",
+    repro_mating: "Marsupium ventral chez la femelle, très fréquemment observable vu le rythme de reproduction élevé.",
+    repro_incubation: "Développement direct, cycle particulièrement rapide pour un cloporte.",
+    repro_juveniles: "Excellente survie, croissance très rapide. Cette espèce peut vite saturer un bac si la population n'est pas régulièrement répartie ou vendue.",
+    repro_pitfalls: "Le croiser avec Orange ou Orange Koi dilue rapidement le contraste noir et blanc vu la vitesse de reproduction — isoler la lignée si tu vends en \"pure Dairy Cow\". Anticiper l'espace : c'est souvent le morph qui sature un bac en premier."
   },
   {
     category: 'cloporte', common_name: 'Cloporte de Gestro', scientific_name: 'Armadillidium gestroi',
@@ -182,11 +257,11 @@ const species = [
     repro_pitfalls: "Substrat trop sec (contrairement aux Armadillidium européens classiques), manque de cachettes."
   },
   {
-    category: 'cloporte', common_name: 'Cloporte à écusson', scientific_name: 'Armadillidium flavoscutatum',
+    category: 'cloporte', common_name: "Cloporte à écusson 'Redhead'", scientific_name: 'Armadillidium flavoscutatum "Redhead"',
     difficulty: 3, humidity_min: 65, humidity_max: 80, temp_min: 20, temp_max: 25,
     sociability: 'Grégaire', diet_summary: 'Détritivore : feuilles, bois',
     vigilance: "Reproduction plus lente à anticiper",
-    presentation: "Petite espèce de cloporte moins répandue, valorisée pour son écusson coloré (morph \"Redhead\"). Plus petite et plus discrète que les Armadillidium/Porcellio classiques de la collection.",
+    presentation: "Petite espèce de cloporte peu répandue en élevage, sélectionnée pour l'écusson rouge-orangé sur le bouclier céphalique (d'où \"Redhead\") qui tranche avec le corps sombre. Plus petite et plus discrète que les Armadillidium/Porcellio classiques de la collection — à observer de près pour profiter du contraste.",
     habitat: "Substrat humide et meuble, litière fine, petites cachettes adaptées à sa taille réduite.",
     feeding_detail: "Feuilles mortes tendres, bois fin en décomposition, calcium disponible.",
     repro_sexing: "Difficile à l'œil nu, d'autant plus sur une espèce de petite taille.",
@@ -195,6 +270,21 @@ const species = [
     repro_incubation: "Développement direct, rythme plus lent que chez les grandes espèces prolifiques de la collection.",
     repro_juveniles: "Juvéniles minuscules, à surveiller de près les premières semaines dans un substrat fin.",
     repro_pitfalls: "Substrat trop grossier pour les juvéniles minuscules, impatience face à une reproduction plus lente que les autres espèces du bac."
+  },
+  {
+    category: 'cloporte', common_name: "Cloporte espagnol 'Marbleized'", scientific_name: 'Armadillidium espanyoli "Marbleized"',
+    difficulty: 2, humidity_min: 50, humidity_max: 70, temp_min: 18, temp_max: 26,
+    sociability: 'Grégaire', diet_summary: 'Détritivore : feuilles sèches, bois',
+    vigilance: "Craint le substrat détrempé en permanence et l'air confiné",
+    presentation: "Armadillidium originaire d'Espagne, capable de s'enrouler en boule. La forme \"Marbleized\" (souvent écrite \"Marbelized\" dans le commerce) a un corps sombre veiné de blanc comme du marbre : chaque individu a son propre motif, qui s'affirme avec l'âge. Adulte vers 14 à 16 mm. Parfois vendu comme \"A. cf. espanyoli\", l'identification exacte de la lignée restant à confirmer. Espèce méditerranéenne : elle préfère un bac nettement plus sec que la plupart des cloportes de la collection.",
+    habitat: "Gradient marqué : la plus grande partie du bac sèche, un coin humide (environ un tiers). Terreau mélangé d'un peu de flake soil et de calcaire (craie, coquilles broyées), feuilles sèches de feuillus, bois en décomposition et beaucoup d'écorces de liège. Très bonne aération indispensable. Idéal vers 18 à 24 °C : la reproduction ralentit au-dessus de 26 °C.",
+    feeding_detail: "Feuilles mortes sèches et bois en décomposition en base, légumes en petites quantités tous les quelques jours, fruits à l'occasion et protéines régulières (gammares, croquette pour poisson). Calcium en permanence pour sa carapace très calcifiée. Limiter la nourriture fraîche, qui fait monter l'humidité du bac.",
+    repro_sexing: "Difficile à l'œil nu comme chez tous les cloportes ; une femelle gestante se repère à son marsupium ventral gonflé.",
+    repro_conditions: "Colonie installée, gradient d'humidité respecté, calcium et protéines réguliers. Un peu de chaleur au printemps et à l'automne relance les naissances.",
+    repro_mating: "Marsupium ventral chez la femelle, comme chez tous les cloportes.",
+    repro_incubation: "Gestation longue, environ 60 jours dans le marsupium ; développement direct, les petits sortent déjà formés.",
+    repro_juveniles: "Les jeunes naissent clairs, leur marbrure apparaît puis se renforce au fil des mues. Croissance lente : la colonie met plusieurs semaines à vraiment démarrer.",
+    repro_pitfalls: "Substrat détrempé en permanence (le principal risque), air confiné, chaleur excessive, impatience face à une reproduction lente. Le croiser avec une autre forme d'A. espanyoli dilue la marbrure si tu veux garder une lignée Marbleized pure."
   },
   {
     category: 'cetoine', common_name: 'Cétoine de Derby', scientific_name: 'Dicronorhina derbyana layardi',
@@ -276,7 +366,7 @@ const species = [
     difficulty: 2, humidity_min: 80, humidity_max: 95, temp_min: 22, temp_max: 27,
     sociability: 'Grégaire, hermaphrodite', diet_summary: 'Végétal + calcium',
     vigilance: 'Statut réglementaire à vérifier localement',
-    presentation: "Grand escargot terrestre africain, parmi les plus grands escargots du monde, très populaire en élevage. Le morph \"Jade White\" est une variation de couleur de coquille recherchée. Espèce considérée invasive dans plusieurs régions du monde — à vérifier auprès des autorités locales avant tout élevage à visée commerciale, la réglementation pouvant varier et évoluer.",
+    presentation: "Grand escargot terrestre africain, parmi les plus grands escargots du monde, très populaire en élevage. Cette fiche couvre la forme sauvage (coquille brune striée classique) ; le morph \"Jade White\" a sa propre fiche dédiée. Espèce considérée invasive dans plusieurs régions du monde — à vérifier auprès des autorités locales avant tout élevage à visée commerciale, la réglementation pouvant varier et évoluer.",
     habitat: "Terrarium très humide, substrat profond (tourbe, terreau non traité) pour permettre l'enfouissement, bonne aération malgré l'humidité élevée. Brumisation quotidienne souvent nécessaire.",
     feeding_detail: "Légumes et fruits variés, feuilles, source de calcium abondante et permanente (os de seiche, coquille d'œuf) indispensable à la croissance de la coquille.",
     repro_sexing: "Sans objet : chaque individu est hermaphrodite et possède les deux organes reproducteurs. L'autofécondation est possible mais la fécondation croisée entre deux individus est plus fréquente et préférable pour la diversité génétique.",
@@ -285,6 +375,51 @@ const species = [
     repro_incubation: "Éclosion en deux à quatre semaines selon la température et l'humidité du substrat.",
     repro_juveniles: "Les jeunes ont besoin de calcium dès l'éclosion pour construire leur coquille. Croissance rapide vers la maturité (environ six mois à un an). Prévoir à l'avance où placer le surplus de naissances.",
     repro_pitfalls: "Sous-estimer le nombre de naissances par ponte, manque de calcium (coquille fragile), et surtout : ne pas relâcher d'individus dans la nature, l'espèce étant problématique pour les écosystèmes et l'agriculture locale hors de son aire d'origine."
+  },
+  {
+    category: 'autre', common_name: "Petit-gris africain 'Jade White'", scientific_name: 'Lissachatina fulica "Jade White"',
+    difficulty: 2, humidity_min: 80, humidity_max: 95, temp_min: 22, temp_max: 27,
+    sociability: 'Grégaire, hermaphrodite', diet_summary: 'Végétal + calcium',
+    vigilance: 'Statut réglementaire à vérifier localement',
+    presentation: "Morph de Lissachatina fulica sélectionné pour sa coquille blanc-jade quasi dépourvue des stries brunes de la forme sauvage, très recherché en élevage pour cet aspect. Mêmes besoins et même vigueur que la forme sauvage — seule la coquille change.",
+    habitat: "Terrarium très humide, substrat profond (tourbe, terreau non traité) pour permettre l'enfouissement, bonne aération malgré l'humidité élevée. Brumisation quotidienne souvent nécessaire.",
+    feeding_detail: "Légumes et fruits variés, feuilles, source de calcium abondante et permanente (os de seiche, coquille d'œuf) indispensable à la croissance de la coquille — les carences se voient particulièrement sur ce morph clair.",
+    repro_sexing: "Sans objet : chaque individu est hermaphrodite et possède les deux organes reproducteurs. L'autofécondation est possible mais la fécondation croisée entre deux individus est plus fréquente et préférable pour la diversité génétique.",
+    repro_conditions: "Humidité élevée et stable, calcium abondant, individus adultes bien nourris. L'espèce est naturellement très prolifique — le défi est souvent de gérer le nombre d'œufs plutôt que de stimuler la ponte.",
+    repro_mating: "Après accouplement, chaque individu peut pondre une centaine d'œufs dans le substrat humide, potentiellement plusieurs fois par an.",
+    repro_incubation: "Éclosion en deux à quatre semaines selon la température et l'humidité du substrat.",
+    repro_juveniles: "Les jeunes ont besoin de calcium dès l'éclosion pour construire leur coquille. Croissance rapide vers la maturité (environ six mois à un an). Prévoir à l'avance où placer le surplus de naissances.",
+    repro_pitfalls: "Sous-estimer le nombre de naissances par ponte, manque de calcium, ne pas relâcher d'individus dans la nature (espèce invasive hors de son aire d'origine), et le croiser avec la forme sauvage réintroduit les stries brunes sur la coquille de la descendance si tu veux garder une lignée Jade White pure."
+  },
+  {
+    category: 'autre', common_name: "Achatine à bouche rose 'Albinos'", scientific_name: 'Archachatina rhodostoma "Albinos"',
+    difficulty: 2, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 26,
+    sociability: 'Grégaire, hermaphrodite', diet_summary: 'Végétal + calcium, un peu de protéines',
+    vigilance: 'Ne jamais relâcher — congeler les œufs en surplus',
+    presentation: "Grand escargot terrestre d'Afrique de l'Ouest (souches du Bénin dans le commerce), à la coquille plus ronde et plus massive que celle des Lissachatina, ornée de flammes brunes sur fond clair, avec la lèvre rose-rouge qui lui donne son nom (rhodostoma : « bouche rose »). Coquille de 9 à 10 cm adulte. La forme \"Albinos\" (\"Albino Body\" dans le commerce) concerne le corps, blanc-crème au lieu de gris-brun ; la coquille garde ses couleurs. Plus calme et plus lent à grandir qu'un petit-gris africain, nocturne, il s'enterre volontiers le jour.",
+    habitat: "Terrarium aéré mais humide, 10 à 15 cm de substrat (terreau non traité, fibre de coco, humus de feuilles) gardé humide sans être détrempé, pour l'enfouissement et la ponte. Feuilles mortes et écorces, petite gamelle d'eau peu profonde. 24 à 26 °C le jour, vers 22 °C la nuit. Nettoyer régulièrement les restes et les vitres (moisissures, acariens).",
+    feeding_detail: "Légumes variés (courgette, concombre, courge, carotte, salade, champignons), fruits en complément, feuilles mortes en décomposition qu'il apprécie, et une petite source de protéines une fois par semaine (gammares, nourriture pour escargots). Calcium en libre service en permanence (os de seiche, coquilles d'œuf broyées). Retirer les restes au bout de 24 à 48 heures.",
+    repro_sexing: "Sans objet : chaque individu est hermaphrodite. Il faut cependant au moins deux adultes : l'accouplement est réciproque et l'autofécondation n'est pas à espérer.",
+    repro_conditions: "Adultes bien nourris en calcium et protéines (maturité vers 10 mois, souvent plus tard), substrat profond et humide pour pondre, température stable autour de 24 à 26 °C.",
+    repro_mating: "Accouplement réciproque, chaque partenaire fécondant l'autre. Les pontes sont petites mais faites de très gros œufs : 5 à 10 œufs d'environ 12 mm, enfouis dans le substrat, plusieurs fois par an.",
+    repro_incubation: "Environ quatre semaines à 24-26 °C dans un substrat humide. La ponte peut rester dans le bac ou passer dans une boîte d'incubation avec le même substrat, à surveiller (ni dessèchement ni moisissure).",
+    repro_juveniles: "Les jeunes sont déjà gros à l'éclosion grâce à la taille des œufs, et mangent leur coquille d'œuf : ne pas la retirer, c'est leur premier calcium. Légumes tendres et calcium dès les premiers jours. Croissance plus lente que chez les Lissachatina, espérance de vie de trois à cinq ans, parfois plus. Le caractère albinos est en général récessif : un couple albinos donne des jeunes albinos, un croisement avec la forme normale peut le masquer.",
+    repro_pitfalls: "Substrat trop sec (œufs qui se dessèchent) ou détrempé (œufs qui moisissent), manque de calcium (coquille fine, apex abîmé). Ne jamais relâcher d'escargot ni jeter d'œufs vivants : congeler les pontes en surplus."
+  },
+  {
+    category: 'autre', common_name: 'Vinaigrier de Thaïlande', scientific_name: 'Thelyphonus sp. "Thaïlande"',
+    difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 27,
+    sociability: 'Solitaire, un individu par bac (cannibale)', diet_summary: 'Prédateur : grillons, blattes, vers',
+    vigilance: "Projette de l'acide acétique (odeur de vinaigre) — protéger les yeux ; pinces sans venin",
+    presentation: "Le « vinaigrier » est un arachnide sans venin de l'ordre des Thelyphonida : grosses pinces (pédipalpes), pattes avant très fines qui lui servent d'antennes, et longue queue fine (flagelle). Dérangé, il projette depuis la base de sa queue un liquide à l'odeur de vinaigre, d'où son nom. Corps de 3 à 4 cm environ sans le flagelle, plus petit que le vinaigrier géant américain (Mastigoproctus). Nocturne, il passe ses journées dans un terrier qu'il creuse lui-même. Souche thaïlandaise vendue sans identification à l'espèce (\"sp.\") : les généralités du genre servent de base, à affiner par l'observation.",
+    habitat: "Bac individuel (environ 30 × 20 cm au sol pour un adulte) rempli de 15 à 20 cm d'un substrat qui tient la forme d'un terrier (terreau, fibre de coco et un peu de tourbe ou d'argile). Il doit rester humide au toucher sans être détrempé : l'animal se dessèche vite. Une écorce de liège posée à plat donne un point de départ au terrier ; petite gamelle d'eau peu profonde et aération correcte malgré l'humidité.",
+    feeding_detail: "Proies vivantes de taille raisonnable : grillons, blattes (Blatta lateralis…), vers de farine. Un adulte mange tous les 7 à 10 jours, un jeune tous les 5 à 7 jours. Retirer les proies non mangées sous 24 heures : un grillon peut blesser un vinaigrier en mue. Il refuse de manger avant une mue et s'enferme dans son terrier : ne pas le déterrer.",
+    repro_sexing: "Les mâles adultes ont des pédipalpes plus longs et plus massifs et un abdomen plus fin ; les femelles sont plus trapues. La comparaison entre deux adultes reste le moyen le plus simple.",
+    repro_conditions: "Deux adultes bien nourris. Le mâle est présenté dans le bac de la femelle sous surveillance, puis retiré après l'accouplement pour éviter le cannibalisme. La femelle a besoin d'un substrat profond pour creuser sa chambre de ponte.",
+    repro_mating: "Parade où le mâle tient la femelle par les pattes avant et la guide, puis dépose un spermatophore qu'elle récupère. Quelques semaines plus tard, elle s'enferme dans son terrier et porte ses œufs dans un sac collé sous l'abdomen.",
+    repro_incubation: "La femelle reste enfermée sans manger pendant toute l'incubation, de plusieurs semaines à quelques mois : ne pas ouvrir le terrier. À l'éclosion, les petits montent sur son dos et y restent jusqu'à leur première mue, en vivant sur leurs réserves.",
+    repro_juveniles: "Après leur première mue sur le dos de leur mère, les petits descendent et la famille sort du terrier : les séparer dans de petites boîtes individuelles à substrat humide dans les semaines qui suivent, avant que le cannibalisme commence. Petites proies (micro-grillons, petites blattes). Croissance lente, autour d'une mue par an chez les vinaigriers : compter plusieurs années jusqu'à l'âge adulte.",
+    repro_pitfalls: "Déranger la femelle pendant l'incubation (elle peut abandonner ou manger sa ponte), substrat trop peu profond ou qui sèche (mues ratées), proies vivantes laissées dans le bac, plusieurs adultes ensemble."
   }
 ];
 
@@ -306,10 +441,18 @@ const insertSpecies = db.prepare(`
   )
 `);
 
+const { defaultCare } = require('./care-defaults');
+const { defaultTraits } = require('./trait-defaults');
+const setCare = db.prepare('UPDATE species SET feed_every_days = :feed_every_days, mist_every_days = :mist_every_days WHERE id = :id');
+const setTraits = db.prepare(`UPDATE species SET diet_type = :diet_type, size_class = :size_class,
+  niche = :niche, substrate_type = :substrate_type WHERE id = :id`);
+
 const speciesIds = {};
 for (const sp of species) {
   const info = insertSpecies.run(sp);
   speciesIds[sp.scientific_name] = info.lastInsertRowid;
+  setCare.run({ id: info.lastInsertRowid, ...defaultCare(sp) });
+  setTraits.run({ id: info.lastInsertRowid, ...defaultTraits(sp) });
 }
 
 const insertBac = db.prepare('INSERT INTO bacs (substrate) VALUES (?)');
@@ -327,7 +470,7 @@ const sampleBacs = [
     { species_id: speciesIds['Tonkinbolus caudulanus'], morph: null, lineage: null, population_estimate: '~24 individus', acquisition_date: '2025-04-10', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null }
   ]},
   { substrate: 'Terreau feuilles et écorce', entries: [
-    { species_id: speciesIds['Porcellio scaber'], morph: 'Lava', lineage: "F3 — issue du groupe fondateur A2", population_estimate: '~38 individus, dont 6 subadultes', acquisition_date: '2025-03-12', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
+    { species_id: speciesIds['Porcellio scaber "Lava"'], morph: null, lineage: "F3 — issue du groupe fondateur A2", population_estimate: '~38 individus, dont 6 subadultes', acquisition_date: '2025-03-12', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
   ]},
   { substrate: 'Fibre de coco et sphaigne', entries: [
     { species_id: speciesIds['Geosesarma riani'], morph: null, lineage: null, population_estimate: '9 individus', acquisition_date: '2025-02-01', status: 'actif', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
@@ -336,13 +479,13 @@ const sampleBacs = [
     { species_id: speciesIds['Pachnoda marginata'], morph: null, lineage: null, population_estimate: '17 larves', acquisition_date: '2025-01-20', status: 'reproduction', breeding_stage: 'incubation', for_sale_quantity: 0, unit_price: null }
   ]},
   { substrate: 'Terreau humide et aéré', entries: [
-    { species_id: speciesIds['Porcellio laevis'], morph: 'Dairy Cow', lineage: null, population_estimate: '~45 individus', acquisition_date: '2024-11-05', status: 'vente', breeding_stage: null, for_sale_quantity: 15, unit_price: 8 }
+    { species_id: speciesIds['Porcellio laevis "Dairy Cow"'], morph: null, lineage: null, population_estimate: '~45 individus', acquisition_date: '2024-11-05', status: 'vente', breeding_stage: null, for_sale_quantity: 15, unit_price: 8 }
   ]},
   { substrate: 'Terreau humide et aéré', entries: [
-    { species_id: speciesIds['Porcellio laevis'], morph: 'Orange Koi', lineage: null, population_estimate: '6 juvéniles', acquisition_date: '2025-08-28', status: 'actif', breeding_stage: null, for_sale_quantity: 6, unit_price: 10 }
+    { species_id: speciesIds['Porcellio laevis "Orange Koi"'], morph: null, lineage: null, population_estimate: '6 juvéniles', acquisition_date: '2025-08-28', status: 'actif', breeding_stage: null, for_sale_quantity: 6, unit_price: 10 }
   ]},
   { substrate: 'Terreau calcaire', entries: [
-    { species_id: speciesIds['Armadillidium vulgare'], morph: 'Albinos', lineage: null, population_estimate: '~20 individus', acquisition_date: '2025-05-15', status: 'vente', breeding_stage: null, for_sale_quantity: 4, unit_price: 12 }
+    { species_id: speciesIds['Armadillidium vulgare "Albinos"'], morph: null, lineage: null, population_estimate: '~20 individus', acquisition_date: '2025-05-15', status: 'vente', breeding_stage: null, for_sale_quantity: 4, unit_price: 12 }
   ]},
   { substrate: 'Fibre de coco', entries: [
     { species_id: speciesIds['Anadenobolus monilicornis'], morph: null, lineage: null, population_estimate: '~20 individus', acquisition_date: '2024-09-01', status: 'vente', breeding_stage: null, for_sale_quantity: 20, unit_price: 5 }
@@ -351,7 +494,7 @@ const sampleBacs = [
     { species_id: speciesIds['Platymeris biguttatus'], morph: null, lineage: null, population_estimate: '11 individus', acquisition_date: '2025-06-01', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null }
   ]},
   { substrate: 'Tourbe et terreau', entries: [
-    { species_id: speciesIds['Lissachatina fulica'], morph: 'Jade White', lineage: null, population_estimate: '14 individus', acquisition_date: '2025-03-01', status: 'reproduction', breeding_stage: 'ponte', for_sale_quantity: 8, unit_price: 15 }
+    { species_id: speciesIds['Lissachatina fulica "Jade White"'], morph: null, lineage: null, population_estimate: '14 individus', acquisition_date: '2025-03-01', status: 'reproduction', breeding_stage: 'ponte', for_sale_quantity: 8, unit_price: 15 }
   ]},
   { substrate: 'Terreau de feuilles et fibre de coco — bac mixte cloportes / iules', entries: [
     { species_id: speciesIds['Armadillidium vulgare'], morph: null, lineage: null, population_estimate: '~15 individus', acquisition_date: '2025-07-01', status: 'actif', breeding_stage: null, for_sale_quantity: 0, unit_price: null },
@@ -373,7 +516,7 @@ const insertLog = db.prepare(`
 `);
 
 const sampleLogs = [
-  { bac_species_id: bacSpeciesIds[1], type: 'mue', note: 'Mue groupée, 4 individus repérés', created_at: '2026-08-28 10:00:00' },
+  { bac_species_id: bacSpeciesIds[1], type: 'pulverisation', note: 'Pulvérisation du bac, substrat réhumidifié', created_at: '2026-08-28 10:00:00' },
   { bac_species_id: bacSpeciesIds[1], type: 'observation', note: 'Exuvie retrouvée côté humide', created_at: '2026-08-14 09:00:00' },
   { bac_species_id: bacSpeciesIds[1], type: 'ponte', note: 'Ponte confirmée, marsupium visible', created_at: '2026-08-02 09:00:00' },
   { bac_species_id: bacSpeciesIds[2], type: 'observation', note: "Femelle porteuse toujours en incubation, aucun signe de stress.", created_at: '2026-08-25 18:30:00' },

@@ -1,9 +1,217 @@
   </main>
 </div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(() => {}));
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((registration) => registration.update())
+        .catch(() => {});
+    });
   }
+
+  // Actions rapides des cartes : on enregistre sans recharger la page, pour ne
+  // pas perdre sa place dans la liste. Sans JavaScript, le formulaire reste un
+  // envoi classique (le serveur redirige comme avant).
+  (function () {
+    var toast = document.getElementById('toast');
+    var toastTimer;
+    function showToast(message) {
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.hidden = true; }, 1800);
+    }
+
+    var LEVELS = ['ras', 'verifier', 'retard', 'alerte'];
+
+    // Applies the statuses the server recomputed after an entry: every card
+    // of the same bac (feeding/misting count for the whole bac) and the
+    // "en retard ou en alerte" total.
+    function applyCare(data) {
+      (data.statuses || []).forEach(function (s) {
+        paint(document.querySelector('.specimen-card[data-fiche="' + s.fiche + '"]'), s);
+      });
+      // A mixed bac's card and a bac's page show the bac's own summary.
+      if (data.bacStatus) {
+        document.querySelectorAll('[data-bac="' + data.bacStatus.bac + '"]').forEach(function (el) { paint(el, data.bacStatus); });
+      }
+      var count = document.querySelector('[data-attention-count]');
+      if (count && typeof data.attention === 'number') count.textContent = data.attention;
+    }
+
+    function paint(card, s) {
+      if (!card) return;
+      LEVELS.forEach(function (l) { card.classList.remove('level-' + l); });
+      if (s.level) card.classList.add('level-' + s.level);
+      var pill = card.querySelector('[data-level-pill]');
+      if (pill) {
+        pill.className = 'level-pill' + (s.level ? ' level-pill--' + s.level : '');
+        pill.textContent = s.label || '';
+        pill.hidden = !s.level;
+      }
+      [['feed', s.feed], ['mist', s.mist]].forEach(function (pair) {
+        var item = card.querySelector('[data-care="' + pair[0] + '"]');
+        if (!item || !pair[1]) return;
+        item.className = 'care-item' + (pair[1].level ? ' care-item--' + pair[1].level : '');
+        item.querySelector('.care-item__text').textContent = pair[1].text;
+      });
+    }
+
+    document.addEventListener('submit', function (event) {
+      var form = event.target;
+      if (!form.matches || !form.matches('form[data-quicklog]')) return;
+      event.preventDefault();
+
+      var button = form.querySelector('button');
+      if (button.disabled) return;
+      button.disabled = true;
+
+      fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'fetch' } })
+        .then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response;
+        })
+        .then(function (response) {
+          // The entry is saved from here on: nothing below may fall back to
+          // re-submitting the form, which would log it a second time.
+          button.classList.add('done');
+          var card = form.closest('.specimen-card');
+          var last = card && card.querySelector('[data-last-obs]');
+          if (last) last.textContent = "obs. aujourd'hui";
+          showToast('Enregistré : ' + form.dataset.label);
+          setTimeout(function () { button.classList.remove('done'); button.disabled = false; }, 900);
+          if ((response.headers.get('content-type') || '').indexOf('application/json') !== -1) {
+            response.json().then(applyCare).catch(function () {});
+          }
+        }, function () {
+          // The entry could not be sent: fall back to a plain form submission.
+          button.disabled = false;
+          form.submit();
+        });
+    });
+  })();
+
+  // Menus d'espèces avec icônes : un <select> natif ne sait pas afficher
+  // d'images, alors chaque <select data-picker> reste en place (formulaire,
+  // scripts de la page) mais s'affiche comme un bouton qui ouvre la liste dans
+  // un panneau. Chaque option donne ses images dans data-pics, séparées par
+  // « | » : le chemin d'une icône, ou une catégorie pour le dessin par défaut.
+  (function () {
+    var CAT_ICONS = <%- JSON.stringify(icons.categoryIcons(28)).replace(/</g, '\\u003c') %>;
+    var sheet, list, title;
+
+    function picsHtml(pics) {
+      return String(pics || '').split('|').filter(Boolean).slice(0, 4).map(function (p) {
+        if (p.charAt(0) === '/') return '<img src="' + p.replace(/"/g, '&quot;') + '" alt="" class="species-icon-img" loading="lazy" decoding="async">';
+        return CAT_ICONS[p] || CAT_ICONS.autre;
+      }).join('');
+    }
+
+    function labelFor(select) {
+      var field = select.closest('.field');
+      var label = field && field.querySelector('label');
+      return select.getAttribute('aria-label') || (label && label.textContent.trim()) || 'Choisir';
+    }
+
+    function ensureSheet() {
+      if (sheet) return;
+      sheet = document.createElement('dialog');
+      sheet.className = 'picker-sheet';
+      sheet.innerHTML = '<div class="picker-sheet__head"><span class="picker-sheet__title"></span>'
+        + '<button type="button" class="picker-sheet__close" aria-label="Fermer">&times;</button></div>'
+        + '<div class="picker-sheet__list" role="listbox"></div>';
+      document.body.appendChild(sheet);
+      list = sheet.querySelector('.picker-sheet__list');
+      title = sheet.querySelector('.picker-sheet__title');
+      sheet.querySelector('.picker-sheet__close').addEventListener('click', function () { sheet.close(); });
+      // A tap on the dimmed backdrop closes it too.
+      sheet.addEventListener('click', function (event) { if (event.target === sheet) sheet.close(); });
+    }
+
+    function open(select) {
+      ensureSheet();
+      title.textContent = labelFor(select);
+      list.innerHTML = '';
+      var chosen = null;
+      function add(opt) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'picker-opt';
+        b.setAttribute('role', 'option');
+        b.setAttribute('aria-selected', opt.selected ? 'true' : 'false');
+        b.disabled = opt.disabled;
+        b.innerHTML = '<span class="picker-pics">' + picsHtml(opt.dataset.pics) + '</span><span class="picker-opt__label"></span>';
+        b.lastChild.textContent = opt.textContent.trim();
+        b.addEventListener('click', function () {
+          sheet.close();
+          if (select.value === opt.value) return;
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        if (opt.selected) chosen = b;
+        list.appendChild(b);
+      }
+      Array.prototype.forEach.call(select.children, function (node) {
+        if (node.tagName === 'OPTGROUP') {
+          var head = document.createElement('div');
+          head.className = 'picker-sheet__group';
+          head.textContent = node.label;
+          list.appendChild(head);
+          Array.prototype.forEach.call(node.children, add);
+        } else if (node.tagName === 'OPTION') {
+          add(node);
+        }
+      });
+      sheet.showModal();
+      if (chosen) {
+        chosen.scrollIntoView({ block: 'center' });
+        chosen.focus({ preventScroll: true });
+      }
+    }
+
+    function enhance(select) {
+      if (select.dataset.pickerReady) return;
+      select.dataset.pickerReady = '1';
+      var wrap = document.createElement('span');
+      wrap.className = 'picker';
+      select.parentNode.insertBefore(wrap, select);
+      wrap.appendChild(select);
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'picker-btn';
+      button.setAttribute('aria-haspopup', 'dialog');
+      wrap.appendChild(button);
+      select.classList.add('picker-native');
+      select.tabIndex = -1;
+      select.setAttribute('aria-hidden', 'true');
+
+      function sync() {
+        var opt = select.options[select.selectedIndex];
+        var text = opt ? opt.textContent.trim() : '';
+        button.innerHTML = '<span class="picker-pics">' + picsHtml(opt && opt.dataset.pics) + '</span><span class="picker-btn__label"></span>';
+        button.lastChild.textContent = text;
+        button.setAttribute('aria-label', labelFor(select) + ' : ' + text);
+      }
+      select._pickerSync = sync;
+      select.addEventListener('change', sync);
+      button.addEventListener('click', function () { open(select); });
+      sync();
+    }
+
+    window.isoPicker = {
+      enhance: function (root) {
+        root = root || document;
+        if (root.matches && root.matches('select[data-picker]')) enhance(root);
+        root.querySelectorAll('select[data-picker]').forEach(enhance);
+      }
+    };
+    window.isoPicker.enhance();
+    // Values the browser restores on "back" arrive without a change event.
+    window.addEventListener('pageshow', function () {
+      document.querySelectorAll('select[data-picker-ready]').forEach(function (s) { s._pickerSync(); });
+    });
+  })();
 </script>
 </body>
 </html>

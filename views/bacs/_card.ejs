@@ -1,0 +1,45 @@
+<div class="specimen-card<%= bac.care.level ? ' level-' + bac.care.level : '' %>" data-fiche="<%= bac.id %>">
+  <div class="card-top">
+    <a class="icon" href="/bacs/<%= bac.bac_id %>"><%- icons.species(bac, 64) %></a>
+    <div class="card-meta">
+      <div class="tag"><%= fmt.numTag(bac.bac_id) %></div>
+      <a class="card-gear" href="/bacs/<%= bac.bac_id %>#reglages" title="Paramètres du bac" aria-label="Paramètres du bac <%= fmt.numTag(bac.bac_id) %>"><%- icons.gear(20) %></a>
+    </div>
+  </div>
+  <a href="/bacs/<%= bac.bac_id %>" class="card-name-link">
+    <div class="name"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
+    <% if (bac.bac_name) { %><div class="bac-label"><%= bac.bac_name %></div><% } %>
+  </a>
+  <div class="card-stamps">
+    <span class="level-pill<%= bac.care.level ? ' level-pill--' + bac.care.level : '' %>" data-level-pill<%= bac.care.level ? '' : ' hidden' %>><%= bac.care.label || '' %></span>
+    <div class="stamp <%= fmt.STATUS_CLASSES[bac.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[bac.status] || bac.status %></div>
+    <% if (bac.vigilance && bac.vigilance !== 'Aucune') { %>
+      <div class="stamp stamp--red">Vigilance</div>
+    <% } %>
+  </div>
+
+  <div class="care-row">
+    <% [['feed', 'nourrissage'], ['mist', 'pulverisation']].forEach(function(c) { var item = bac.care[c[0]]; %>
+      <div class="care-item<%= item.level ? ' care-item--' + item.level : '' %>" data-care="<%= c[0] %>">
+        <%- icons.action(c[1]) %>
+        <span class="care-item__text"><%= item.text %></span>
+      </div>
+    <% }); %>
+  </div>
+
+  <div class="quick-actions">
+    <% [['nourrissage','Nourri'], ['nettoyage','Nettoyé'], ['pulverisation','Pulvérisé'], ['observation','RAS']].forEach(function(a) { %>
+      <form method="POST" action="/fiches/<%= bac.id %>/log/quick?type=<%= a[0] %>" data-quicklog data-label="<%= fmt.LOG_TYPE_LABELS[a[0]] %>">
+        <button type="submit" class="btn-quiet" title="<%= fmt.LOG_TYPE_LABELS[a[0]] %>">
+          <%- icons.action(a[0]) %>
+          <span class="qa-label"><%= a[1] %></span>
+        </button>
+      </form>
+    <% }); %>
+  </div>
+
+  <div class="foot">
+    <span><%= bac.population_estimate || '—' %></span>
+    <span data-last-obs>obs. <%= fmt.relative(bac.last_log_at) %></span>
+  </div>
+</div>

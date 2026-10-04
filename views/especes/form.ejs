@@ -9,9 +9,9 @@
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
-<form method="POST" action="<%= isNew ? '/especes' : '/especes/' + sp.id %>" style="max-width:680px;">
+<form method="POST" action="<%= isNew ? '/especes' : '/especes/' + sp.id %>" enctype="multipart/form-data" style="max-width:680px;">
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 20px;">
+  <div class="form-grid-2">
     <div class="field">
       <label>Nom commun</label>
       <input type="text" name="common_name" value="<%= sp.common_name || '' %>" required>
@@ -23,6 +23,17 @@
   </div>
 
   <div class="field">
+    <label>Icône personnalisée <span style="font-weight:normal;">(sinon icône générique par catégorie)</span></label>
+    <% if (sp.icon_path) { %>
+      <div class="icon-current">
+        <img src="<%= sp.icon_path %>" alt="" class="icon-current__img">
+        <label class="icon-current__remove"><input type="checkbox" name="remove_icon" value="1"> Retirer cette icône</label>
+      </div>
+    <% } %>
+    <input type="file" name="icon" accept="image/*">
+  </div>
+
+  <div class="field">
     <label>Catégorie</label>
     <select name="category">
       <% ['iule','cloporte','cetoine','autre'].forEach(function(c) { %>
@@ -31,7 +42,7 @@
     </select>
   </div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 20px;">
+  <div class="form-grid-3">
     <div class="field">
       <label>Difficulté (1-5)</label>
       <input type="number" name="difficulty" min="1" max="5" value="<%= sp.difficulty || 3 %>">
@@ -52,9 +63,37 @@
     </div>
   </div>
 
+  <div class="form-grid-2">
+    <div class="field">
+      <label>Nourrir tous les … jours</label>
+      <input type="number" name="feed_every_days" min="1" max="90" value="<%= isNew ? 7 : (sp.feed_every_days || '') %>">
+    </div>
+    <div class="field">
+      <label>Pulvériser tous les … jours</label>
+      <input type="number" name="mist_every_days" min="1" max="90" value="<%= isNew ? 3 : (sp.mist_every_days || '') %>">
+    </div>
+  </div>
+  <p class="field-hint">Sert aux alertes de la page Bacs (RAS → à vérifier → en retard → alerte). Laisse vide pour ne pas être alerté sur ce soin.</p>
+
   <div class="field"><label>Sociabilité</label><input type="text" name="sociability" value="<%= sp.sociability || '' %>"></div>
   <div class="field"><label>Alimentation (résumé)</label><input type="text" name="diet_summary" value="<%= sp.diet_summary || '' %>"></div>
   <div class="field"><label>Vigilance</label><input type="text" name="vigilance" value="<%= sp.vigilance || '' %>" placeholder="Aucune, si rien de particulier"></div>
+
+  <div class="section-title"><h2>Cohabitation</h2><div class="rule"></div></div>
+  <p class="field-hint">Utilisé par le comparateur pour savoir avec qui l'espèce peut partager un bac. Laissé sur « — choisir — », c'est la valeur habituelle de sa catégorie qui s'applique.</p>
+  <div class="form-grid-2">
+    <% [['diet_type', 'Régime'], ['size_class', 'Taille adulte'], ['niche', 'Occupe le bac'], ['substrate_type', 'Installation']].forEach(function (t) { %>
+      <div class="field">
+        <label><%= t[1] %></label>
+        <select name="<%= t[0] %>">
+          <option value="">— choisir —</option>
+          <% traitOptions[t[0]].forEach(function (o) { %>
+            <option value="<%= o[0] %>" <%= sp[t[0]] === o[0] ? 'selected' : '' %>><%= o[1] %></option>
+          <% }); %>
+        </select>
+      </div>
+    <% }); %>
+  </div>
 
   <div class="field"><label>Présentation</label><textarea name="presentation"><%= sp.presentation || '' %></textarea></div>
   <div class="field"><label>Habitat</label><textarea name="habitat"><%= sp.habitat || '' %></textarea></div>

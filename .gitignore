@@ -6,5 +6,9 @@ design-mockups/*.html
 node_modules/
 data/*.db
 data/*.db-*
+data/icon-originals/
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Local tooling
+.claude/

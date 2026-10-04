@@ -1,3 +1,5 @@
+const { thumbPath } = require('../../lib/icon-image');
+
 function svg(inner, { size = 21, stroke = 2, viewBox = '0 0 24 24' } = {}) {
   return `<svg viewBox="${viewBox}" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 }
@@ -6,6 +8,7 @@ const NAV_ICONS = {
   bacs: svg('<rect x="5" y="8" width="14" height="13" rx="1.5"/><path d="M8 8V6a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M5 13h14"/>', { stroke: 1.6 }),
   fiches: svg('<path d="M4 6h9l7 7-9 9-7-7z"/><circle cx="8" cy="10" r="1.3"/>', { stroke: 1.6 }),
   especes: svg('<path d="M12 6c-2-1.5-5-2-9-1v13c4-1 7-0.5 9 1c2-1.5 5-2 9-1V5c-4-1-7-0.5-9 1z"/><path d="M12 6v13"/>', { stroke: 1.6 }),
+  tournee: svg('<circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.6l5.2 3.4-5.2 3.4z"/>', { stroke: 1.6 }),
   journal: svg('<path d="M19 4c-5 0-11 4-13 11l-1 5 5-1C17 17 21 11 21 6"/><path d="M9 15l-3 3"/>', { stroke: 1.6 }),
   pontes: svg('<ellipse cx="12" cy="13" rx="5" ry="7"/><path d="M4 18c2-2 5-2 8-2s6 0 8 2"/>', { stroke: 1.6 }),
   vente: svg('<path d="M12 3v18M6 21h12"/><path d="M4 7h6M14 7h6"/><path d="M4 7l-2 5a3 3 0 0 0 6 0zM20 7l-2 5a3 3 0 0 0 6 0z"/>', { stroke: 1.6 })
@@ -21,7 +24,7 @@ const SPECIES_ICONS = {
 const ACTION_ICONS = {
   nourrissage: svg('<path d="M5 19c8 0 14-6 14-14-8 0-14 6-14 14z"/><path d="M5 19c3-6 6-9 11-11"/>', { size: 22, stroke: 1.7 }),
   nettoyage: svg('<path d="M4 20l4-4M4 20h4v-4M20 4l-4 4M20 4h-4v4"/><path d="M9 15l6-6"/>', { size: 22, stroke: 1.7 }),
-  mue: svg('<ellipse cx="12" cy="12" rx="9" ry="6"/><path d="M6 12c1.5 2 3.5 2 6 0s4.5-2 6 0"/>', { size: 22, stroke: 1.7 }),
+  pulverisation: svg('<path d="M9 4c2 3 2.6 4.4 2.6 5.8a2.6 2.6 0 1 1-5.2 0C6.4 8.4 7 7 9 4z"/><path d="M16 9c1.6 2.3 2 3.3 2 4.3a2 2 0 1 1-4 0c0-1 .4-2 2-4.3z"/><path d="M4 20c6-1.3 10-1.3 16 0"/>', { size: 22, stroke: 1.7 }),
   ponte: svg('<ellipse cx="12" cy="13" rx="5" ry="7"/><path d="M4 18c2-2 5-2 8-2s6 0 8 2"/>', { size: 22, stroke: 1.7 }),
   observation: svg('<path d="M5 13l4 4L19 7"/>', { size: 22, stroke: 1.7 }),
   vente: svg('<path d="M12 3v18M6 21h12"/><path d="M4 7h6M14 7h6"/><path d="M4 7l-2 5a3 3 0 0 0 6 0zM20 7l-2 5a3 3 0 0 0 6 0z"/>', { size: 22, stroke: 1.7 })
@@ -31,9 +34,36 @@ function nav(name) {
   return NAV_ICONS[name] || '';
 }
 
-function species(category, size = 30) {
+// Accepts either a species-like object ({ category, icon_path }) or a bare
+// category string (older call sites) — a custom watercolor icon wins when
+// the species has one, otherwise falls back to the generic hand-drawn SVG.
+// Small sizes use the light "-sm" version of the icon and load lazily (they
+// come in long lists); large sizes are a page's main illustration and load
+// right away. Width/height are plain attributes (not inline styles) so a
+// context's CSS can resize it, e.g. the large illustration plates.
+function species(sp, size = 30) {
+  const category = typeof sp === 'string' ? sp : sp && sp.category;
+  const iconPath = typeof sp === 'object' && sp ? sp.icon_path : null;
+  if (iconPath) {
+    const small = size <= 128;
+    const src = small ? thumbPath(iconPath) : iconPath;
+    const loading = small ? ' loading="lazy"' : '';
+    return `<img src="${src}" alt="" class="species-icon-img" width="${size}" height="${size}"${loading} decoding="async">`;
+  }
   const inner = SPECIES_ICONS[category] || SPECIES_ICONS.autre;
   return svg(inner, { size, stroke: 2, viewBox: '0 0 48 48' });
+}
+
+// For the icon pickers that stand in for species dropdowns: what an option
+// shows, as its custom icon's small file or else its category name, whose
+// hand-drawn SVG `categoryIcons()` provides once per page.
+function pic(sp) {
+  if (!sp) return '';
+  return sp.icon_path ? thumbPath(sp.icon_path) : sp.category || 'autre';
+}
+
+function categoryIcons(size = 28) {
+  return Object.fromEntries(Object.entries(SPECIES_ICONS).map(([cat, inner]) => [cat, svg(inner, { size, stroke: 2, viewBox: '0 0 48 48' })]));
 }
 
 function action(type) {
@@ -80,4 +110,8 @@ function humidityDroplets(min, max) {
   return `<div class="rating-icons">${out}</div>`;
 }
 
-module.exports = { nav, species, action, diamond, droplet, thermometer, group, leaf, warning, ratingDiamonds, humidityDroplets };
+function gear(size = 20) {
+  return svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', { size, stroke: 1.6 });
+}
+
+module.exports = { nav, species, pic, categoryIcons, action, diamond, droplet, thermometer, group, leaf, warning, ratingDiamonds, humidityDroplets, gear };

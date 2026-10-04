@@ -1,16 +1,21 @@
 <%- include('../partials/header', { title, active }) %>
 
-<div class="masthead">
+<div class="masthead masthead--home">
   <div>
-    <div class="wordmark" style="font-size:34px; color:var(--ink);">ISOTERRA</div>
-    <div class="subtitle">Carnet d'élevage et registre professionnel</div>
+    <div class="wordmark brand">ISOTERRA</div>
+    <div class="subtitle tagline">Carnet d'élevage et registre professionnel</div>
   </div>
-  <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
+  <div class="stamp stamp--muted date-stamp"><%= fmt.dateFr(new Date().toISOString()) %></div>
 </div>
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
-<div style="display:flex; gap:18px; margin-bottom:38px; flex-wrap:wrap;">
+<% if (typeof notice !== 'undefined' && notice) { %>
+  <div class="notice" role="status"><%= notice %></div>
+  <script>history.replaceState(null, '', location.pathname);</script>
+<% } %>
+
+<div class="stat-row">
   <div class="label-tag" style="transform:rotate(-1deg);">
     <div class="pin"></div>
     <div class="num" style="color:var(--rust);"><%= stats.total %></div>
@@ -18,8 +23,8 @@
   </div>
   <div class="label-tag" style="transform:rotate(0.8deg);">
     <div class="pin"></div>
-    <div class="num" style="color:var(--moss);"><%= stats.muesThisWeek %></div>
-    <div class="lbl">mues cette semaine</div>
+    <div class="num" style="color:var(--moss);"><%= stats.pulverisationsThisWeek %></div>
+    <div class="lbl">pulvérisations cette semaine</div>
   </div>
   <div class="label-tag" style="transform:rotate(-0.5deg);">
     <div class="pin"></div>
@@ -28,20 +33,18 @@
   </div>
   <div class="label-tag" style="transform:rotate(1.1deg);">
     <div class="pin"></div>
-    <div class="num" style="color:var(--stampred);"><%= stats.aSurveiller %></div>
-    <div class="lbl">à surveiller</div>
+    <div class="num" style="color:var(--stampred);" data-attention-count><%= stats.attention %></div>
+    <div class="lbl">en retard ou en alerte</div>
   </div>
 </div>
 
 <% if (bacs.length > 0) { %>
-<div style="display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--ink); background:var(--paper-alt); padding:16px 22px; margin-bottom:34px;">
-  <div>
-    <div class="wordmark" style="font-size:16px; color:var(--ink);">La tournée du jour</div>
-    <div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-top:2px;"><%= bacs.length %> bac<%= bacs.length > 1 ? 's' : '' %> à parcourir — un tap par bac</div>
+<div class="tour-cta">
+  <div class="tour-cta__text">
+    <div class="wordmark tour-cta__title">La tournée du jour</div>
+    <div class="tour-cta__sub"><%= groups.length %> bac<%= groups.length > 1 ? 's' : '' %> à parcourir — un tap par bac</div>
   </div>
-  <a href="/tournee" style="display:inline-flex; align-items:center; justify-content:center; padding:12px 26px; border:2px solid var(--rust); border-radius:6px; box-shadow:0 0 0 3px var(--paper-alt), 0 0 0 4.5px var(--rust); transform:rotate(-1.5deg); font-family:'IM Fell English SC',serif; letter-spacing:0.06em; color:var(--rust); font-size:14px; white-space:nowrap; text-decoration:none;">
-    Commencer la tournée
-  </a>
+  <a href="/tournee" class="tour-cta__btn">Commencer la tournée</a>
 </div>
 <% } %>
 
@@ -49,48 +52,20 @@
   <h2>Registre des bacs</h2>
   <div class="rule"></div>
   <a href="/fiches/new" class="btn-quiet">+ nouveau bac</a>
-  <div class="count"><%= bacs.length %> fiches</div>
+  <div class="count"><%= groups.length %> bac<%= groups.length > 1 ? 's' : '' %><%= bacs.length !== groups.length ? ' · ' + bacs.length + ' fiches' : '' %></div>
 </div>
 
 <% if (bacs.length === 0) { %>
   <p style="font-style:italic; color:var(--ink-muted);">Aucun bac pour l'instant. <a href="/fiches/new">Ajoute le premier</a>.</p>
 <% } %>
 
-<div class="grid-3">
-  <% bacs.forEach(function(bac) { %>
-    <div class="specimen-card">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-        <a class="icon" href="/fiches/<%= bac.id %>"><%- icons.species(bac.category) %></a>
-        <div class="tag"><%= fmt.numTag(bac.bac_id) %></div>
-      </div>
-      <a href="/fiches/<%= bac.id %>" style="color:inherit;">
-        <div class="name" style="font-style:italic;"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></div>
-      </a>
-      <% if (bac.cohabitants.length) { %>
-        <div style="font-size:11px; font-style:italic; color:var(--ink-faint);">cohabite avec <%= bac.cohabitants.join(', ') %></div>
-      <% } %>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <div class="stamp <%= fmt.STATUS_CLASSES[bac.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[bac.status] || bac.status %></div>
-        <% if (bac.vigilance && bac.vigilance !== 'Aucune') { %>
-          <div class="stamp stamp--red">Vigilance</div>
-        <% } %>
-      </div>
-
-      <div style="display:flex; gap:6px;">
-        <% ['nourrissage','nettoyage','mue','observation'].forEach(function(t) { %>
-          <form method="POST" action="/fiches/<%= bac.id %>/log/quick?type=<%= t %>" style="flex:1;">
-            <button type="submit" class="btn-quiet" style="width:100%; justify-content:center; border:1px solid var(--line); padding:8px 4px;" title="<%= fmt.LOG_TYPE_LABELS[t] %>">
-              <%- icons.action(t) %>
-            </button>
-          </form>
-        <% }); %>
-      </div>
-
-      <div class="foot">
-        <span><%= bac.population_estimate || '—' %></span>
-        <span>obs. <%= fmt.relative(bac.last_log_at) %></span>
-      </div>
-    </div>
+<div class="grid-3 bac-grid">
+  <% groups.forEach(function (g) { %>
+    <% if (g.compat) { %>
+      <%- include('_bac-card', { g: g }) %>
+    <% } else { %>
+      <%- include('_card', { bac: g.fiches[0] }) %>
+    <% } %>
   <% }); %>
 </div>
 

@@ -16,10 +16,10 @@
 
 <div class="ledger">
   <% logs.forEach(function(log) { %>
-    <div class="row" style="grid-template-columns:150px 1fr 160px 100px;">
+    <div class="row ledger--wide">
       <div class="date"><%= fmt.dateShort(log.created_at) %></div>
       <div>
-        <a href="/fiches/<%= log.bac_species_id %>" style="color:var(--ink); font-style:italic;"><%= log.scientific_name %><%= log.morph ? " '" + log.morph + "'" : '' %></a>
+        <% log.species.forEach(function (s, k) { %><a href="/fiches/<%= s.bac_species_id %>" style="color:var(--ink); font-style:italic;"><%= s.scientific_name %><%= s.morph ? " '" + s.morph + "'" : '' %></a><%= k < log.species.length - 1 ? ', ' : '' %><% }); %>
         <span style="font-family:'Special Elite',monospace; font-size:10px; color:var(--ink-faint);"><%= fmt.numTag(log.bac_id) %></span>
         <% if (log.note) { %><div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-top:2px;"><%= log.note %></div><% } %>
       </div>

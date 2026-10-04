@@ -1,0 +1,337 @@
+<%- include('../partials/header', { title, active }) %>
+
+<%
+  var occupantIds = occupants.map(function (o) { return o.id; });
+  var speciesById = {};
+  speciesList.forEach(function (sp) { speciesById[sp.id] = sp; });
+  var bacPics = function (b) {
+    return String(b.species_ids || '').split(',').map(function (id) { return speciesById[id]; }).filter(Boolean).map(icons.pic).join('|');
+  };
+  var scoreColor = function (n) { return n >= 70 ? 'var(--moss)' : n >= 50 ? 'var(--rust)' : 'var(--stampred)'; };
+  var speciesOptions = function (selectedId) {
+    var out = '<option value="">— choisir une espèce —</option>';
+    var cat = null;
+    speciesList.forEach(function (sp) {
+      if (sp.category !== cat) {
+        if (cat !== null) out += '</optgroup>';
+        out += '<optgroup label="' + fmt.escape(fmt.CATEGORY_LABELS[sp.category] || sp.category) + '">';
+        cat = sp.category;
+      }
+      var inBac = occupantIds.indexOf(sp.id) !== -1;
+      out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '"' + (selectedId === sp.id ? ' selected' : '') + (inBac ? ' disabled' : '') + '>'
+        + fmt.escape(sp.scientific_name) + (inBac ? ' (déjà dans le bac)' : '') + '</option>';
+    });
+    return out + (cat !== null ? '</optgroup>' : '');
+  };
+  var entry = function (selectedId) {
+    return '<div class="species-entry" data-entry>'
+      + '<div class="species-entry__head">'
+      + '<span class="species-entry__num" data-entry-num></span>'
+      + '<select name="species_id" aria-label="Espèce" data-entry-species data-picker>' + speciesOptions(selectedId) + '</select>'
+      + '<button type="button" class="species-entry__remove" data-entry-remove>Retirer</button>'
+      + '</div>'
+      + '<details class="species-entry__more">'
+      + '<summary>Morph, lignée, population <span>(optionnel)</span></summary>'
+      + '<div class="form-grid-3">'
+      + '<div class="field"><label>Morph</label><input type="text" name="morph" placeholder="ex. Dairy Cow"></div>'
+      + '<div class="field"><label>Lignée</label><input type="text" name="lineage" placeholder="ex. F3 — groupe A2"></div>'
+      + '<div class="field"><label>Population</label><input type="text" name="population_estimate" placeholder="ex. ~38 individus"></div>'
+      + '</div>'
+      + '</details>'
+      + '</div>';
+  };
+%>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">REGISTRE DES BACS<%= bac ? ' > ' + fmt.numTag(bac.id).toUpperCase() + (bac.name ? ' — ' + bac.name.toUpperCase() : '') : '' %></div>
+    <h1><%= bac ? 'Ajouter des espèces' : 'Nouveau bac' %></h1>
+    <div class="subtitle"><%= bac ? 'Dans le bac ' + fmt.numTag(bac.id) + (bac.name ? ' « ' + bac.name + ' »' : '') : "Une seule espèce, ou plusieurs pour un bac multi-espèce" %></div>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<form method="POST" action="/fiches" class="new-bac-form" data-new-bac data-occupants="<%= occupantIds.join(',') %>" data-mode="<%= bac ? 'ajout' : 'nouveau' %>">
+
+  <div class="section-title"><h2>Le bac</h2><div class="rule"></div></div>
+
+  <% if (bacList.length) { %>
+    <div class="field">
+      <label>Où vont les animaux ?</label>
+      <select name="bac_id" data-bac-choice data-picker>
+        <option value="">Dans un nouveau bac</option>
+        <% bacList.forEach(function (b) { %>
+          <option value="<%= b.id %>" data-pics="<%= bacPics(b) %>" <%= bac && bac.id === b.id ? 'selected' : '' %>>Bac <%= fmt.numTag(b.id) %><%= b.name ? ' « ' + b.name + ' »' : '' %> — <%= b.residents || 'vide' %></option>
+        <% }); %>
+      </select>
+    </div>
+  <% } %>
+
+  <% if (bac) { %>
+    <div class="occupants">
+      <div class="occupants__title">Déjà dans ce bac<%= bac.substrate ? ' · substrat : ' + bac.substrate : '' %></div>
+      <% if (occupants.length) { %>
+        <ul class="occupants__list">
+          <% occupants.forEach(function (o) { %>
+            <li><%- icons.species(o, 40) %><span><%= o.scientific_name %></span></li>
+          <% }); %>
+        </ul>
+      <% } else { %>
+        <p class="occupants__empty">Personne pour l'instant.</p>
+      <% } %>
+    </div>
+
+    <% if (compatRanked) { %>
+      <div class="suggest">
+        <div class="suggest__title">Iraient bien avec eux</div>
+        <% if (compatRanked.length) { %>
+          <div class="suggest__list">
+            <% compatRanked.forEach(function (r) { %>
+              <button type="button" class="suggest-row" data-suggest="<%= r.species.id %>">
+                <span class="suggest-row__icon"><%- icons.species(r.species, 40) %></span>
+                <span class="suggest-row__name"><%= r.species.scientific_name %></span>
+                <span class="suggest-row__score" style="color:<%= scoreColor(r.group.score) %>;"><%= r.group.score %> %</span>
+                <span class="suggest-row__add" aria-hidden="true">+</span>
+              </button>
+            <% }); %>
+          </div>
+          <p class="suggest__hint">Touche une espèce pour l'ajouter à la liste ci-dessous. Score du bac une fois l'espèce ajoutée.</p>
+        <% } else { %>
+          <p class="suggest__hint">Aucune espèce du guide ne s'entend vraiment bien avec ce bac.</p>
+        <% } %>
+      </div>
+    <% } %>
+  <% } else { %>
+    <div class="form-grid-2">
+      <div class="field">
+        <label>Nom du bac (optionnel)</label>
+        <input type="text" name="bac_name" placeholder="ex. Rack A · étagère 2" maxlength="60">
+      </div>
+      <div class="field">
+        <label>Substrat</label>
+        <input type="text" name="substrate" placeholder="ex. Terreau feuilles et écorce">
+      </div>
+    </div>
+  <% } %>
+
+  <div class="section-title"><h2><%= bac ? 'Espèces à ajouter' : 'Les espèces' %></h2><div class="rule"></div></div>
+
+  <div class="species-entries" data-entries>
+    <% prefill.forEach(function (id) { %><%- entry(id) %><% }); %>
+  </div>
+  <template id="entry-template"><%- entry(null) %></template>
+
+  <button type="button" class="add-species" data-add-entry>+ Ajouter une autre espèce</button>
+
+  <div class="compat-live" data-compat aria-live="polite"></div>
+
+  <div class="section-title"><h2>Arrivée</h2><div class="rule"></div></div>
+  <p class="field-hint">Commun à toutes les espèces ajoutées, modifiable ensuite fiche par fiche.</p>
+  <div class="form-grid-2">
+    <div class="field">
+      <label>Date d'acquisition</label>
+      <input type="date" name="acquisition_date">
+    </div>
+    <div class="field">
+      <label>Statut</label>
+      <select name="status">
+        <option value="actif">Actif</option>
+        <option value="reproduction">Reproduction</option>
+        <option value="vente">En vente</option>
+      </select>
+    </div>
+  </div>
+
+  <button type="submit" class="btn" data-submit><%= bac ? 'Ajouter au bac' : 'Créer le bac' %></button>
+</form>
+
+<p class="draft-note">Pas d'idée de mélange ? <a href="/especes/compatibilite?mode=groupes">Trouver les meilleurs groupes automatiquement</a>.</p>
+
+<script>
+(function () {
+  var form = document.querySelector('[data-new-bac]');
+  var list = form.querySelector('[data-entries]');
+  var template = document.getElementById('entry-template');
+  var panel = form.querySelector('[data-compat]');
+  var submit = form.querySelector('[data-submit]');
+  var bacChoice = form.querySelector('[data-bac-choice]');
+  var adding = form.dataset.mode === 'ajout';
+  var occupants = form.dataset.occupants ? form.dataset.occupants.split(',') : [];
+  var names = {};
+  template.content.querySelectorAll('option[value]').forEach(function (o) { if (o.value) names[o.value] = o.textContent; });
+
+  var request = 0;
+  var timer = null;
+  var lastScore = null;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function entries() { return Array.prototype.slice.call(list.querySelectorAll('[data-entry]')); }
+  function chosen() {
+    return entries().map(function (e) { return e.querySelector('select').value; }).filter(Boolean);
+  }
+  function range(r, unit, none) {
+    if (r === false) return 'aucune';
+    if (!r) return none;
+    return (r[0] === r[1] ? r[0] : r[0] + '–' + r[1]) + unit;
+  }
+  function color(n) { return n >= 70 ? 'var(--moss)' : n >= 50 ? 'var(--rust)' : 'var(--stampred)'; }
+
+  function addEntry(speciesId) {
+    var node = template.content.firstElementChild.cloneNode(true);
+    list.appendChild(node);
+    if (speciesId) node.querySelector('select').value = speciesId;
+    if (window.isoPicker) window.isoPicker.enhance(node);
+    return node;
+  }
+
+  function showHint(html, isError) {
+    lastScore = null;
+    panel.className = 'compat-live compat-live--hint' + (isError ? ' compat-live--error' : '');
+    panel.innerHTML = html;
+  }
+
+  function showGroup(g, ids) {
+    lastScore = g.score;
+    var pairLink = ids.length === 2
+      ? '/especes/compatibilite?mode=paire&a=' + ids[0] + '&b=' + ids[1]
+      : (g.weakest ? '/especes/compatibilite?mode=paire&a=' + g.weakest.aId + '&b=' + g.weakest.bId : null);
+    var html = '<div class="compat-live__head">'
+      + '<div><div class="compat-live__title">' + (ids.length === 2 ? 'Compatibilité des deux espèces' : 'Compatibilité des ' + ids.length + ' espèces') + '</div>'
+      + '<span class="stamp ' + esc(g.verdictClass) + '">' + esc(g.verdict) + '</span></div>'
+      + '<div class="compat-live__score" style="color:' + color(g.score) + ';">' + g.score + ' %</div>'
+      + '</div>'
+      + '<div class="compat-live__cond">Température commune : <strong>' + range(g.common.temp, ' °C', 'non renseignée') + '</strong>'
+      + ' · Hygrométrie : <strong>' + range(g.common.humidity, ' %', 'non renseignée') + '</strong></div>';
+    if (g.weakest) {
+      html += '<div class="compat-live__weak">Paire la plus fragile : <em>' + esc(g.weakest.a) + '</em> × <em>' + esc(g.weakest.b) + '</em> (' + g.weakest.total + ' %)</div>';
+    }
+    if (g.notes.length) {
+      html += '<ul class="reason-list reason-list--warn">' + g.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+    } else if (g.strengths.length) {
+      html += '<ul class="reason-list reason-list--good">' + g.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
+    }
+    if (pairLink) html += '<a class="compat-live__more" href="' + pairLink + '">' + (ids.length === 2 ? 'Voir le détail' : 'Détail de la paire la plus fragile') + '</a>';
+    panel.className = 'compat-live';
+    panel.innerHTML = html;
+  }
+
+  function refresh() {
+    var all = entries();
+    var picked = chosen();
+
+    all.forEach(function (e, i) {
+      e.querySelector('[data-entry-num]').textContent = i + 1;
+      e.querySelector('[data-entry-remove]').hidden = all.length === 1;
+    });
+
+    // The same species twice: mark both rows, nothing can be saved.
+    var counts = {};
+    picked.forEach(function (id) { counts[id] = (counts[id] || 0) + 1; });
+    var duplicate = false;
+    all.forEach(function (e) {
+      var dup = counts[e.querySelector('select').value] > 1;
+      e.classList.toggle('species-entry--dup', dup);
+      if (dup) duplicate = true;
+    });
+
+    document.querySelectorAll('[data-suggest]').forEach(function (b) {
+      b.classList.toggle('is-picked', picked.indexOf(b.dataset.suggest) !== -1);
+    });
+
+    submit.disabled = duplicate || picked.length === 0;
+    var n = picked.length;
+    submit.textContent = adding
+      ? (n > 1 ? 'Ajouter ' + n + ' espèces au bac' : 'Ajouter au bac')
+      : (n > 1 ? 'Créer le bac avec ' + n + ' espèces' : 'Créer le bac');
+
+    clearTimeout(timer);
+    request++;
+    var ids = occupants.concat(picked);
+    if (duplicate) return showHint('La même espèce est choisie deux fois : change ou retire une des lignes en rouge.', true);
+    if (picked.length === 0) {
+      return showHint(adding
+        ? 'Choisis l\'espèce à ajouter : sa compatibilité avec le bac s\'affiche ici.'
+        : 'Choisis une espèce. Dès qu\'il y en a deux, leur compatibilité s\'affiche ici.');
+    }
+    if (ids.length === 1) {
+      return showHint('Ajoute une deuxième espèce pour voir si elles peuvent cohabiter.'
+        + '<span class="compat-live__links">'
+        + '<a href="/especes/compatibilite?a=' + ids[0] + '">Avec qui ' + esc(names[ids[0]] || 'elle') + ' cohabite le mieux</a>'
+        + '<a href="/especes/compatibilite?mode=groupes&inclure=' + ids[0] + '">Meilleurs groupes avec elle</a>'
+        + '</span>');
+    }
+
+    var mine = request;
+    panel.classList.add('compat-live--loading');
+    lastScore = null;
+    timer = setTimeout(function () {
+      fetch('/especes/compatibilite/groupe.json?ids=' + ids.join(','))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (mine !== request) return;
+          if (data.group) showGroup(data.group, ids);
+          else showHint('Compatibilité indisponible pour ces espèces.');
+        })
+        .catch(function () { if (mine === request) showHint('Compatibilité indisponible pour l\'instant (réseau).'); });
+    }, 150);
+  }
+
+  list.addEventListener('change', function (ev) {
+    if (ev.target.matches('[data-entry-species]')) refresh();
+  });
+  list.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-entry-remove]');
+    if (!btn) return;
+    btn.closest('[data-entry]').remove();
+    refresh();
+  });
+  // A new row opens its species list straight away.
+  form.querySelector('[data-add-entry]').addEventListener('click', function () {
+    var node = addEntry();
+    refresh();
+    var picker = node.querySelector('.picker-btn');
+    if (picker) picker.click();
+    else node.querySelector('select').focus();
+  });
+  document.querySelectorAll('[data-suggest]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.dataset.suggest;
+      if (chosen().indexOf(id) !== -1) return;
+      var empty = entries().filter(function (e) { return !e.querySelector('select').value; })[0];
+      if (empty) {
+        var select = empty.querySelector('select');
+        select.value = id;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      } else {
+        addEntry(id);
+        refresh();
+      }
+    });
+  });
+
+  // Switching bac reloads the page for that bac, keeping the species chosen.
+  if (bacChoice) {
+    bacChoice.addEventListener('change', function () {
+      var params = [];
+      if (bacChoice.value) params.push('bac_id=' + bacChoice.value);
+      var picked = chosen();
+      if (picked.length) params.push('species=' + picked.join(','));
+      location.href = '/fiches/new' + (params.length ? '?' + params.join('&') : '');
+    });
+  }
+
+  form.addEventListener('submit', function (ev) {
+    if (lastScore !== null && lastScore < 50
+      && !confirm('Ces espèces sont déconseillées ensemble (' + lastScore + ' %). ' + (adding ? 'Ajouter' : 'Créer') + ' quand même ?')) {
+      ev.preventDefault();
+    }
+  });
+
+  refresh();
+})();
+</script>
+
+<%- include('../partials/footer') %>

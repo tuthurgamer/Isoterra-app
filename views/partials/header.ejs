@@ -2,12 +2,16 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><%= typeof title !== 'undefined' ? title + ' — Isoterra' : 'Isoterra' %></title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#2a2018">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Isoterra">
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/css/style.css">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/css/style.css?v=20261007">
 </head>
 <body>
 <div class="app-shell">
@@ -24,6 +28,10 @@
     <a class="tab-item <%= active === 'especes' ? 'active' : '' %>" href="/especes">
       <%- icons.nav('especes') %>
       <span class="tab-caption">ESPÈCES</span>
+    </a>
+    <a class="tab-item tab-item--tour" href="/tournee" title="Commencer la tournée">
+      <%- icons.nav('tournee') %>
+      <span class="tab-caption">TOURNÉE</span>
     </a>
     <a class="tab-item <%= active === 'journal' ? 'active' : '' %>" href="/journal">
       <%- icons.nav('journal') %>

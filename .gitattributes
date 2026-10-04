@@ -1,0 +1,6 @@
+# Scripts run on the Raspberry Pi need Unix line endings, whatever the PC uses.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.db binary

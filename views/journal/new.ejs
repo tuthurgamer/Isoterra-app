@@ -17,7 +17,7 @@
   <div class="field">
     <label>Type d'événement</label>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <% const types = ['nourrissage','nettoyage','mue','ponte','observation','vente']; %>
+      <% const types = ['nourrissage','nettoyage','pulverisation','ponte','observation','vente']; %>
       <% types.forEach(function(t, i) { %>
         <label class="stamp stamp-toggle <%= i === 4 ? 'selected stamp--rust' : 'stamp--muted' %>" style="cursor:pointer;">
           <input type="radio" name="type" value="<%= t %>" <%= i === 4 ? 'checked' : '' %> style="margin-right:4px;">

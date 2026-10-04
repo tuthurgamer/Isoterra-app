@@ -1,0 +1,66 @@
+<%# A bac holding several species: one card for the whole bac. Care, level and
+    quick actions are the bac's (feeding and misting serve every species in
+    it); each species keeps its own line, linking to its fiche. %>
+<% var w = g.compat.weakest; %>
+<div class="specimen-card bac-card<%= g.care.level ? ' level-' + g.care.level : '' %>" data-bac="<%= g.bacId %>">
+  <div class="bac-card__top">
+    <a class="bac-card__title" href="/bacs/<%= g.bacId %>">
+      <span class="bac-card__kind">Bac mixte</span>
+      <span class="tag"><%= fmt.numTag(g.bacId) %></span>
+    </a>
+    <a class="card-gear" href="/bacs/<%= g.bacId %>#reglages" title="Paramètres du bac" aria-label="Paramètres du bac <%= fmt.numTag(g.bacId) %>"><%- icons.gear(20) %></a>
+  </div>
+  <% if (g.name) { %><div class="bac-label bac-card__name-label"><%= g.name %></div><% } %>
+
+  <ul class="bac-card__species">
+    <% g.fiches.forEach(function (f) { %>
+      <li>
+        <a href="/bacs/<%= g.bacId %>#fiche-<%= f.id %>" class="bac-card__sp">
+          <span class="bac-card__icon"><%- icons.species(f, 64) %></span>
+          <span class="bac-card__sp-main">
+            <span class="bac-card__name"><%= f.scientific_name %><%= f.morph ? " '" + f.morph + "'" : '' %></span>
+            <span class="bac-card__sp-meta">
+              <span class="stamp stamp--sm <%= fmt.STATUS_CLASSES[f.status] || 'stamp--muted' %>"><%= fmt.STATUS_LABELS[f.status] || f.status %></span>
+              <% if (f.vigilance && f.vigilance !== 'Aucune') { %><span class="stamp stamp--sm stamp--red">Vigilance</span><% } %>
+              <% if (f.population_estimate) { %><span class="bac-card__pop"><%= f.population_estimate %></span><% } %>
+            </span>
+          </span>
+        </a>
+      </li>
+    <% }); %>
+  </ul>
+
+  <div class="card-stamps">
+    <span class="level-pill<%= g.care.level ? ' level-pill--' + g.care.level : '' %>" data-level-pill<%= g.care.level ? '' : ' hidden' %>><%= g.care.label || '' %></span>
+    <a class="stamp <%= g.compat.verdictClass %>" href="/especes/compatibilite?mode=paire&a=<%= w.a.id %>&b=<%= w.b.id %>" title="<%= g.compat.verdict %>">Compatibilité <%= g.compat.score %> %</a>
+  </div>
+
+  <% if (g.compat.score < 70 && g.compat.notes.length) { %>
+    <p class="bac-card__note"><%= g.compat.notes[0] %></p>
+  <% } %>
+
+  <div class="care-row">
+    <% [['feed', 'nourrissage'], ['mist', 'pulverisation']].forEach(function (c) { var item = g.care[c[0]]; %>
+      <div class="care-item<%= item.level ? ' care-item--' + item.level : '' %>" data-care="<%= c[0] %>">
+        <%- icons.action(c[1]) %>
+        <span class="care-item__text"><%= item.text %></span>
+      </div>
+    <% }); %>
+  </div>
+
+  <div class="quick-actions">
+    <% [['nourrissage', 'Nourri'], ['nettoyage', 'Nettoyé'], ['pulverisation', 'Pulvérisé'], ['observation', 'RAS']].forEach(function (a) { %>
+      <form method="POST" action="/bacs/<%= g.bacId %>/log/quick?type=<%= a[0] %>" data-quicklog data-label="<%= fmt.LOG_TYPE_LABELS[a[0]] %> (tout le bac)">
+        <button type="submit" class="btn-quiet" title="<%= fmt.LOG_TYPE_LABELS[a[0]] %> — tout le bac">
+          <%- icons.action(a[0]) %>
+          <span class="qa-label"><%= a[1] %></span>
+        </button>
+      </form>
+    <% }); %>
+  </div>
+
+  <div class="foot">
+    <a href="/fiches/new?bac_id=<%= g.bacId %>" class="bac-card__add">+ ajouter une espèce</a>
+    <span data-last-obs>obs. <%= fmt.relative(g.lastLog) %></span>
+  </div>
+</div>

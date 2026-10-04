@@ -7,6 +7,7 @@
   </div>
   <div style="display:flex; gap:8px; align-items:center;">
     <% if (sp.is_draft) { %><div class="stamp stamp--red">Brouillon — à affiner</div><% } %>
+    <a href="/especes/<%= sp.id %>/fiche-client" class="stamp stamp--rust">Fiche client</a>
     <a href="/especes/<%= sp.id %>/edit" class="stamp stamp--muted">Modifier</a>
   </div>
 </div>
@@ -18,7 +19,7 @@
     <div class="wordmark" style="font-size:24px; font-style:italic; margin-bottom:18px;"><%= sp.scientific_name %></div>
 
     <div class="plate-frame">
-      <div class="inner"><%- icons.species(sp.category, 100) %></div>
+      <div class="inner"><%- icons.species(sp, sp.icon_path ? 320 : 100) %></div>
       <div class="caption"><%= sp.scientific_name.toUpperCase() %></div>
     </div>
 
@@ -54,6 +55,25 @@
         <div class="rating-value" style="display:flex; align-items:center; gap:8px;">
           <%- icons.warning(sp.vigilance && sp.vigilance !== 'Aucune' ? 'var(--stampred)' : 'var(--ink-faint)') %>
           <%= sp.vigilance || 'Aucune' %>
+        </div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Rythme de soins</div>
+        <div class="rating-value">
+          <div class="care-item"><%- icons.action('nourrissage') %><span>Nourrir <%= sp.feed_every_days ? 'tous les ' + sp.feed_every_days + ' j' : '— pas d\'alerte' %></span></div>
+          <div class="care-item"><%- icons.action('pulverisation') %><span>Pulvériser <%= sp.mist_every_days ? 'tous les ' + sp.mist_every_days + ' j' : '— pas d\'alerte' %></span></div>
+        </div>
+      </div>
+      <div class="rating-row">
+        <div class="rating-label">Cohabitation</div>
+        <div class="rating-value">
+          <div class="trait-list">
+            <% [['diet_type', 'Régime'], ['size_class', 'Taille'], ['niche', 'Occupe'], ['substrate_type', 'Installation']].forEach(function (t) {
+                 var opt = traitOptions[t[0]].find(function (o) { return o[0] === sp[t[0]]; }); %>
+              <span><em><%= t[1] %> :</em> <%= opt ? opt[1] : '—' %></span>
+            <% }); %>
+          </div>
+          <a class="trait-link" href="/especes/compatibilite?a=<%= sp.id %>">Voir avec qui elle cohabite le mieux</a>
         </div>
       </div>
     </div>

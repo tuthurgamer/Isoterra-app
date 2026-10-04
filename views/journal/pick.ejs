@@ -4,6 +4,7 @@
   <div>
     <div class="eyebrow">JOURNAL</div>
     <h1>Choisir une fiche</h1>
+    <% if (typeof bacId !== 'undefined' && bacId) { %><div class="subtitle">Bac mixte <%= fmt.numTag(bacId) %> : pour quelle espèce ?</div><% } %>
   </div>
 </div>
 <div class="rule-double"></div>

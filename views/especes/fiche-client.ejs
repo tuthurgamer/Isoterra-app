@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= title %></title>
+<meta name="theme-color" content="#2a2018">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css?v=20261007">
+</head>
+<body class="client-sheet-page">
+<%
+  var traitLabel = function (key) {
+    var o = traitOptions[key].find(function (x) { return x[0] === sp[key]; });
+    return o ? o[1] : null;
+  };
+  var range = function (min, max, unit) {
+    if (!min && !max) return '—';
+    return (min && max && min !== max ? min + '–' + max : (min || max)) + unit;
+  };
+  var hasVigilance = sp.vigilance && sp.vigilance !== 'Aucune';
+  var breederName = settings.breeder_name || '';
+  var breederContact = settings.breeder_contact || '';
+  var care = [];
+  if (sp.feed_every_days) care.push('nourrir tous les ' + sp.feed_every_days + ' j');
+  if (sp.mist_every_days) care.push('pulvériser tous les ' + sp.mist_every_days + ' j');
+
+  var cohab;
+  if (partners === null) cohab = 'Prédateur : à maintenir seul dans son bac.';
+  else if (partners.length) cohab = "S'entend bien avec : " + partners.map(function (n) { return '<em>' + fmt.escape(n) + '</em>'; }).join(', ') + '.';
+  else cohab = "Pas de compagnon de bac conseillé : demander conseil avant tout mélange d'espèces.";
+
+  // Rubriques de la fiche ; celles décochées ne sont ni affichées ni imprimées.
+  var sections = [
+    { key: 'presentation', title: 'Présentation', on: true, paras: [sp.presentation] },
+    { key: 'habitat', title: 'Installation', on: true, paras: [sp.habitat] },
+    { key: 'feeding', title: 'Alimentation', on: true, paras: [sp.feeding_detail] },
+    { key: 'vigilance', title: 'Précautions', on: true, paras: [hasVigilance ? sp.vigilance : null] },
+    { key: 'cohab', title: 'Cohabitation', on: true, html: true, paras: [cohab] },
+    { key: 'repro', title: 'Reproduction', on: true, paras: [sp.repro_conditions, sp.repro_juveniles] },
+    { key: 'pitfalls', title: 'Erreurs à éviter', on: false, paras: [sp.repro_pitfalls] }
+  ].filter(function (s) { return s.paras.some(Boolean); });
+%>
+
+<div class="sheet-toolbar">
+  <div class="sheet-toolbar__row">
+    <a href="<%= backUrl %>" class="sheet-toolbar__back">&larr; Retour</a>
+    <button type="button" class="btn" data-print>Imprimer / PDF</button>
+  </div>
+  <p class="sheet-toolbar__hint">Sur le téléphone : Imprimer, puis « Enregistrer au format PDF », et envoie le PDF à ton client.</p>
+
+  <div class="sheet-toolbar__label">Rubriques sur la fiche</div>
+  <div class="sheet-toggles">
+    <% sections.forEach(function (s) { %>
+      <label class="sheet-toggle"><input type="checkbox" data-toggle="<%= s.key %>" <%= s.on ? 'checked' : '' %>><span><%= s.title %></span></label>
+    <% }); %>
+  </div>
+  <label class="check-line sheet-toolbar__edit"><input type="checkbox" data-edit-texts> Modifier les textes avant d'imprimer (non enregistré)</label>
+
+  <details class="sheet-breeder"<%= breederName ? '' : ' open' %>>
+    <summary>Ton élevage sur la fiche<%= breederName ? ' : ' + breederName : '' %></summary>
+    <form method="POST" action="/especes/fiche-client/eleveur">
+      <input type="hidden" name="back" value="<%= selfUrl %>">
+      <div class="field">
+        <label>Nom de l'élevage</label>
+        <input type="text" name="breeder_name" value="<%= breederName %>" maxlength="80" placeholder="ex. Élevage Isoterra">
+      </div>
+      <div class="field">
+        <label>Contact (téléphone, e-mail, Instagram…)</label>
+        <input type="text" name="breeder_contact" value="<%= breederContact %>" maxlength="160">
+      </div>
+      <button type="submit" class="btn">Enregistrer</button>
+    </form>
+  </details>
+</div>
+
+<article class="client-sheet">
+  <header class="client-sheet__head">
+    <span class="client-sheet__brand"><%= breederName || "Fiche d'élevage" %></span>
+    <% if (breederName) { %><span class="client-sheet__kind">Fiche d'élevage</span><% } %>
+  </header>
+
+  <div class="client-sheet__title">
+    <div class="client-sheet__plate"><%- icons.species(sp, sp.icon_path ? 320 : 72) %></div>
+    <div class="client-sheet__names">
+      <h1><%= sp.common_name || sp.scientific_name %></h1>
+      <div class="client-sheet__sci"><%= sp.scientific_name %></div>
+      <div class="client-sheet__diff"><span>Difficulté</span><%- icons.ratingDiamonds(sp.difficulty) %></div>
+    </div>
+  </div>
+
+  <dl class="client-sheet__facts">
+    <div><dt>Température</dt><dd><%= range(sp.temp_min, sp.temp_max, ' °C') %></dd></div>
+    <div><dt>Hygrométrie</dt><dd><%= range(sp.humidity_min, sp.humidity_max, ' %') %></dd></div>
+    <div><dt>Installation</dt><dd><%= traitLabel('substrate_type') || '—' %></dd></div>
+    <div><dt>Vie en groupe</dt><dd><%= sp.sociability || '—' %></dd></div>
+    <div><dt>Alimentation</dt><dd><%= sp.diet_summary || '—' %></dd></div>
+    <div><dt>Soins</dt><dd><%= care.length ? care.join(', ') : '—' %></dd></div>
+  </dl>
+
+  <div class="client-sheet__body">
+    <% sections.forEach(function (s) { %>
+      <section class="client-sheet__section<%= s.on ? '' : ' is-off' %>" data-section="<%= s.key %>">
+        <h2><%= s.title %></h2>
+        <% s.paras.filter(Boolean).forEach(function (p) { %>
+          <p data-editable><%- s.html ? p : fmt.escape(p) %></p>
+        <% }); %>
+      </section>
+    <% }); %>
+  </div>
+
+  <footer class="client-sheet__foot">
+    <span><%= breederName %><%= breederName && breederContact ? ' · ' : '' %><%= breederContact %></span>
+    <span><%= fiche && fiche.lineage ? 'Lignée ' + fiche.lineage + ' · ' : '' %>Remise le <%= fmt.dateFr(new Date().toISOString()) %></span>
+  </footer>
+</article>
+
+<script>
+  (function () {
+    var KEY = 'isoterra.ficheClient.rubriques';
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+
+    function apply(input) {
+      var section = document.querySelector('[data-section="' + input.dataset.toggle + '"]');
+      if (section) section.classList.toggle('is-off', !input.checked);
+    }
+
+    var toggles = document.querySelectorAll('[data-toggle]');
+    toggles.forEach(function (input) {
+      // The sections you last chose are remembered on this device.
+      if (saved && Object.prototype.hasOwnProperty.call(saved, input.dataset.toggle)) input.checked = saved[input.dataset.toggle];
+      apply(input);
+      input.addEventListener('change', function () {
+        apply(input);
+        var state = {};
+        toggles.forEach(function (t) { state[t.dataset.toggle] = t.checked; });
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      });
+    });
+
+    document.querySelector('[data-edit-texts]').addEventListener('change', function (event) {
+      document.querySelectorAll('[data-editable]').forEach(function (p) {
+        if (event.target.checked) p.setAttribute('contenteditable', 'true');
+        else p.removeAttribute('contenteditable');
+      });
+      document.body.classList.toggle('is-editing', event.target.checked);
+    });
+
+    document.querySelector('[data-print]').addEventListener('click', function () { window.print(); });
+  })();
+</script>
+</body>
+</html>

@@ -1,50 +1,34 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('node:path');
-const fs = require('node:fs');
 const db = require('../db/db');
-
-const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 8 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    cb(null, /^image\//.test(file.mimetype));
-  }
-});
+const { uploadPhoto } = require('../lib/uploads');
+const { groupEntries } = require('../lib/journal');
 
 router.get('/', (req, res) => {
-  const logs = db.prepare(`
+  const rows = db.prepare(`
     SELECT l.*, bs.bac_id, bs.morph, s.scientific_name, s.category
     FROM log_entries l
     JOIN bac_species bs ON bs.id = l.bac_species_id
     JOIN species s ON s.id = bs.species_id
-    ORDER BY l.created_at DESC
+    ORDER BY l.created_at DESC, l.id DESC
     LIMIT 200
   `).all();
-  res.render('journal/index', { title: 'Journal', active: 'journal', logs });
+  res.render('journal/index', { title: 'Journal', active: 'journal', logs: groupEntries(rows) });
 });
 
 router.get('/new', (req, res) => {
   const ficheId = req.query.fiche_id;
   if (!ficheId) {
+    // ?bac_id= narrows the choice to one bac.
+    const bacId = Number(req.query.bac_id) || null;
     const fiches = db.prepare(`
       SELECT bs.id, bs.bac_id, bs.morph, s.scientific_name
       FROM bac_species bs JOIN species s ON s.id = bs.species_id
+      ${bacId ? 'WHERE bs.bac_id = ?' : ''}
       ORDER BY s.scientific_name
-    `).all();
-    return res.render('journal/pick', { title: 'Nouvelle entrée', active: 'journal', fiches });
+    `).all(...(bacId ? [bacId] : []));
+    if (bacId && fiches.length === 1) return res.redirect('/journal/new?fiche_id=' + fiches[0].id);
+    return res.render('journal/pick', { title: 'Nouvelle entrée', active: 'journal', fiches, bacId: bacId && fiches.length ? bacId : null });
   }
   const bacSpecies = db.prepare(`
     SELECT bs.*, s.scientific_name FROM bac_species bs JOIN species s ON s.id = bs.species_id WHERE bs.id = ?
@@ -53,8 +37,8 @@ router.get('/new', (req, res) => {
   res.render('journal/new', { title: 'Nouvelle entrée', active: 'journal', bacSpecies });
 });
 
-router.post('/', upload.single('photo'), (req, res) => {
-  const { fiche_id, type, note } = req.body;
+router.post('/', uploadPhoto.single('photo'), (req, res) => {
+  const { fiche_id, type, note } = req.body || {};
   if (!fiche_id || !type) return res.status(400).send('Fiche et type requis');
   const photoPath = req.file ? '/uploads/' + req.file.filename : null;
   db.prepare('INSERT INTO log_entries (bac_species_id, type, note, photo_path) VALUES (?, ?, ?, ?)')
