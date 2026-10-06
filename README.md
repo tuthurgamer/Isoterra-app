@@ -58,31 +58,26 @@ Pour arrêter le serveur : `Ctrl + C` dans le terminal.
 
 > Astuce développement : `npm run dev` relance automatiquement le serveur à chaque modification de fichier — pratique si tu retouches le code, inutile pour un usage normal.
 
-## 4. Utiliser l'appli depuis ton téléphone
+## 4. Utiliser l'appli depuis ton téléphone ou ton PC
 
-### Via Tailscale (recommandé — HTTPS, marche même hors Wi-Fi)
+Au quotidien, l'appli tourne sur le **Raspberry Pi** (voir section 7), allumé en permanence. Le lancement sur le PC (sections 2 et 3) ne sert plus qu'au développement, avec une copie des données.
 
-Le PC et le téléphone sont déjà sur le même tailnet Tailscale. Tant que le serveur Isoterra tourne sur le PC (`npm start` ou `DemarrerIsoterra.bat`) :
+### Via Tailscale (recommandé : HTTPS, marche même hors de la maison)
+
+Le Pi, le PC et le téléphone sont sur le même tailnet Tailscale.
 
 1. Sur le téléphone, ouvre **l'application Chrome** et colle cette adresse dans la barre d'adresse :
    ```
-   https://desktop-lpsqeqs.tail97d968.ts.net:10000/
+   https://isoterra.tail97d968.ts.net/
    ```
    > Ne clique pas sur le lien depuis une autre appli (messagerie, Claude...) : il s'ouvrirait dans un navigateur intégré à cette appli (barre avec une croix ✕ en haut à gauche), qui **ne propose ni l'installation ni le plein écran**.
-2. Dans le menu de Chrome (les trois points), choisis **"Installer l'application"** (ou "Ajouter à l'écran d'accueil") — comme c'est du HTTPS, l'appli s'installe pour de vrai : icône, plein écran sans barre d'adresse, et un appui long sur l'icône propose "Commencer la tournée" et "Nouvelle entrée de journal".
+2. Dans le menu de Chrome (les trois points), choisis **"Installer l'application"** (ou "Ajouter à l'écran d'accueil") : icône, plein écran sans barre d'adresse, et un appui long sur l'icône propose "Commencer la tournée" et "Nouvelle entrée de journal".
 
-Ça fonctionne aussi bien sur le même Wi-Fi qu'à l'extérieur, tant que le téléphone a Tailscale actif.
+Ça fonctionne aussi bien sur le Wi-Fi de la maison qu'à l'extérieur, tant que le téléphone a Tailscale actif.
 
-Ce lien est géré par `tailscale serve` (config additive, ne touche pas aux autres services déjà exposés sur ce PC via Tailscale) — visible avec `tailscale serve status`, modifiable avec `tailscale serve --https=10000 off` si besoin de tout retirer.
+### Via le Wi-Fi de la maison (sans Tailscale)
 
-### Via le Wi-Fi local (sans Tailscale)
-
-Le serveur écoute aussi sur toutes les interfaces réseau, donc ton téléphone peut s'y connecter en HTTP simple s'il est **sur le même Wi-Fi** que ton PC — utile en dépannage, mais sans installation PWA complète (HTTP simple ne permet pas le mode hors-ligne) :
-
-1. Trouve l'adresse IP locale de ton PC :
-   - Windows : `ipconfig` dans une invite de commandes → ligne "Adresse IPv4" (ex. `192.168.1.42`).
-   - Mac/Linux : `ifconfig` ou `ip addr` dans un terminal.
-2. Sur ton téléphone, va sur `http://<ton-ip>:3000` (ex. `http://192.168.1.42:3000`).
+En dépannage, le Pi répond aussi en HTTP simple sur le réseau local, à l'adresse que lui donne la box (`http://<ip-du-pi>:3000`), mais sans installation complète de l'appli.
 
 ## 5. Où sont stockées tes données
 
