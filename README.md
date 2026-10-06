@@ -96,6 +96,11 @@ Le Raspberry Pi fait tourner Isoterra en continu, sans dépendre du PC :
 - **L'appli** est un service système (`isoterra`) : elle démarre avec le Pi et redémarre toute seule si elle s'arrête.
 - **Mises à jour automatiques** : toutes les 5 minutes, le Pi regarde s'il y a un nouveau commit sur la branche `main` de GitHub. Si oui, il le récupère, réinstalle les dépendances si elles ont changé et relance l'appli. Si la nouvelle version ne répond pas, il revient tout seul à la précédente (et ne retente pas cette version-là).
 - **Sauvegarde de la base** chaque nuit à 3 h 30 dans `~/isoterra-sauvegardes` (les 30 dernières sont gardées).
+- **Contrôle chaque minute** (`deploy/healthcheck.sh`) : si la box est injoignable, le Wi-Fi et le réseau sont relancés ; si l'appli ne répond plus, elle est relancée ; si Tailscale est déconnecté, il est relancé. Si la panne dure 10 minutes, le Pi redémarre (une seule fois par incident, pour ne pas redémarrer en boucle si c'est la box qui est éteinte).
+- **Chien de garde matériel** : si le système se fige, le Pi redémarre tout seul en moins de 15 secondes ; après une erreur grave du noyau, en 10 secondes.
+- **Wi-Fi sans économie d'énergie** (cause fréquente de décrochages sur les Pi), qui se reconnecte sans fin quand la box redémarre.
+- **Mises à jour de sécurité automatiques** du système et de Tailscale.
+- **Alimentation** : le Pi 3B a besoin d'une alimentation 5,1 V / 2,5 A (l'officielle de préférence) et d'un câble court. En cas de manque de courant, `bash deploy/install-pi.sh` affiche un avertissement, et `vcgencmd get_throttled` doit répondre `throttled=0x0`.
 - **Accès** depuis le téléphone ou le PC via Tailscale (`tailscale serve` sur le Pi).
 
 La base (`data/isoterra.db`), les photos (`public/uploads/`) et les icônes d'origine (`data/icon-originals/`) restent sur le Pi : les mises à jour ne touchent qu'au code.
@@ -114,5 +119,7 @@ sudo tailscale serve --bg 3000
 - État de l'appli : `systemctl status isoterra`
 - Journal de l'appli en direct : `journalctl -u isoterra -f`
 - Historique des mises à jour : `journalctl -u isoterra-update`
+- Réparations faites par le contrôle automatique : `journalctl -u isoterra-health`
+- Après une modification de `deploy/` (services, réglages du Pi) : relancer `bash deploy/install-pi.sh` (sans risque, on peut le relancer autant de fois que nécessaire)
 - Forcer une vérification de mise à jour tout de suite : `sudo systemctl start isoterra-update`
 - Liste des sauvegardes : `ls ~/isoterra-sauvegardes`
