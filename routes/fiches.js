@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const db = require('../db/db');
 const { evaluateGroup } = require('../lib/compatibility');
 const { careStatuses, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
+const { moveFiches } = require('../lib/bac-move');
 const { numTag } = require('../views/helpers/format');
 
 const publicDir = path.join(__dirname, '..', 'public');
@@ -193,6 +194,25 @@ router.post('/:id/delete', (req, res) => {
   const name = fiche.scientific_name + (fiche.morph ? " '" + fiche.morph + "'" : '');
   if (shared) return res.redirect(`/bacs/${fiche.bac_id}?notice=${encodeURIComponent(`${name} retiré du bac`)}`);
   res.redirect('/?notice=' + encodeURIComponent(`Bac ${numTag(fiche.bac_id)} supprimé (${name})`));
+});
+
+// Moves this species, journal included, to another bac or to a new bac of
+// its own (bac_id=new): out of a mixed bac, or back out of a wrong merge.
+router.post('/:id/move', (req, res) => {
+  const fiche = db.prepare(`
+    SELECT bs.id, bs.bac_id, bs.morph, s.scientific_name
+    FROM bac_species bs JOIN species s ON s.id = bs.species_id WHERE bs.id = ?
+  `).get(req.params.id);
+  if (!fiche) return res.status(404).render('404', { path: req.path });
+  const target = String((req.body || {}).bac_id || '');
+  const toBacId = target === 'new' ? null : Number(target);
+  if (toBacId !== null && (!toBacId || toBacId === fiche.bac_id || !db.prepare('SELECT id FROM bacs WHERE id = ?').get(toBacId))) {
+    return res.redirect(`/bacs/${fiche.bac_id}?notice=${encodeURIComponent('Choisis le bac où le déplacer')}#modifier-${fiche.id}`);
+  }
+  const { bacId, placed } = moveFiches([fiche.id], toBacId);
+  const name = fiche.scientific_name + (fiche.morph ? " '" + fiche.morph + "'" : '');
+  const notice = toBacId ? `${name} déplacé dans ce bac` : `${name} installé seul dans ce nouveau bac`;
+  res.redirect(`/bacs/${bacId}?notice=${encodeURIComponent(notice)}#fiche-${placed.get(fiche.id)}`);
 });
 
 // Deletes the whole bac, every species in it included.

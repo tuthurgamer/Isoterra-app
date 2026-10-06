@@ -4,6 +4,7 @@ const db = require('../db/db');
 const { careStatuses, bacStatusOf, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
 const fs = require('node:fs');
 const { logForBac, noteForBac } = require('../lib/bac-log');
+const { moveFiches } = require('../lib/bac-move');
 const { evaluateGroup } = require('../lib/compatibility');
 const { groupEntries } = require('../lib/journal');
 const { uploadPhoto } = require('../lib/uploads');
@@ -105,8 +106,31 @@ router.get('/bacs/:id', (req, res) => {
       WHERE bac_species_id IN (SELECT id FROM bac_species WHERE bac_id = ?)
     `).get(bac.id),
     speciesList: db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all(),
+    // The bacs these animals could join ("Réunir", "Déplacer").
+    otherBacs: db.prepare(`
+      SELECT b.id, b.name, GROUP_CONCAT(s.scientific_name, ', ') AS residents, GROUP_CONCAT(s.id) AS species_ids
+      FROM bacs b JOIN bac_species bs ON bs.bac_id = b.id JOIN species s ON s.id = bs.species_id
+      WHERE b.id != ?
+      GROUP BY b.id
+      ORDER BY b.id
+    `).all(bac.id),
     notice: req.query.notice || null
   });
+});
+
+// Two bacs that are really one: everything in this bac, journal included,
+// joins the chosen bac, which keeps its number; this one disappears.
+router.post('/bacs/:id/merge', (req, res) => {
+  const fromId = Number(req.params.id);
+  const intoId = Number((req.body || {}).into);
+  if (!db.prepare('SELECT id FROM bacs WHERE id = ?').get(fromId)) return res.status(404).render('404', { path: req.path });
+  if (!intoId || intoId === fromId || !db.prepare('SELECT id FROM bacs WHERE id = ?').get(intoId)) {
+    return res.redirect(`/bacs/${fromId}?notice=${encodeURIComponent('Choisis le bac à rejoindre')}#reunir`);
+  }
+  const ids = db.prepare('SELECT id FROM bac_species WHERE bac_id = ?').all(fromId).map((r) => r.id);
+  if (ids.length) moveFiches(ids, intoId);
+  else db.prepare('DELETE FROM bacs WHERE id = ?').run(fromId);
+  res.redirect(`/bacs/${intoId}?notice=${encodeURIComponent(`Bac ${numTag(fromId)} réuni dans ce bac`)}#animaux`);
 });
 
 const NOTE_TYPES = ['observation', 'ponte', 'vente', 'nourrissage', 'nettoyage', 'pulverisation'];

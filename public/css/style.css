@@ -1779,6 +1779,26 @@ a.bac-card__title { color: inherit; }
 .hub-edit__remove { margin: 16px 0 6px; }
 .hub-compat-note { margin-bottom: 12px; }
 a.add-species { display: block; margin: 6px 0 22px; text-align: center; text-decoration: none; }
+.hub-animal-actions { display: flex; flex-direction: column; gap: 10px; margin: 6px 0 22px; }
+.hub-animal-actions a.add-species { margin: 0; }
+.hub-merge > summary {
+  display: block;
+  list-style: none;
+  padding: 12px 16px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 6px;
+  text-align: center;
+  font-family: 'IM Fell English SC', Georgia, serif;
+  letter-spacing: 0.05em;
+  font-size: 15px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.hub-merge > summary::-webkit-details-marker { display: none; }
+.hub-merge[open] > summary { border-style: solid; color: var(--ink); }
+.hub-merge__form { padding: 12px 2px 0; }
+.hub-merge__form .field-hint { margin-top: 0; }
+.hub-edit__move { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line-strong); }
 
 .hub-journal { margin: 0; padding: 0; list-style: none; }
 .hub-journal__item { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }

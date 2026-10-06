@@ -21,6 +21,13 @@
     });
     return out + (cat !== null ? '</optgroup>' : '');
   };
+  var speciesById = {};
+  speciesList.forEach(function (sp) { speciesById[sp.id] = sp; });
+  var bacOptions = otherBacs.map(function (b) {
+    var pics = String(b.species_ids || '').split(',').map(function (id) { return speciesById[id]; }).filter(Boolean).map(icons.pic).join('|');
+    return '<option value="' + b.id + '" data-pics="' + fmt.escape(pics) + '">'
+      + fmt.escape('Bac ' + fmt.numTag(b.id) + (b.name ? ' « ' + b.name + ' »' : '') + ' — ' + b.residents) + '</option>';
+  }).join('');
   var careItems = [['feed', 'nourrissage'], ['mist', 'pulverisation']];
   var noteTypes = [['observation', 'Observation'], ['ponte', 'Ponte'], ['vente', 'Vente'], ['nourrissage', 'Nourrissage'], ['nettoyage', 'Nettoyage'], ['pulverisation', 'Pulvérisation']];
 %>
@@ -199,6 +206,18 @@
           <button type="submit" class="btn">Enregistrer</button>
         </form>
         <% if (mixed) { %>
+          <form method="POST" action="/fiches/<%= f.id %>/move" class="hub-edit__move"
+                onsubmit="return confirm('Déplacer <%= f.scientific_name.replace(/[\x27"]/g, '') %> vers :\n\n' + this.elements.bac_id.selectedOptions[0].textContent.trim() + ' ?');">
+            <div class="field">
+              <label>Déplacer dans un autre bac</label>
+              <select name="bac_id" data-picker>
+                <option value="new" data-pics="<%= icons.pic(f) %>">Un nouveau bac, pour elle seule</option>
+                <%- bacOptions %>
+              </select>
+            </div>
+            <p class="field-hint">Elle emporte tout son journal.</p>
+            <button type="submit" class="btn">Déplacer</button>
+          </form>
           <form method="POST" action="/fiches/<%= f.id %>/delete" class="hub-edit__remove"
                 onsubmit="return confirm('Retirer <%= f.scientific_name.replace(/[\x27"]/g, '') %> du bac et effacer son journal ? C\'est irréversible.');">
             <button type="submit" class="btn-danger">Retirer cette espèce du bac</button>
@@ -208,7 +227,26 @@
     </article>
   <% }); %>
 
-  <a class="add-species" href="/fiches/new?bac_id=<%= bac.id %>">+ Ajouter une espèce dans ce bac</a>
+  <div class="hub-animal-actions">
+    <a class="add-species" href="/fiches/new?bac_id=<%= bac.id %>">+ Ajouter une espèce dans ce bac</a>
+    <% if (otherBacs.length && first) { %>
+      <details class="hub-merge" id="reunir">
+        <summary>Réunir avec un autre bac</summary>
+        <form method="POST" action="/bacs/<%= bac.id %>/merge" class="hub-merge__form"
+              onsubmit="var o = this.elements.into.selectedOptions[0]; return Boolean(o && o.value) && confirm('Réunir avec ce bac ?\n\n' + o.textContent.trim() + '\n\nLes animaux du bac <%= fmt.numTag(bac.id) %> et leur journal y passent, puis le bac <%= fmt.numTag(bac.id) %> disparaît.');">
+          <p class="field-hint">Ces animaux vivent en fait avec ceux d'un autre bac ? Choisis ce bac : ils le rejoignent avec tout leur journal, puis le bac <%= fmt.numTag(bac.id) %> disparaît.</p>
+          <div class="field">
+            <label>Bac à rejoindre</label>
+            <select name="into" data-picker required>
+              <option value="">— choisir le bac —</option>
+              <%- bacOptions %>
+            </select>
+          </div>
+          <button type="submit" class="btn">Réunir</button>
+        </form>
+      </details>
+    <% } %>
+  </div>
 </section>
 
 <section class="hub-section" id="journal">
@@ -264,13 +302,13 @@
 
 <script>
   (function () {
-    // A link to #reglages or #modifier-12 opens that panel.
+    // A link to #reglages, #reunir or #modifier-12 opens that panel.
     function openTarget() {
       var id = location.hash.slice(1);
       var el = id && document.getElementById(id);
       if (!el) return;
       var details = el.tagName === 'DETAILS' ? el : el.querySelector('details');
-      if (details && (id === 'reglages' || id.indexOf('modifier-') === 0)) details.open = true;
+      if (details && (id === 'reglages' || id === 'reunir' || id.indexOf('modifier-') === 0)) details.open = true;
       el.scrollIntoView({ block: 'start' });
     }
     window.addEventListener('hashchange', openTarget);
