@@ -46,6 +46,22 @@ if (!speciesColumns.includes('diet_type')) {
   db.exec('COMMIT');
 }
 
+if (!speciesColumns.includes('lifespan')) {
+  // Life expectancy, filled once for the species already in the guide; the
+  // giant land snails move at the same time to their own "Escargots" category.
+  const { defaultLifespan, SNAIL_GENERA } = require('./lifespan-defaults');
+  db.exec('BEGIN');
+  db.exec('ALTER TABLE species ADD COLUMN lifespan TEXT');
+  const setLifespan = db.prepare('UPDATE species SET lifespan = ? WHERE id = ?');
+  const toSnails = db.prepare("UPDATE species SET category = 'escargot' WHERE id = ? AND category = 'autre'");
+  for (const sp of db.prepare('SELECT id, scientific_name FROM species').all()) {
+    const lifespan = defaultLifespan(sp.scientific_name);
+    if (lifespan) setLifespan.run(lifespan, sp.id);
+    if (SNAIL_GENERA.some((genus) => sp.scientific_name.startsWith(genus + ' '))) toSnails.run(sp.id);
+  }
+  db.exec('COMMIT');
+}
+
 const ficheColumns = db.prepare("PRAGMA table_info(bac_species)").all().map((c) => c.name);
 if (!ficheColumns.includes('feed_every_days')) {
   db.exec('ALTER TABLE bac_species ADD COLUMN feed_every_days INTEGER');

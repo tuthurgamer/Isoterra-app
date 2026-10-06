@@ -36,8 +36,8 @@
   <div class="field">
     <label>Catégorie</label>
     <select name="category">
-      <% ['iule','cloporte','cetoine','autre'].forEach(function(c) { %>
-        <option value="<%= c %>" <%= sp.category === c ? 'selected' : '' %>><%= c %></option>
+      <% Object.keys(fmt.CATEGORY_LABELS).forEach(function(c) { %>
+        <option value="<%= c %>" <%= sp.category === c ? 'selected' : '' %>><%= fmt.CATEGORY_LABELS[c] %></option>
       <% }); %>
     </select>
   </div>
@@ -75,6 +75,7 @@
   </div>
   <p class="field-hint">Sert aux alertes de la page Bacs (RAS → à vérifier → en retard → alerte). Laisse vide pour ne pas être alerté sur ce soin.</p>
 
+  <div class="field"><label>Espérance de vie</label><input type="text" name="lifespan" value="<%= sp.lifespan || '' %>" placeholder="ex. 2 à 3 ans"></div>
   <div class="field"><label>Sociabilité</label><input type="text" name="sociability" value="<%= sp.sociability || '' %>"></div>
   <div class="field"><label>Alimentation (résumé)</label><input type="text" name="diet_summary" value="<%= sp.diet_summary || '' %>"></div>
   <div class="field"><label>Vigilance</label><input type="text" name="vigilance" value="<%= sp.vigilance || '' %>" placeholder="Aucune, si rien de particulier"></div>

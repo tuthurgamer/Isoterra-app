@@ -41,6 +41,7 @@ const CATEGORY_LABELS = {
   iule: 'Iules',
   cloporte: 'Cloportes',
   cetoine: 'Cétoines',
+  escargot: 'Escargots',
   autre: 'Autres espèces'
 };
 

@@ -43,6 +43,10 @@
         </div>
       </div>
       <div class="rating-row">
+        <div class="rating-label">Espérance de vie</div>
+        <div class="rating-value"><%= sp.lifespan || '—' %></div>
+      </div>
+      <div class="rating-row">
         <div class="rating-label">Sociabilité</div>
         <div class="rating-value" style="display:flex; align-items:center; gap:8px;"><%- icons.group() %> <%= sp.sociability || '—' %></div>
       </div>

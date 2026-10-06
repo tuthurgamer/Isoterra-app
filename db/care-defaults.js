@@ -2,7 +2,7 @@
 // Deliberately moderate: they only seed the species guide, where each value
 // can be adjusted to how the bacs are actually set up.
 
-const FEED_BY_CATEGORY = { iule: 7, cloporte: 5, cetoine: 14, autre: 4 };
+const FEED_BY_CATEGORY = { iule: 7, cloporte: 5, cetoine: 14, escargot: 2, autre: 4 };
 
 // Species whose needs differ from their category's default. Keyed by the
 // binomial without the morph, so every morph of a species shares them.

@@ -6,7 +6,7 @@
 <title><%= title %></title>
 <meta name="theme-color" content="#2a2018">
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/css/style.css?v=20261007">
+<link rel="stylesheet" href="/css/style.css?v=20261008">
 </head>
 <body class="client-sheet-page">
 <%
@@ -93,9 +93,11 @@
     <div><dt>Température</dt><dd><%= range(sp.temp_min, sp.temp_max, ' °C') %></dd></div>
     <div><dt>Hygrométrie</dt><dd><%= range(sp.humidity_min, sp.humidity_max, ' %') %></dd></div>
     <div><dt>Installation</dt><dd><%= traitLabel('substrate_type') || '—' %></dd></div>
+    <div><dt>Espérance de vie</dt><dd><%= sp.lifespan || '—' %></dd></div>
     <div><dt>Vie en groupe</dt><dd><%= sp.sociability || '—' %></dd></div>
     <div><dt>Alimentation</dt><dd><%= sp.diet_summary || '—' %></dd></div>
     <div><dt>Soins</dt><dd><%= care.length ? care.join(', ') : '—' %></dd></div>
+    <div><dt>Taille adulte</dt><dd><%= traitLabel('size_class') || '—' %></dd></div>
   </dl>
 
   <div class="client-sheet__body">

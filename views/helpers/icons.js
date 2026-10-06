@@ -18,6 +18,7 @@ const SPECIES_ICONS = {
   iule: '<path d="M6 30 Q 12 16, 20 24 T 34 22 Q 40 20 42 14"/><path d="M9 28 L6 33 M12 25 L9 30 M15 23 L13 29 M19 22 L17 28 M23 22 L22 28 M27 21 L27 27 M31 21 L32 27 M35 20 L37 26 M39 17 L41 22"/><path d="M42 14 L45 11 M42 14 L44 16"/>',
   cloporte: '<path d="M10 24c0-8 6-13 14-13s14 5 14 13-6 13-14 13-14-5-14-13z"/><path d="M12 18h24M10 24h28M12 30h24"/><path d="M8 20l-4-2M8 24l-5 0M8 28l-4 2M40 20l4-2M40 24l5 0M40 28l4 2"/><path d="M20 37l-3 4M28 37l3 4"/>',
   cetoine: '<ellipse cx="24" cy="26" rx="11" ry="15"/><path d="M24 12v29"/><ellipse cx="24" cy="10" rx="5" ry="4"/><path d="M14 18l-7-3M14 26l-8 1M14 34l-7 4M34 18l7-3M34 26l8 1M34 34l7 4"/>',
+  escargot: '<circle cx="21" cy="25" r="10"/><path d="M21 25a2 2 0 0 1 4 0a4 4 0 0 1-8 0a6 6 0 0 1 12 0"/><path d="M5 36h30c4 0 6-2 7-6l1-4"/><path d="M43 26l-3-8M43 26l3-8"/><path d="M40 18h.01M46 18h.01"/>',
   autre: '<ellipse cx="24" cy="24" rx="12" ry="9"/><path d="M13 19l-6-5m-1 8l-7-2m2 9l-7 3M35 19l6-5m1 8l7-2m-2 9l7 3"/><path d="M9 12c-3-1-6 1-6 4M39 12c3-1 6 1 6 4"/><path d="M18 15l-2-3M30 15l2-3"/>'
 };
 

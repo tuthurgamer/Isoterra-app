@@ -9,8 +9,8 @@ const { TRAIT_OPTIONS, defaultTraits, binomial } = require('../db/trait-defaults
 const { getSettings, setSetting } = require('../lib/settings');
 const { processIcon, thumbPath } = require('../lib/icon-image');
 
-const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', autre: 'Autres espèces' };
-const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'autre'];
+const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', escargot: 'Escargots', autre: 'Autres espèces' };
+const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'escargot', 'autre'];
 
 const iconDir = path.join(__dirname, '..', 'public', 'uploads', 'species-icons');
 const iconOriginalsDir = path.join(__dirname, '..', 'data', 'icon-originals');
@@ -202,6 +202,7 @@ function insertOrUpdate(b, id, iconPath) {
     humidity_min: Number(b.humidity_min) || null, humidity_max: Number(b.humidity_max) || null,
     temp_min: Number(b.temp_min) || null, temp_max: Number(b.temp_max) || null,
     sociability: b.sociability || null, diet_summary: b.diet_summary || null, vigilance: b.vigilance || null,
+    lifespan: String(b.lifespan || '').trim() || null,
     presentation: b.presentation || null, habitat: b.habitat || null, feeding_detail: b.feeding_detail || null,
     repro_sexing: b.repro_sexing || null, repro_conditions: b.repro_conditions || null,
     repro_mating: b.repro_mating || null, repro_incubation: b.repro_incubation || null,
@@ -217,7 +218,7 @@ function insertOrUpdate(b, id, iconPath) {
     db.prepare(`
       UPDATE species SET category=:category, common_name=:common_name, scientific_name=:scientific_name,
         difficulty=:difficulty, humidity_min=:humidity_min, humidity_max=:humidity_max,
-        temp_min=:temp_min, temp_max=:temp_max, sociability=:sociability, diet_summary=:diet_summary,
+        temp_min=:temp_min, temp_max=:temp_max, sociability=:sociability, diet_summary=:diet_summary, lifespan=:lifespan,
         vigilance=:vigilance, presentation=:presentation, habitat=:habitat, feeding_detail=:feeding_detail,
         repro_sexing=:repro_sexing, repro_conditions=:repro_conditions, repro_mating=:repro_mating,
         repro_incubation=:repro_incubation, repro_juveniles=:repro_juveniles, repro_pitfalls=:repro_pitfalls,
@@ -230,11 +231,11 @@ function insertOrUpdate(b, id, iconPath) {
   }
   const info = db.prepare(`
     INSERT INTO species (category, common_name, scientific_name, difficulty, humidity_min, humidity_max,
-      temp_min, temp_max, sociability, diet_summary, vigilance, presentation, habitat, feeding_detail,
+      temp_min, temp_max, sociability, diet_summary, lifespan, vigilance, presentation, habitat, feeding_detail,
       repro_sexing, repro_conditions, repro_mating, repro_incubation, repro_juveniles, repro_pitfalls,
       icon_path, feed_every_days, mist_every_days, diet_type, size_class, niche, substrate_type, is_draft)
     VALUES (:category, :common_name, :scientific_name, :difficulty, :humidity_min, :humidity_max,
-      :temp_min, :temp_max, :sociability, :diet_summary, :vigilance, :presentation, :habitat, :feeding_detail,
+      :temp_min, :temp_max, :sociability, :diet_summary, :lifespan, :vigilance, :presentation, :habitat, :feeding_detail,
       :repro_sexing, :repro_conditions, :repro_mating, :repro_incubation, :repro_juveniles, :repro_pitfalls,
       :icon_path, :feed_every_days, :mist_every_days, :diet_type, :size_class, :niche, :substrate_type, :is_draft)
   `).run(fields);

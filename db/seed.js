@@ -362,7 +362,7 @@ const species = [
     repro_pitfalls: "Chute d'humidité même brève, manipulation excessive de la femelle porteuse, eau stagnante trop profonde, sous-alimentation en protéines avant la ponte."
   },
   {
-    category: 'autre', common_name: 'Petit-gris africain', scientific_name: 'Lissachatina fulica',
+    category: 'escargot', common_name: 'Petit-gris africain', scientific_name: 'Lissachatina fulica',
     difficulty: 2, humidity_min: 80, humidity_max: 95, temp_min: 22, temp_max: 27,
     sociability: 'Grégaire, hermaphrodite', diet_summary: 'Végétal + calcium',
     vigilance: 'Statut réglementaire à vérifier localement',
@@ -377,7 +377,7 @@ const species = [
     repro_pitfalls: "Sous-estimer le nombre de naissances par ponte, manque de calcium (coquille fragile), et surtout : ne pas relâcher d'individus dans la nature, l'espèce étant problématique pour les écosystèmes et l'agriculture locale hors de son aire d'origine."
   },
   {
-    category: 'autre', common_name: "Petit-gris africain 'Jade White'", scientific_name: 'Lissachatina fulica "Jade White"',
+    category: 'escargot', common_name: "Petit-gris africain 'Jade White'", scientific_name: 'Lissachatina fulica "Jade White"',
     difficulty: 2, humidity_min: 80, humidity_max: 95, temp_min: 22, temp_max: 27,
     sociability: 'Grégaire, hermaphrodite', diet_summary: 'Végétal + calcium',
     vigilance: 'Statut réglementaire à vérifier localement',
@@ -392,7 +392,7 @@ const species = [
     repro_pitfalls: "Sous-estimer le nombre de naissances par ponte, manque de calcium, ne pas relâcher d'individus dans la nature (espèce invasive hors de son aire d'origine), et le croiser avec la forme sauvage réintroduit les stries brunes sur la coquille de la descendance si tu veux garder une lignée Jade White pure."
   },
   {
-    category: 'autre', common_name: "Achatine à bouche rose 'Albinos'", scientific_name: 'Archachatina rhodostoma "Albinos"',
+    category: 'escargot', common_name: "Achatine à bouche rose 'Albinos'", scientific_name: 'Archachatina rhodostoma "Albinos"',
     difficulty: 2, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 26,
     sociability: 'Grégaire, hermaphrodite', diet_summary: 'Végétal + calcium, un peu de protéines',
     vigilance: 'Ne jamais relâcher — congeler les œufs en surplus',
@@ -443,9 +443,11 @@ const insertSpecies = db.prepare(`
 
 const { defaultCare } = require('./care-defaults');
 const { defaultTraits } = require('./trait-defaults');
+const { defaultLifespan } = require('./lifespan-defaults');
 const setCare = db.prepare('UPDATE species SET feed_every_days = :feed_every_days, mist_every_days = :mist_every_days WHERE id = :id');
 const setTraits = db.prepare(`UPDATE species SET diet_type = :diet_type, size_class = :size_class,
   niche = :niche, substrate_type = :substrate_type WHERE id = :id`);
+const setLifespan = db.prepare('UPDATE species SET lifespan = ? WHERE id = ?');
 
 const speciesIds = {};
 for (const sp of species) {
@@ -453,6 +455,7 @@ for (const sp of species) {
   speciesIds[sp.scientific_name] = info.lastInsertRowid;
   setCare.run({ id: info.lastInsertRowid, ...defaultCare(sp) });
   setTraits.run({ id: info.lastInsertRowid, ...defaultTraits(sp) });
+  setLifespan.run(defaultLifespan(sp.scientific_name), info.lastInsertRowid);
 }
 
 const insertBac = db.prepare('INSERT INTO bacs (substrate) VALUES (?)');

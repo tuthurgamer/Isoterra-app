@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS species (
   size_class TEXT,
   niche TEXT,
   substrate_type TEXT,
+  lifespan TEXT,
   is_draft INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))

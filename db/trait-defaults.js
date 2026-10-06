@@ -38,6 +38,7 @@ const BY_CATEGORY = {
   iule: { diet_type: 'detritivore', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'humide' },
   cloporte: { diet_type: 'detritivore', size_class: 'petit', niche: 'litiere', substrate_type: 'humide' },
   cetoine: { diet_type: 'detritivore', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'flake' },
+  escargot: { diet_type: 'herbivore', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' },
   autre: { diet_type: 'omnivore', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' }
 };
 
