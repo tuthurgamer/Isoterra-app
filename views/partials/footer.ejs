@@ -7,6 +7,15 @@
       navigator.serviceWorker.register('/service-worker.js')
         .then((registration) => registration.update())
         .catch(() => {});
+      // Garde toutes les icônes d'espèces sur le téléphone (seules celles qui
+      // manquent sont téléchargées), y compris quand une nouvelle version de
+      // l'app vient de prendre la main.
+      navigator.serviceWorker.ready.then((registration) => {
+        if (registration.active) registration.active.postMessage('icones');
+      });
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage('icones');
+      });
     });
   }
 
@@ -103,7 +112,7 @@
 
     function picsHtml(pics) {
       return String(pics || '').split('|').filter(Boolean).slice(0, 4).map(function (p) {
-        if (p.charAt(0) === '/') return '<img src="' + p.replace(/"/g, '&quot;') + '" alt="" class="species-icon-img" loading="lazy" decoding="async">';
+        if (p.charAt(0) === '/') return '<img src="' + p.replace(/"/g, '&quot;') + '" alt="" class="species-icon-img" decoding="async">';
         return CAT_ICONS[p] || CAT_ICONS.autre;
       }).join('');
     }

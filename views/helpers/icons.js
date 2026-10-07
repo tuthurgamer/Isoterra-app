@@ -38,18 +38,17 @@ function nav(name) {
 // Accepts either a species-like object ({ category, icon_path }) or a bare
 // category string (older call sites) — a custom watercolor icon wins when
 // the species has one, otherwise falls back to the generic hand-drawn SVG.
-// Small sizes use the light "-sm" version of the icon and load lazily (they
-// come in long lists); large sizes are a page's main illustration and load
-// right away. Width/height are plain attributes (not inline styles) so a
+// Small sizes use the light "-sm" version of the icon; large sizes are a
+// page's main illustration. None waits for the page to be scrolled to it:
+// the service worker keeps every icon on the phone, so they arrive with the
+// page. Width/height are plain attributes (not inline styles) so a
 // context's CSS can resize it, e.g. the large illustration plates.
 function species(sp, size = 30) {
   const category = typeof sp === 'string' ? sp : sp && sp.category;
   const iconPath = typeof sp === 'object' && sp ? sp.icon_path : null;
   if (iconPath) {
-    const small = size <= 128;
-    const src = small ? thumbPath(iconPath) : iconPath;
-    const loading = small ? ' loading="lazy"' : '';
-    return `<img src="${src}" alt="" class="species-icon-img" width="${size}" height="${size}"${loading} decoding="async">`;
+    const src = size <= 128 ? thumbPath(iconPath) : iconPath;
+    return `<img src="${src}" alt="" class="species-icon-img" width="${size}" height="${size}" decoding="async">`;
   }
   const inner = SPECIES_ICONS[category] || SPECIES_ICONS.autre;
   return svg(inner, { size, stroke: 2, viewBox: '0 0 48 48' });

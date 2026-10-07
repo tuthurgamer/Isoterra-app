@@ -119,6 +119,14 @@ router.get('/compatibilite/groupe.json', (req, res) => {
   });
 });
 
+// Every species icon, small and large, for the service worker to keep on the
+// phone: icons then show up with the page instead of coming from the Pi.
+router.get('/icones.json', (req, res) => {
+  const paths = db.prepare('SELECT icon_path FROM species WHERE icon_path IS NOT NULL ORDER BY id').all()
+    .flatMap((r) => [thumbPath(r.icon_path), r.icon_path]);
+  res.set('Cache-Control', 'no-store').json(paths);
+});
+
 router.post('/', uploadIcon.single('icon'), (req, res) => {
   const iconPath = req.file ? storeIcon(req.file) : null;
   const info = insertOrUpdate(req.body, null, iconPath);
