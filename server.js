@@ -9,6 +9,15 @@ app.locals.icons = require('./views/helpers/icons');
 app.locals.fmt = require('./views/helpers/format');
 
 app.use(express.urlencoded({ extended: true }));
+
+// Uploads (species icons, journal photos) get a fresh, unique filename on
+// every upload — the same URL never changes content, so it's safe to tell
+// browsers to keep it forever instead of re-checking with the Pi on every
+// page load, which is what was making icons feel slow to load.
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads'), {
+  maxAge: '1y',
+  immutable: true
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
