@@ -102,6 +102,7 @@ Le Raspberry Pi fait tourner Isoterra en continu, sans dépendre du PC :
 - **Mises à jour de sécurité automatiques** du système et de Tailscale.
 - **Alimentation** : le Pi 3B a besoin d'une alimentation 5,1 V / 2,5 A (l'officielle de préférence) et d'un câble court. En cas de manque de courant, `bash deploy/install-pi.sh` affiche un avertissement, et `vcgencmd get_throttled` doit répondre `throttled=0x0`.
 - **Accès** depuis le téléphone ou le PC via Tailscale (`tailscale serve` sur le Pi).
+- **Page Serveur** dans l'appli (icône en haut de l'accueil, `/serveur`) : température, alimentation, Wi-Fi, carte SD, version, sauvegardes et réparations automatiques, avec des boutons pour sauvegarder, télécharger la base, chercher une mise à jour, redémarrer l'appli ou le Pi, et éteindre le Pi avant de le débrancher. Elle ne s'ouvre que par l'adresse Tailscale.
 
 La base (`data/isoterra.db`), les photos (`public/uploads/`) et les icônes d'origine (`data/icon-originals/`) restent sur le Pi : les mises à jour ne touchent qu'au code.
 

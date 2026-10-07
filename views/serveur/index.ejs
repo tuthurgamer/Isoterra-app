@@ -1,0 +1,176 @@
+<%- include('../partials/header', { title, active }) %>
+
+<%
+  var PILL = { ok: 'ras', warn: 'verifier', alert: 'alerte' };
+  var actions = [
+    { name: 'mise-a-jour', title: 'Chercher une mise à jour', desc: "D'habitude le Pi regarde sur GitHub toutes les 5 minutes.", button: 'Chercher', danger: false },
+    { name: 'redemarrer-app', title: "Redémarrer l'app", desc: "Relance seulement l'app : de retour en une dizaine de secondes.", button: 'Redémarrer', danger: false,
+      confirm: "Redémarrer l'app ? Elle sera de retour en une dizaine de secondes." },
+    { name: 'redemarrer-pi', title: 'Redémarrer le Pi', desc: "Redémarrage complet : l'app revient en 1 à 2 minutes.", button: 'Redémarrer', danger: true,
+      confirm: "Redémarrer complètement le Pi ? L'app sera injoignable 1 à 2 minutes." },
+    { name: 'eteindre', title: 'Éteindre le Pi', desc: "Avant de le débrancher, pour changer l'alimentation par exemple. Pour le rallumer : le débrancher puis le rebrancher.", button: 'Éteindre', danger: true,
+      confirm: "Éteindre le Pi ? L'app restera injoignable jusqu'à ce que tu le débranches et le rebranches." }
+  ];
+%>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">SERVEUR</div>
+    <h1>Le Pi et l'app</h1>
+    <div class="subtitle">Mis à jour toutes les 15 secondes</div>
+  </div>
+  <span class="level-pill level-pill--<%= PILL[info.summary.level] %> server-summary" data-summary><%= info.summary.text %></span>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<div class="server-grid">
+  <% info.sections.forEach(function (section) { %>
+    <section class="server-panel" id="<%= section.key %>">
+      <div class="section-title"><h2><%= section.title %></h2><div class="rule"></div></div>
+      <dl class="server-facts">
+        <% section.rows.forEach(function (row) { %>
+          <div class="server-fact<%= row.level ? ' server-fact--' + row.level : '' %>" data-row="<%= row.key %>">
+            <dt><%= row.label %></dt>
+            <dd data-value><%= row.value %></dd>
+            <p class="server-fact__note" data-note<%= row.note ? '' : ' hidden' %>><%= row.note || '' %></p>
+          </div>
+        <% }); %>
+      </dl>
+      <% if (section.key === 'sauvegardes') { %>
+        <div class="server-buttons">
+          <button type="button" class="btn" data-action="sauvegarde">Sauvegarder maintenant</button>
+          <a class="btn server-download" href="/serveur/telecharger" download>Télécharger la base</a>
+        </div>
+      <% } %>
+    </section>
+  <% }); %>
+</div>
+
+<section class="server-panel">
+  <div class="section-title"><h2>Réparations automatiques</h2><div class="rule"></div></div>
+  <% if (info.repairs.length) { %>
+    <ul class="server-repairs">
+      <% info.repairs.forEach(function (r) { %>
+        <li><span><%= r.when %></span><%= r.text %></li>
+      <% }); %>
+    </ul>
+  <% } else { %>
+    <p class="empty-hint">Aucune : le Pi n'a rien eu à réparer.</p>
+  <% } %>
+  <details class="server-log">
+    <summary>Derniers messages de l'app</summary>
+    <pre><%= info.log || 'Rien à afficher ici.' %></pre>
+  </details>
+</section>
+
+<section class="server-panel">
+  <div class="danger-zone server-actions">
+    <h2>Actions</h2>
+    <% if (!info.onPi) { %><p class="danger-action__desc">Ces actions ne marchent que sur le Pi.</p><% } %>
+    <% actions.forEach(function (a) { %>
+      <div class="danger-action">
+        <div>
+          <div class="danger-action__title"><%= a.title %></div>
+          <div class="danger-action__desc"><%= a.desc %></div>
+        </div>
+        <button type="button" class="<%= a.danger ? 'btn-danger' : 'btn' %>" data-action="<%= a.name %>"<% if (a.confirm) { %> data-confirm="<%= a.confirm %>"<% } %>><%= a.button %></button>
+      </div>
+    <% }); %>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var PILL = { ok: 'ras', warn: 'verifier', alert: 'alerte' };
+    var startedAt = <%- JSON.stringify(info.startedAt) %>;
+    var toastTimer;
+
+    function say(message) {
+      var toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.hidden = true; }, 4000);
+    }
+
+    function paint(info) {
+      var pill = document.querySelector('[data-summary]');
+      pill.className = 'level-pill level-pill--' + PILL[info.summary.level] + ' server-summary';
+      pill.textContent = info.summary.text;
+      info.sections.forEach(function (section) {
+        section.rows.forEach(function (row) {
+          var el = document.querySelector('[data-row="' + row.key + '"]');
+          if (!el) return;
+          el.className = 'server-fact' + (row.level ? ' server-fact--' + row.level : '');
+          el.querySelector('[data-value]').textContent = row.value;
+          var note = el.querySelector('[data-note]');
+          note.textContent = row.note || '';
+          note.hidden = !row.note;
+        });
+      });
+    }
+
+    function refresh() {
+      if (document.hidden) return Promise.resolve(null);
+      return fetch('/serveur/etat.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (info) { if (info) paint(info); return info; })
+        .catch(function () { return null; });
+    }
+    setInterval(refresh, 15000);
+
+    // While the app or the Pi restarts: a panel, then the page reloads by
+    // itself once a new app answers (its start time has changed).
+    function waitForReturn(text, note) {
+      var veil = document.createElement('div');
+      veil.className = 'upload-veil';
+      veil.innerHTML = '<div class="upload-card" role="alertdialog" aria-live="assertive"><div class="upload-card__title"></div>'
+        + '<div class="upload-bar is-busy"><span></span></div><p class="upload-card__hint"></p></div>';
+      veil.querySelector('.upload-card__title').textContent = text;
+      veil.querySelector('.upload-card__hint').textContent = note;
+      document.body.appendChild(veil);
+      setTimeout(function poll() {
+        fetch('/serveur/etat.json', { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (info) {
+            if (info && info.startedAt !== startedAt) location.reload();
+            else setTimeout(poll, 3000);
+          })
+          .catch(function () { setTimeout(poll, 3000); });
+      }, 4000);
+    }
+
+    document.querySelectorAll('[data-action]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var name = button.dataset.action;
+        if (button.dataset.confirm && !confirm(button.dataset.confirm)) return;
+        button.disabled = true;
+        fetch('/serveur/action/' + name, { method: 'POST', headers: { 'X-Requested-With': 'serveur' } })
+          .then(function (r) { return r.json(); })
+          .then(function (answer) {
+            button.disabled = false;
+            if (!answer.ok) return say(answer.message);
+            if (name === 'redemarrer-app') return waitForReturn(answer.message, 'La page se rechargera toute seule.');
+            if (name === 'redemarrer-pi') return waitForReturn(answer.message, 'Compte 1 à 2 minutes : la page se rechargera toute seule.');
+            if (name === 'eteindre') {
+              var veil = document.createElement('div');
+              veil.className = 'upload-veil';
+              veil.innerHTML = '<div class="upload-card" role="alertdialog"><div class="upload-card__title">Le Pi s\'éteint</div>'
+                + '<p class="upload-card__hint">Attends une trentaine de secondes, que la petite lumière verte du Pi ne clignote plus, avant de le débrancher.</p></div>';
+              document.body.appendChild(veil);
+              return;
+            }
+            say(answer.message);
+            refresh();
+          })
+          .catch(function () {
+            button.disabled = false;
+            say("Le Pi n'a pas répondu.");
+          });
+      });
+    });
+  })();
+</script>
+
+<%- include('../partials/footer') %>

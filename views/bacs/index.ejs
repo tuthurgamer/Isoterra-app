@@ -5,7 +5,10 @@
     <div class="wordmark brand">ISOTERRA</div>
     <div class="subtitle tagline">Carnet d'élevage et registre professionnel</div>
   </div>
-  <div class="stamp stamp--muted date-stamp"><%= fmt.dateFr(new Date().toISOString()) %></div>
+  <div class="home-tools">
+    <a href="/serveur" class="server-link" aria-label="Serveur : état du Pi et de l'app"><%- icons.nav('serveur') %><span>Serveur</span></a>
+    <div class="stamp stamp--muted date-stamp"><%= fmt.dateFr(new Date().toISOString()) %></div>
+  </div>
 </div>
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
