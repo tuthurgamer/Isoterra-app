@@ -7,7 +7,7 @@ const db = require('../db/db');
 const { computeCompatibility, evaluateGroup, bestGroups } = require('../lib/compatibility');
 const { TRAIT_OPTIONS, defaultTraits, binomial } = require('../db/trait-defaults');
 const { getSettings, setSetting } = require('../lib/settings');
-const { processIcon, thumbPath } = require('../lib/icon-image');
+const { processIconInBackground, thumbPath } = require('../lib/icon-image');
 
 const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', escargot: 'Escargots', autre: 'Autres espèces' };
 const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'escargot', 'autre'];
@@ -39,8 +39,8 @@ function deleteIconFile(iconPath) {
 }
 
 // Trims and resizes the fresh upload, returning its public path.
-function storeIcon(file) {
-  processIcon(file.path, iconOriginalsDir);
+async function storeIcon(file) {
+  await processIconInBackground(file.path, iconOriginalsDir);
   return '/uploads/species-icons/' + file.filename;
 }
 
@@ -127,8 +127,8 @@ router.get('/icones.json', (req, res) => {
   res.set('Cache-Control', 'no-store').json(paths);
 });
 
-router.post('/', uploadIcon.single('icon'), (req, res) => {
-  const iconPath = req.file ? storeIcon(req.file) : null;
+router.post('/', uploadIcon.single('icon'), async (req, res) => {
+  const iconPath = req.file ? await storeIcon(req.file) : null;
   const info = insertOrUpdate(req.body, null, iconPath);
   res.redirect('/especes/' + info.id);
 });
@@ -186,12 +186,13 @@ router.post('/fiche-client/eleveur', (req, res) => {
   res.redirect(/^\/especes\/\d+\/fiche-client(\?fiche=\d+)?$/.test(back) ? back : '/especes');
 });
 
-router.post('/:id', uploadIcon.single('icon'), (req, res) => {
+router.post('/:id', uploadIcon.single('icon'), async (req, res) => {
   const current = db.prepare('SELECT icon_path FROM species WHERE id = ?').get(req.params.id);
   let iconPath = current ? current.icon_path : null;
   if (req.file) {
+    const fresh = await storeIcon(req.file);
     deleteIconFile(iconPath);
-    iconPath = storeIcon(req.file);
+    iconPath = fresh;
   } else if (req.body && req.body.remove_icon) {
     deleteIconFile(iconPath);
     iconPath = null;

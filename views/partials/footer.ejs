@@ -101,6 +101,133 @@
     });
   })();
 
+  // Envoi des photos. Une photo met plusieurs secondes à partir vers le Pi,
+  // et l'app installée n'affiche aucune barre de chargement : sans retour, on
+  // touche de nouveau « Enregistrer » ou on change de page, ce qui annule
+  // l'envoi en cours et la photo est perdue. Les formulaires avec une photo
+  // partent donc par ce script : un panneau montre l'avancement et couvre la
+  // page jusqu'à la fin, et un échec est annoncé (la photo reste choisie, on
+  // peut réessayer). Les photos sont réduites sur le téléphone avant de
+  // partir, ce qui rend l'envoi bien plus court.
+  (function () {
+    var veil, card, title, bar, hint, closeBtn;
+
+    function holdPage(event) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+
+    function show(text, percent, note) {
+      if (!veil) {
+        veil = document.createElement('div');
+        veil.className = 'upload-veil';
+        veil.innerHTML = '<div class="upload-card" role="alertdialog" aria-live="assertive">'
+          + '<div class="upload-card__title"></div><div class="upload-bar"><span></span></div>'
+          + '<p class="upload-card__hint"></p>'
+          + '<button type="button" class="btn upload-card__close" hidden>Fermer</button></div>';
+        document.body.appendChild(veil);
+        card = veil.firstChild;
+        title = card.querySelector('.upload-card__title');
+        bar = card.querySelector('.upload-bar');
+        hint = card.querySelector('.upload-card__hint');
+        closeBtn = card.querySelector('.upload-card__close');
+      }
+      veil.hidden = false;
+      card.classList.remove('is-error');
+      closeBtn.hidden = true;
+      title.textContent = text + (percent != null ? ' ' + percent + ' %' : '');
+      bar.classList.toggle('is-busy', percent == null);
+      bar.firstChild.style.width = percent == null ? '' : percent + '%';
+      hint.textContent = note || 'Reste sur cette page jusqu\'à la fin.';
+    }
+
+    // A file to send: lighter when it can be, the original otherwise. Photos
+    // become JPEG of 2048 px at most. Icons stay PNG (their transparent
+    // background is trimmed on the Pi); one that isn't PNG is converted.
+    function shrink(file, isIcon) {
+      if (!/^image\//.test(file.type) || !window.createImageBitmap) return Promise.resolve(file);
+      var isPng = file.type === 'image/png';
+      return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bitmap) {
+        var max = isIcon && !isPng ? 1024 : 2048;
+        var scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+        if (scale === 1 && (isIcon ? isPng : file.size < 1500000)) return file;
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        var type = isIcon ? 'image/png' : 'image/jpeg';
+        return new Promise(function (resolve) { canvas.toBlob(resolve, type, 0.85); }).then(function (blob) {
+          if (!blob || (!isIcon && blob.size >= file.size)) return file;
+          return new File([blob], file.name.replace(/\.[^.]*$/, '') + (isIcon ? '.png' : '.jpg'), { type: type });
+        });
+      }).catch(function () { return file; });
+    }
+
+    function send(form, submitter) {
+      var buttons = form.querySelectorAll('button, input[type="submit"]');
+      var files = Array.prototype.filter.call(form.querySelectorAll('input[type="file"]'), function (i) { return i.name && i.files.length; });
+      var isIcon = files.some(function (i) { return i.name === 'icon'; });
+      var data;
+      try { data = new FormData(form, submitter); } catch (e) { data = new FormData(form); }
+
+      function done() {
+        window.removeEventListener('beforeunload', holdPage);
+        delete form.dataset.sending;
+        buttons.forEach(function (b) { b.disabled = false; });
+      }
+      function fail(message, retry) {
+        done();
+        show('L\'envoi n\'a pas abouti', null, message + (retry ? ' Ta photo est toujours choisie : touche de nouveau « Enregistrer ».' : ''));
+        card.classList.add('is-error');
+        closeBtn.hidden = false;
+        closeBtn.onclick = function () { veil.hidden = true; };
+        closeBtn.focus();
+      }
+
+      form.dataset.sending = '1';
+      buttons.forEach(function (b) { b.disabled = true; });
+      window.addEventListener('beforeunload', holdPage);
+      show('Préparation de la photo…', null);
+
+      Promise.all(files.map(function (input) {
+        return shrink(input.files[0], input.name === 'icon').then(function (file) { data.set(input.name, file, file.name); });
+      })).then(function () {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action);
+        xhr.setRequestHeader('X-Requested-With', 'upload');
+        xhr.timeout = 180000;
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) show('Envoi de la photo…', Math.round(event.loaded / event.total * 100));
+        };
+        xhr.upload.onload = function () {
+          show(isIcon ? 'Préparation de l\'icône…' : 'Enregistrement…', null, 'Encore quelques secondes : reste sur cette page.');
+        };
+        xhr.onload = function () {
+          var answer = null;
+          try { answer = JSON.parse(xhr.responseText); } catch (e) {}
+          if (xhr.status < 300 && answer && answer.location) {
+            window.removeEventListener('beforeunload', holdPage);
+            location.assign(answer.location);
+            return;
+          }
+          var text = String(xhr.responseText || '').trim();
+          fail(text && text.length < 300 && text.indexOf('<') === -1 ? text : 'Le Pi a répondu par une erreur (' + xhr.status + ').', xhr.status >= 500);
+        };
+        xhr.onerror = xhr.ontimeout = function () { fail('La connexion avec le Pi a été coupée.', true); };
+        xhr.send(data);
+      });
+    }
+
+    document.addEventListener('submit', function (event) {
+      var form = event.target;
+      if (event.defaultPrevented || !form.matches('form[enctype="multipart/form-data"]')) return;
+      var hasFile = Array.prototype.some.call(form.querySelectorAll('input[type="file"]'), function (i) { return i.files.length; });
+      if (!hasFile || !window.FormData || !window.XMLHttpRequest) return;
+      event.preventDefault();
+      if (!form.dataset.sending) send(form, event.submitter);
+    });
+  })();
+
   // Menus d'espèces avec icônes : un <select> natif ne sait pas afficher
   // d'images, alors chaque <select data-picker> reste en place (formulaire,
   // scripts de la page) mais s'affiche comme un bouton qui ouvre la liste dans
