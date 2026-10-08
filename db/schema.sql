@@ -84,8 +84,9 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
--- Every photo of the journal, kept once even when a note for a whole bac
--- puts it in each species' journal (log_entries.photo_path = photos.path).
+-- Every photo, kept once even when a note for a whole bac puts it in each
+-- species' journal (log_entries.photo_path = photos.path). A photo added
+-- from a species' page without choosing a bac has no journal entry.
 CREATE TABLE IF NOT EXISTS photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   path TEXT NOT NULL UNIQUE,
@@ -95,6 +96,7 @@ CREATE TABLE IF NOT EXISTS photos (
   taken_at TEXT,  -- when it was shot (read from the photo), else when it was sent
   favorite INTEGER NOT NULL DEFAULT 0,  -- replaced by rating (a favourite became 5 stars)
   rating INTEGER NOT NULL DEFAULT 0,    -- 1 to 5 stars, 0 = not rated yet
+  caption TEXT,  -- the note of a photo added from a species' page without a bac
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 

@@ -45,7 +45,7 @@ router.get('/', (req, res) => {
     groups: (byStars ? byRating(photos) : byMonth(photos)).map((g) => ({ label: g.label, photos: g.photos.map(card) })),
     top: top.map(card),
     total: photos.length,
-    allCount: db.prepare('SELECT COUNT(*) AS n FROM photos p WHERE EXISTS (SELECT 1 FROM log_entries l WHERE l.photo_path = p.path)').get().n,
+    allCount: db.prepare('SELECT COUNT(*) AS n FROM photos').get().n,
     filter: { bacId, speciesId, byStars, label: filterLabel },
     links: { byDate: query({}), byStars: query({ tri: 'note' }) },
     bacs,

@@ -82,18 +82,47 @@
       </div>
     </div>
 
-    <% if (photos.length) { %>
-      <div class="species-photos">
-        <div class="species-photos__head"><span>Photos de mon élevage</span><a href="/photos?espece=<%= sp.id %>">Tout voir (<%= photoCount %>)</a></div>
+    <div class="species-photos" id="photos">
+      <div class="species-photos__head"><span>Photos de mon élevage</span><% if (photoCount) { %><a href="/photos?espece=<%= sp.id %>">Tout voir (<%= photoCount %>)</a><% } %></div>
+      <% if (photos.length) { %>
         <div class="photo-strip" data-photo-group>
           <% photos.forEach(function (photo) { %><%- include('../photos/_thumb', { photo: photo }) %><% }); %>
         </div>
         <p class="species-photos__hint"><%= sp.showcase_photo ? 'Une de ces photos est sur la fiche client.' : "Ouvre une photo puis « Fiche client » pour la mettre sur la fiche client." %></p>
-      </div>
-    <% } %>
-    <% if (!photos.length) { %>
-      <p class="species-photos__hint">Aucune photo de cette espèce pour l'instant. Dans la galerie, ouvre une photo puis « Espèces » pour indiquer qu'on la voit dessus.</p>
-    <% } %>
+      <% } else { %>
+        <p class="species-photos__hint">Aucune photo de cette espèce pour l'instant.</p>
+      <% } %>
+
+      <details class="species-photos__add" id="ajouter-photos">
+        <summary>+ Ajouter des photos</summary>
+        <form method="POST" action="/especes/<%= sp.id %>/photos" enctype="multipart/form-data" class="species-photos__form">
+          <% if (bacs.length) { %>
+            <div class="field">
+              <label>Ranger dans le journal de</label>
+              <select name="fiche_id" data-picker>
+                <% bacs.forEach(function (b) { %>
+                  <option value="<%= b.id %>" data-pics="<%= icons.pic(sp) %>">Bac <%= fmt.numTag(b.bac_id) %><%= b.bac_name ? ' « ' + b.bac_name + ' »' : '' %></option>
+                <% }); %>
+                <option value="" data-pics="<%= icons.pic(sp) %>">Aucun bac : seulement avec l'espèce</option>
+              </select>
+            </div>
+          <% } else { %>
+            <input type="hidden" name="fiche_id" value="">
+            <p class="species-photos__hint">Cette espèce n'est dans aucun bac : les photos restent avec elle, dans le guide et la galerie.</p>
+          <% } %>
+          <div class="field">
+            <label>Note (optionnelle)</label>
+            <textarea name="note" rows="2" placeholder="ex. Adulte en train de muer"></textarea>
+          </div>
+          <label class="hub-photo">
+            <input type="file" name="photo" accept="image/*" multiple required data-photo-input>
+            <span data-photo-label>+ Choisir les photos</span>
+          </label>
+          <div class="photo-preview" data-photo-preview hidden></div>
+          <button type="submit" class="btn">Ajouter</button>
+        </form>
+      </details>
+    </div>
 
     <% if (bacs.length) { %>
       <div style="margin-top:18px; font-size:12.5px; color:var(--ink-muted);">
@@ -136,5 +165,20 @@
     <div class="draft-note">Cette fiche est un point de départ général — à corriger et compléter avec ta propre expérience d'éleveur.</div>
   </div>
 </div>
+
+<script>
+  (function () {
+    if (location.hash === '#ajouter-photos') document.getElementById('ajouter-photos').open = true;
+    <% if (notice) { %>
+    document.addEventListener('DOMContentLoaded', function () {
+      var toast = document.getElementById('toast');
+      toast.textContent = <%- JSON.stringify(notice).replace(/</g, '\\u003c') %>;
+      toast.hidden = false;
+      setTimeout(function () { toast.hidden = true; }, 2600);
+      history.replaceState(null, '', location.pathname + location.hash);
+    });
+    <% } %>
+  })();
+</script>
 
 <%- include('../partials/footer') %>

@@ -84,6 +84,9 @@ if (!photoColumns.includes('rating')) {
   db.exec('ALTER TABLE photos ADD COLUMN rating INTEGER NOT NULL DEFAULT 0');
   db.exec('UPDATE photos SET rating = 5 WHERE favorite = 1');
 }
+if (!photoColumns.includes('caption')) {
+  db.exec('ALTER TABLE photos ADD COLUMN caption TEXT');
+}
 
 // The species of each photo are chosen photo by photo; when that arrives,
 // every photo starts with the species of the entries it was sent with.

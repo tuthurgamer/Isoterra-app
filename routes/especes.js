@@ -8,7 +8,9 @@ const { computeCompatibility, evaluateGroup, bestGroups } = require('../lib/comp
 const { TRAIT_OPTIONS, defaultTraits, binomial } = require('../db/trait-defaults');
 const { getSettings, setSetting } = require('../lib/settings');
 const { processIconInBackground, thumbPath } = require('../lib/icon-image');
-const { listPhotos, card } = require('../lib/photos');
+const { listPhotos, card, savePhotos, photosOfSpecies, removeUnusedPhotos } = require('../lib/photos');
+const { uploadPhotos } = require('../lib/uploads');
+const { noteForBac } = require('../lib/bac-log');
 
 const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', escargot: 'Escargots', autre: 'Autres espèces' };
 const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'escargot', 'autre'];
@@ -137,11 +139,35 @@ router.post('/', uploadIcon.single('icon'), async (req, res) => {
 router.get('/:id', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
-  const bacs = db.prepare('SELECT id, bac_id, morph FROM bac_species WHERE species_id = ?').all(req.params.id);
+  const bacs = db.prepare(`
+    SELECT bs.id, bs.bac_id, bs.morph, b.name AS bac_name FROM bac_species bs JOIN bacs b ON b.id = bs.bac_id
+    WHERE bs.species_id = ? ORDER BY bs.bac_id
+  `).all(req.params.id);
   // The photos where this species is seen, the best rated first.
   const photos = listPhotos({ speciesId: sp.id, best: true, limit: 12 }).map(card);
   const photoCount = listPhotos({ speciesId: sp.id }).length;
-  res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs, photos, photoCount, traitOptions: TRAIT_OPTIONS });
+  res.render('especes/show', {
+    title: sp.scientific_name, active: 'especes', sp, bacs, photos, photoCount, traitOptions: TRAIT_OPTIONS, notice: req.query.notice || null
+  });
+});
+
+// Photos added from a species' page: into the journal of one of its bacs
+// (fiche_id), or, with no bac chosen, kept with the species alone.
+router.post('/:id/photos', uploadPhotos, (req, res) => {
+  const b = req.body || {};
+  const sp = db.prepare('SELECT id FROM species WHERE id = ?').get(req.params.id);
+  const photos = savePhotos(req.files, b);
+  if (!sp) {
+    removeUnusedPhotos(photos);
+    return res.status(404).render('404', { path: req.path });
+  }
+  if (!photos.length) return res.redirect(`/especes/${sp.id}?notice=${encodeURIComponent('Choisis au moins une photo')}#photos`);
+  const note = String(b.note || '').trim() || null;
+  const fiche = db.prepare('SELECT id, bac_id FROM bac_species WHERE id = ? AND species_id = ?').get(Number(b.fiche_id) || 0, sp.id);
+  if (fiche) noteForBac(fiche.bac_id, { type: 'observation', note, photos, ficheId: fiche.id });
+  else photosOfSpecies(photos, sp.id, note);
+  const notice = photos.length > 1 ? `${photos.length} photos ajoutées` : 'Photo ajoutée';
+  res.redirect(`/especes/${sp.id}?notice=${encodeURIComponent(notice)}#photos`);
 });
 
 router.get('/:id/edit', (req, res) => {

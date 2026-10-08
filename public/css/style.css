@@ -472,6 +472,8 @@ input[type="file"]::file-selector-button {
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .grid-2col { display: grid; grid-template-columns: 300px 1fr; gap: 40px; }
 .grid-2col--even { grid-template-columns: 1.4fr 1fr; }
+/* A wide child (a strip of photos that scrolls) must not widen its column. */
+.grid-2col > * { min-width: 0; }
 @media (max-width: 900px) {
   .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-2col, .grid-2col--even { grid-template-columns: 1fr; }
@@ -2015,3 +2017,23 @@ html.viewer-open, html.viewer-open body { overflow: hidden; }
 @media print {
   .client-sheet__photo img { width: 46mm; height: 32mm; }
 }
+
+/* Adding photos from a species' page. */
+.species-photos__add { margin-top: 10px; }
+.species-photos__add > summary {
+  display: block;
+  list-style: none;
+  padding: 10px 14px;
+  border: 1.5px dashed var(--rust);
+  border-radius: 6px;
+  text-align: center;
+  font-family: 'IM Fell English SC', Georgia, serif;
+  letter-spacing: 0.05em;
+  font-size: 15px;
+  color: var(--rust);
+  cursor: pointer;
+}
+.species-photos__add > summary::-webkit-details-marker { display: none; }
+.species-photos__add[open] > summary { border-style: solid; }
+.species-photos__form { padding: 12px 2px 0; }
+.species-photos__form .hub-photo { margin-bottom: 12px; }
