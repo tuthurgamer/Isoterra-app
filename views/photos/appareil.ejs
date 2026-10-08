@@ -18,42 +18,45 @@
   </div>
 
   <div class="cam__top">
-    <a class="cam__icon" href="/photos" data-cam-close aria-label="Fermer l'appareil photo">&times;</a>
-    <div class="cam__dest">
-      <select aria-label="Ranger les photos dans" data-picker data-cam-dest>
-        <option value="">— où ranger les photos ? —</option>
-        <% ['Bacs', 'Une espèce, sans bac'].forEach(function (group) { %>
-          <optgroup label="<%= group %>">
-            <% destinations.filter(function (d) { return d.group === group; }).forEach(function (d) { %>
-              <option value="<%= d.value %>" data-pics="<%= d.pics %>"<%= d.value === chosen ? ' selected' : '' %>><%= d.label %></option>
-            <% }); %>
-          </optgroup>
-        <% }); %>
-      </select>
+    <div class="cam__bar">
+      <a class="cam__icon" href="/photos" data-cam-close aria-label="Fermer l'appareil photo">&times;</a>
+      <div class="cam__dest">
+        <select aria-label="Ranger les photos dans" data-picker data-cam-dest>
+          <option value="">— où ranger les photos ? —</option>
+          <% ['Bacs', 'Une espèce, sans bac'].forEach(function (group) { %>
+            <optgroup label="<%= group %>">
+              <% destinations.filter(function (d) { return d.group === group; }).forEach(function (d) { %>
+                <option value="<%= d.value %>" data-pics="<%= d.pics %>"<%= d.value === chosen ? ' selected' : '' %>><%= d.label %></option>
+              <% }); %>
+            </optgroup>
+          <% }); %>
+        </select>
+      </div>
+      <button type="button" class="cam__icon cam__pro" data-cam-pro aria-expanded="false">PRO</button>
     </div>
-    <button type="button" class="cam__icon cam__pro" data-cam-pro aria-expanded="false">PRO</button>
+    <div class="cam__quick" data-cam-quick></div>
   </div>
 
   <div class="cam__panel" data-cam-panel hidden></div>
 
-  <div class="cam__zooms" data-cam-zooms></div>
-
-  <div class="cam__bottom">
-    <button type="button" class="cam__roll" data-cam-roll aria-label="Photos de la séance">
-      <img alt="" hidden>
-      <span class="cam__roll-count" hidden></span>
-      <span class="cam__roll-state" hidden></span>
-    </button>
-    <button type="button" class="cam__shutter" data-cam-shoot aria-label="Prendre la photo"><span></span></button>
-    <button type="button" class="cam__icon cam__lens" data-cam-lens aria-label="Changer d'objectif" hidden>
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M4 9a8.5 8.5 0 0 1 14.6-3.6M20 15a8.5 8.5 0 0 1-14.6 3.6"/><path d="M18.6 2.5v3h-3M5.4 21.5v-3h3"/></svg>
-    </button>
+  <div class="cam__controls">
+    <div class="cam-dial" data-cam-dial hidden></div>
+    <div class="cam__lenses" data-cam-lenses></div>
+    <div class="cam__pills" data-cam-pills hidden></div>
+    <div class="cam__bottom">
+      <button type="button" class="cam__roll" data-cam-roll aria-label="Photos de la séance">
+        <img alt="" hidden>
+        <span class="cam__roll-count" hidden></span>
+        <span class="cam__roll-state" hidden></span>
+      </button>
+      <button type="button" class="cam__shutter" data-cam-shoot aria-label="Prendre la photo"><span></span></button>
+      <label class="cam__native" title="Ouvre l'appareil photo du téléphone (HDR, mode nuit) ; sa photo est rangée pareil">
+        <input type="file" accept="image/*" capture="environment" data-cam-native>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 8h3.2l1.8-2.6h6l1.8 2.6H20v11H4z"/><circle cx="12" cy="13.2" r="3.4"/></svg>
+        <span>Appareil<br>du téléphone</span>
+      </label>
+    </div>
   </div>
-
-  <label class="cam__native">
-    <input type="file" accept="image/*" capture="environment" data-cam-native>
-    <span>Appareil du téléphone</span>
-  </label>
 </div>
 
 <div class="cam-roll" data-cam-sheet hidden>
@@ -71,6 +74,6 @@
 <script>
   window.isoCam = <%- JSON.stringify({ destinations: destinations.map(function (d) { return { value: d.value, back: d.back }; }), chosen: chosen }).replace(/</g, '\\u003c') %>;
 </script>
-<script src="/js/appareil.js?v=1" defer></script>
+<script src="/js/appareil.js?v=2" defer></script>
 
 <%- include('../partials/footer') %>
