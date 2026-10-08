@@ -43,6 +43,7 @@ app.use('/vente', require('./routes/vente'));
 app.use('/tournee', require('./routes/tournee'));
 app.use('/serveur', require('./routes/serveur'));
 app.use('/photos', require('./routes/photos'));
+app.use('/appareil', require('./routes/appareil'));
 
 app.use((req, res) => {
   res.status(404).render('404', { path: req.path });

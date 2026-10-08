@@ -1,0 +1,76 @@
+<%- include('../partials/header', { title, active: 'photos', noNav: true }) %>
+
+<%# The camera, full screen above the page. Its script (public/js/appareil.js)
+    shows the phone's settings it can use, takes the photos and sends them one
+    by one to where they go; the viewer and the menus come from the footer. %>
+<div class="cam" data-cam>
+  <div class="cam__stage" data-cam-stage>
+    <video class="cam__video" playsinline muted autoplay></video>
+    <div class="cam__frame" data-cam-frame>
+      <div class="cam__grid" data-cam-grid hidden></div>
+      <div class="cam__focus" data-cam-focus hidden></div>
+    </div>
+    <canvas class="cam__histo" width="128" height="52" data-cam-histo hidden></canvas>
+    <div class="cam__level" data-cam-level hidden><span class="cam__level-line"></span><span class="cam__level-bubble"></span><em></em></div>
+    <div class="cam__countdown" data-cam-countdown hidden></div>
+    <div class="cam__flash" data-cam-flash></div>
+    <div class="cam__message" data-cam-message hidden></div>
+  </div>
+
+  <div class="cam__top">
+    <a class="cam__icon" href="/photos" data-cam-close aria-label="Fermer l'appareil photo">&times;</a>
+    <div class="cam__dest">
+      <select aria-label="Ranger les photos dans" data-picker data-cam-dest>
+        <option value="">— où ranger les photos ? —</option>
+        <% ['Bacs', 'Une espèce, sans bac'].forEach(function (group) { %>
+          <optgroup label="<%= group %>">
+            <% destinations.filter(function (d) { return d.group === group; }).forEach(function (d) { %>
+              <option value="<%= d.value %>" data-pics="<%= d.pics %>"<%= d.value === chosen ? ' selected' : '' %>><%= d.label %></option>
+            <% }); %>
+          </optgroup>
+        <% }); %>
+      </select>
+    </div>
+    <button type="button" class="cam__icon cam__pro" data-cam-pro aria-expanded="false">PRO</button>
+  </div>
+
+  <div class="cam__panel" data-cam-panel hidden></div>
+
+  <div class="cam__zooms" data-cam-zooms></div>
+
+  <div class="cam__bottom">
+    <button type="button" class="cam__roll" data-cam-roll aria-label="Photos de la séance">
+      <img alt="" hidden>
+      <span class="cam__roll-count" hidden></span>
+      <span class="cam__roll-state" hidden></span>
+    </button>
+    <button type="button" class="cam__shutter" data-cam-shoot aria-label="Prendre la photo"><span></span></button>
+    <button type="button" class="cam__icon cam__lens" data-cam-lens aria-label="Changer d'objectif" hidden>
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M4 9a8.5 8.5 0 0 1 14.6-3.6M20 15a8.5 8.5 0 0 1-14.6 3.6"/><path d="M18.6 2.5v3h-3M5.4 21.5v-3h3"/></svg>
+    </button>
+  </div>
+
+  <label class="cam__native">
+    <input type="file" accept="image/*" capture="environment" data-cam-native>
+    <span>Appareil du téléphone</span>
+  </label>
+</div>
+
+<div class="cam-roll" data-cam-sheet hidden>
+  <div class="cam-roll__head">
+    <div>
+      <div class="cam-roll__title">Photos de la séance</div>
+      <div class="cam-roll__sub" data-cam-sheet-sub></div>
+    </div>
+    <button type="button" class="cam__icon" data-cam-sheet-close aria-label="Revenir à l'appareil">&times;</button>
+  </div>
+  <div class="cam-roll__grid" data-cam-sheet-grid data-photo-group></div>
+  <a class="btn cam-roll__done" href="/photos" data-cam-done>Terminer</a>
+</div>
+
+<script>
+  window.isoCam = <%- JSON.stringify({ destinations: destinations.map(function (d) { return { value: d.value, back: d.back }; }), chosen: chosen }).replace(/</g, '\\u003c') %>;
+</script>
+<script src="/js/appareil.js?v=1" defer></script>
+
+<%- include('../partials/footer') %>

@@ -15,7 +15,10 @@
     <h1>Photos de l'élevage</h1>
     <div class="subtitle"><%= filter.label ? plural(total, 'photo') + ' · ' + filter.label : plural(allCount, 'photo') %></div>
   </div>
-  <a href="#ajouter" class="btn" data-open-add>+ Ajouter des photos</a>
+  <div class="masthead-actions">
+    <a href="/appareil<%= filter.bacId ? '?bac=' + filter.bacId : filter.speciesId ? '?espece=' + filter.speciesId : '' %>" class="btn camera-link"><%- icons.nav('photos') %><span>Appareil photo</span></a>
+    <a href="#ajouter" class="btn" data-open-add>+ Ajouter des photos</a>
+  </div>
 </div>
 <div class="rule-double"></div>
 <div class="rule-thin"></div>

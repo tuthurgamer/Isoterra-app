@@ -2037,3 +2037,107 @@ html.viewer-open, html.viewer-open body { overflow: hidden; }
 .species-photos__add[open] > summary { border-style: solid; }
 .species-photos__form { padding: 12px 2px 0; }
 .species-photos__form .hub-photo { margin-bottom: 12px; }
+
+/* --- Appareil photo (plein écran) --- */
+
+html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
+.cam { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: #000; color: #f3eee6; font-family: 'Special Elite', monospace; user-select: none; }
+.cam__stage { position: relative; flex: 1; overflow: hidden; touch-action: none; }
+.cam__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+.cam__frame { position: absolute; pointer-events: none; }
+.cam__grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)), linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)),
+    linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)), linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45));
+  background-size: 1px 100%, 1px 100%, 100% 1px, 100% 1px;
+  background-position: 33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%;
+  background-repeat: no-repeat;
+}
+.cam__grid[hidden], .cam__focus[hidden], .cam__histo[hidden], .cam__level[hidden], .cam__countdown[hidden], .cam__message[hidden] { display: none; }
+.cam__focus { position: absolute; width: 74px; height: 74px; margin: -37px 0 0 -37px; border: 2px solid #ffd54a; border-radius: 6px; animation: cam-focus 0.3s ease-out; }
+.cam__focus.is-done { border-color: #7ddc6f; }
+@keyframes cam-focus { from { transform: scale(1.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.cam__histo { position: absolute; top: calc(70px + env(safe-area-inset-top)); left: 12px; width: 128px; height: 52px; border-radius: 4px; }
+.cam__level { position: absolute; top: 50%; left: 50%; width: 120px; height: 120px; margin: -60px 0 0 -60px; pointer-events: none; }
+.cam__level-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; margin-top: -1px; background: rgba(255,255,255,0.8); transition: transform 0.08s linear; }
+.cam__level-bubble { display: none; position: absolute; top: 50%; left: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid rgba(255,255,255,0.9); border-radius: 50%; transition: transform 0.08s linear; }
+.cam__level.is-flat .cam__level-line { display: none; }
+.cam__level.is-flat .cam__level-bubble { display: block; }
+.cam__level.is-flat::before { content: ""; position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 1px dashed rgba(255,255,255,0.6); border-radius: 50%; }
+.cam__level.is-level .cam__level-line { background: #7ddc6f; }
+.cam__level.is-level .cam__level-bubble { border-color: #7ddc6f; background: rgba(125,220,111,0.3); }
+.cam__level em { position: absolute; left: 0; right: 0; bottom: -4px; font-style: normal; font-size: 12px; text-align: center; text-shadow: 0 1px 2px #000; }
+.cam__countdown { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 96px; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.6); pointer-events: none; }
+.cam__flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.cam__flash.is-on { animation: cam-flash 0.25s ease-out; }
+@keyframes cam-flash { from { opacity: 0.85; } to { opacity: 0; } }
+.cam__message { position: absolute; left: 16px; right: 16px; top: 40%; padding: 14px 16px; border-radius: 8px; background: rgba(20,16,12,0.9); font-family: 'Vollkorn', Georgia, serif; font-size: 15px; line-height: 1.45; text-align: center; }
+
+.cam__top { position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: calc(10px + env(safe-area-inset-top)) 10px 10px; background: linear-gradient(rgba(0,0,0,0.65), transparent); }
+.cam__icon { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 8px; border: none; border-radius: 22px; background: rgba(0,0,0,0.35); color: inherit; font-family: inherit; font-size: 28px; line-height: 1; text-decoration: none; cursor: pointer; }
+.cam__pro { font-size: 13px; letter-spacing: 0.08em; border: 1.5px solid rgba(243,238,230,0.6); }
+.cam__pro.is-on { border-color: #ffd54a; color: #ffd54a; }
+.cam__dest { flex: 1; min-width: 0; }
+.cam__dest .picker-btn { min-height: 44px; border-color: rgba(243,238,230,0.35); background: rgba(0,0,0,0.45); color: #f3eee6; font-size: 14px; }
+.cam__dest .picker-btn::after { border-color: #f3eee6; }
+
+.cam__panel { position: absolute; left: 0; right: 0; top: calc(64px + env(safe-area-inset-top)); bottom: calc(150px + env(safe-area-inset-bottom)); z-index: 2; overflow-y: auto; padding: 4px 14px 18px; background: rgba(12,10,8,0.86); overscroll-behavior: contain; }
+.cam__panel[hidden] { display: none; }
+.cam-panel__section { padding: 10px 0 6px; border-bottom: 1px solid rgba(243,238,230,0.12); }
+.cam-panel__section h3 { margin: 0 0 6px; font-family: 'IM Fell English SC', Georgia, serif; font-size: 17px; font-weight: normal; letter-spacing: 0.05em; color: #ffd54a; }
+.cam-panel__tip { margin: 6px 0 0; font-family: 'Vollkorn', Georgia, serif; font-size: 13px; font-style: italic; opacity: 0.75; }
+.cam-panel__foot { padding-top: 14px; text-align: center; }
+.cam-set { padding: 6px 0; }
+.cam-set[hidden] { display: none; }
+.cam-set__head { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; opacity: 0.9; }
+.cam-set__head output { color: #ffd54a; }
+.cam-set input[type="range"] { width: 100%; margin: 8px 0 2px; accent-color: #ffd54a; }
+.cam-set__choices { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.cam-chip { padding: 7px 12px; border: 1px solid rgba(243,238,230,0.35); border-radius: 999px; background: none; color: inherit; font-family: inherit; font-size: 12.5px; cursor: pointer; }
+.cam-chip.is-on { border-color: #ffd54a; background: rgba(255,213,74,0.18); color: #ffd54a; }
+
+.cam__zooms { position: absolute; left: 0; right: 0; bottom: calc(150px + env(safe-area-inset-bottom)); z-index: 1; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
+.cam__zooms button { pointer-events: auto; min-width: 44px; height: 36px; padding: 0 10px; border: none; border-radius: 18px; background: rgba(0,0,0,0.5); color: #f3eee6; font-family: inherit; font-size: 13px; cursor: pointer; }
+.cam__zooms button.is-on { color: #ffd54a; }
+
+.cam__bottom { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; align-items: center; justify-content: space-around; padding: 14px 18px calc(56px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(0,0,0,0.75) 35%); }
+.cam__shutter { position: relative; width: 78px; height: 78px; padding: 0; border: 4px solid #f3eee6; border-radius: 50%; background: none; cursor: pointer; }
+.cam__shutter span { position: absolute; inset: 5px; border-radius: 50%; background: #f3eee6; transition: transform 0.1s; }
+.cam__shutter:active span { transform: scale(0.88); }
+.cam__shutter:disabled { opacity: 0.35; }
+.cam__shutter.is-busy span { background: #ffd54a; }
+.cam__roll { position: relative; width: 54px; height: 54px; padding: 0; overflow: visible; border: 2px solid rgba(243,238,230,0.7); border-radius: 8px; background: rgba(255,255,255,0.08); cursor: pointer; }
+.cam__roll img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.cam__roll-count { position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: #f3eee6; color: #111; font-size: 12px; line-height: 22px; text-align: center; }
+.cam__roll-state { position: absolute; bottom: -5px; right: -5px; width: 14px; height: 14px; border: 2px solid #000; border-radius: 50%; background: #ffb74a; animation: cam-wait 1s ease-in-out infinite alternate; }
+.cam__roll-state.is-error { background: #e5533d; animation: none; }
+.cam__roll-count[hidden], .cam__roll-state[hidden], .cam__roll img[hidden], .cam__lens[hidden] { display: none; }
+@keyframes cam-wait { from { opacity: 0.4; } to { opacity: 1; } }
+.cam__lens { width: 54px; height: 54px; }
+.cam__native { position: absolute; left: 0; right: 0; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 1; display: flex; justify-content: center; }
+.cam__native input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.cam__native span { padding: 7px 14px; border: 1px solid rgba(243,238,230,0.4); border-radius: 999px; font-size: 12px; cursor: pointer; }
+
+.cam-roll { position: fixed; inset: 0; z-index: 75; display: flex; flex-direction: column; padding: calc(12px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); background: #15110d; color: #f3eee6; }
+.cam-roll[hidden] { display: none; }
+.cam-roll__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cam-roll__title { font-family: 'IM Fell English SC', Georgia, serif; font-size: 20px; letter-spacing: 0.04em; }
+.cam-roll__sub { font-family: 'Special Elite', monospace; font-size: 12px; opacity: 0.75; }
+.cam-roll__grid { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: max-content; gap: 6px; overflow-y: auto; }
+.cam-roll__tile { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: #2a2018; }
+.cam-roll__tile.photo-thumb { border: none; }
+.cam-roll__tile > img { width: 100%; height: 100%; object-fit: cover; }
+.cam-roll__badge { position: absolute; left: 4px; right: 4px; bottom: 4px; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.65); font-family: 'Special Elite', monospace; font-size: 10px; text-align: center; }
+.cam-roll__badge.is-envoi { color: #ffd54a; }
+.cam-roll__badge.is-erreur, .cam-roll__badge.is-refus { color: #ff8a73; }
+.cam-roll__drop { position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; padding: 0; border: none; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; font-size: 17px; cursor: pointer; }
+.cam-roll__done { margin-top: 12px; text-align: center; text-decoration: none; }
+
+/* Buttons opening the camera. */
+.masthead-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.camera-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.camera-link svg { width: 20px; height: 20px; flex-shrink: 0; }
+.species-photos__camera { display: flex; width: 100%; margin-bottom: 14px; }
+.cam-roll__done.btn { border-color: #f3eee6; background: #f3eee6; color: #15110d; box-shadow: none; }
+.cam__histo { border: 1px solid rgba(255,255,255,0.25); }

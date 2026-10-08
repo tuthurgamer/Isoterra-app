@@ -96,6 +96,7 @@
       <details class="species-photos__add" id="ajouter-photos">
         <summary>+ Ajouter des photos</summary>
         <form method="POST" action="/especes/<%= sp.id %>/photos" enctype="multipart/form-data" class="species-photos__form">
+          <a href="/appareil?espece=<%= sp.id %>" class="btn camera-link species-photos__camera"><%- icons.nav('photos') %><span>Prendre avec l'appareil photo</span></a>
           <% if (bacs.length) { %>
             <div class="field">
               <label>Ranger dans le journal de</label>
