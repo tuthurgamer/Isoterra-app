@@ -7,6 +7,9 @@ const db = new DatabaseSync(DB_PATH);
 
 db.exec('PRAGMA foreign_keys = ON;');
 
+// Tables whose arrival brings a one-time filling (see below).
+const hadPhotoSpecies = Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'photo_species'").get());
+
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 db.exec(schema);
 
@@ -74,6 +77,23 @@ db.exec(`
   SELECT photo_path, photo_path, MIN(created_at), MIN(created_at) FROM log_entries
   WHERE photo_path IS NOT NULL GROUP BY photo_path
 `);
+
+// Photos get a 0-to-5-star rating; the favourites of before become 5 stars.
+const photoColumns = db.prepare('PRAGMA table_info(photos)').all().map((c) => c.name);
+if (!photoColumns.includes('rating')) {
+  db.exec('ALTER TABLE photos ADD COLUMN rating INTEGER NOT NULL DEFAULT 0');
+  db.exec('UPDATE photos SET rating = 5 WHERE favorite = 1');
+}
+
+// The species of each photo are chosen photo by photo; when that arrives,
+// every photo starts with the species of the entries it was sent with.
+if (!hadPhotoSpecies) {
+  db.exec(`
+    INSERT OR IGNORE INTO photo_species (photo_id, species_id)
+    SELECT DISTINCT p.id, bs.species_id FROM photos p
+    JOIN log_entries l ON l.photo_path = p.path JOIN bac_species bs ON bs.id = l.bac_species_id
+  `);
+}
 
 const ficheColumns = db.prepare("PRAGMA table_info(bac_species)").all().map((c) => c.name);
 if (!ficheColumns.includes('feed_every_days')) {

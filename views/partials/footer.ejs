@@ -394,7 +394,7 @@
     var view, img, list = [], index = 0, opened = false;
     var zoom = { s: 1, x: 0, y: 0 };
     var ICON = {
-      star: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8L3.5 9.7l5.9-.8z"/></svg>',
+      tag: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 12.5V4h8.5l8.5 8.5-8.5 8.5z"/><circle cx="8" cy="8.5" r="1.4"/></svg>',
       share: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
       sheet: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h5"/></svg>',
       save: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>',
@@ -428,9 +428,13 @@
         + '<div class="viewer__bar"><span class="viewer__count"></span><button type="button" class="viewer__close" data-v="close" aria-label="Fermer">×</button></div>'
         + '<button type="button" class="viewer__nav viewer__nav--prev" data-v="prev" aria-label="Photo précédente">‹</button>'
         + '<button type="button" class="viewer__nav viewer__nav--next" data-v="next" aria-label="Photo suivante">›</button>'
-        + '<div class="viewer__info"><div class="viewer__when"></div><a class="viewer__where"></a><p class="viewer__note"></p>'
+        + '<div class="viewer__info"><div class="viewer__when"></div>'
+        + '<div class="viewer__stars" role="group" aria-label="Note de la photo">'
+        + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-v="rate" data-stars="' + n + '" aria-label="' + n + ' étoile' + (n > 1 ? 's' : '') + '">★</button>'; }).join('')
+        + '</div><a class="viewer__where"></a><p class="viewer__note"></p>'
+        + '<div class="viewer__panel" hidden></div>'
         + '<div class="viewer__actions">'
-        + '<button type="button" data-v="fav">' + ICON.star + '<span>Favori</span></button>'
+        + '<button type="button" data-v="species">' + ICON.tag + '<span>Espèces</span></button>'
         + '<button type="button" data-v="share">' + ICON.share + '<span>Partager</span></button>'
         + '<button type="button" data-v="sheet">' + ICON.sheet + '<span>Fiche client</span></button>'
         + '<a data-v="save" download>' + ICON.save + '<span>Enregistrer</span></a>'
@@ -467,10 +471,11 @@
       var note = view.querySelector('.viewer__note');
       note.textContent = [p.type, p.note].filter(Boolean).join(' — ');
       note.hidden = !note.textContent;
-      var fav = view.querySelector('[data-v="fav"]');
-      fav.classList.toggle('is-on', p.favorite);
-      fav.setAttribute('aria-pressed', p.favorite ? 'true' : 'false');
-      fav.lastChild.textContent = p.favorite ? 'Favorite' : 'Favori';
+      view.querySelectorAll('[data-v="rate"]').forEach(function (b) {
+        var n = Number(b.dataset.stars);
+        b.classList.toggle('is-on', n <= p.rating);
+        b.setAttribute('aria-pressed', n === p.rating ? 'true' : 'false');
+      });
       var onSheet = p.species.some(function (s) { return s.showcase; });
       var sheet = view.querySelector('[data-v="sheet"]');
       sheet.classList.toggle('is-on', onSheet);
@@ -480,6 +485,7 @@
       save.href = p.full;
       save.setAttribute('download', 'isoterra-photo-' + p.id + '.jpg');
       view.querySelector('.viewer__choice').hidden = true;
+      speciesPanel(p);
       view.querySelector('[data-v="prev"]').hidden = index === 0;
       view.querySelector('[data-v="next"]').hidden = index === list.length - 1;
     }
@@ -535,11 +541,55 @@
       if (!fromHistory) history.back();
     }
 
-    // Every thumbnail of this photo on the page follows a change.
+    // Every thumbnail of this photo on the page follows a change: its stars
+    // and the icons of its species.
     function update(p) {
       document.querySelectorAll('[data-photo-id="' + p.id + '"]').forEach(function (t) {
-        t.classList.toggle('is-favorite', p.favorite);
         t.dataset.photo = JSON.stringify(p);
+        var stars = t.querySelector('[data-stars]');
+        if (stars) {
+          stars.hidden = !p.rating;
+          stars.textContent = p.rating + '★';
+          stars.classList.toggle('is-top', p.rating === 5);
+        }
+        var who = t.querySelector('.photo-thumb__who');
+        if (who) { who.innerHTML = pics(p); who.hidden = !p.species.length; }
+      });
+    }
+
+    // The species seen on the photo, to tick among all those of the guide
+    // (those of its bac first). Shown while the "Espèces" button is on.
+    var guide = {};
+    function speciesPanel(p) {
+      var panel = view.querySelector('.viewer__panel');
+      if (panel.hidden) return;
+      var key = p.bac || 0;
+      if (!guide[key]) {
+        panel.innerHTML = '<p class="viewer__panel-wait">Chargement des espèces…</p>';
+        fetch('/photos/especes.json' + (p.bac ? '?bac=' + p.bac : ''))
+          .then(function (r) { return r.json(); })
+          .then(function (all) { guide[key] = all; if (list[index] === p) speciesPanel(p); })
+          .catch(function () { panel.innerHTML = '<p class="viewer__panel-wait">Le Pi n\'a pas répondu.</p>'; });
+        return;
+      }
+      var cat = window.isoCatIcons || {};
+      var on = {};
+      p.species.forEach(function (s) { on[s.id] = true; });
+      var html = '<div class="viewer__panel-head">Qui voit-on sur cette photo ?</div>';
+      var group = null;
+      guide[key].forEach(function (s) {
+        if (s.group !== group) {
+          html += (group === null ? '' : '</div>') + '<div class="viewer__panel-group">' + s.group + '</div><div class="viewer__chips">';
+          group = s.group;
+        }
+        var icon = s.pic.charAt(0) === '/' ? '<img src="' + s.pic.replace(/"/g, '&quot;') + '" alt="" class="species-icon-img">' : (cat[s.pic] || cat.autre || '');
+        html += '<button type="button" class="viewer__chip' + (on[s.id] ? ' is-on' : '') + '" data-v="tag" data-species="' + s.id + '" aria-pressed="' + (on[s.id] ? 'true' : 'false') + '">'
+          + '<span class="viewer__chip-icon">' + icon + '</span><span class="viewer__chip-name"></span></button>';
+      });
+      panel.innerHTML = html + '</div>';
+      guide[key].forEach(function (s) {
+        var chip = panel.querySelector('[data-species="' + s.id + '"] .viewer__chip-name');
+        if (chip) chip.textContent = s.name;
       });
     }
 
@@ -556,7 +606,7 @@
 
     function chooseSheet(p, s) {
       post('/photos/' + p.id + '/fiche-client', { species_id: s.id }).then(function (answer) {
-        p.species.forEach(function (other) { if (other.id === s.id) other.showcase = answer.chosen; });
+        Object.assign(p, answer.photo);
         // A species shows one photo: others of this page lose that place.
         if (answer.chosen) list.forEach(function (q) {
           if (q !== p) q.species.forEach(function (other) { if (other.id === s.id && other.showcase) { other.showcase = false; update(q); } });
@@ -575,13 +625,41 @@
       if (action === 'close') close();
       else if (action === 'prev') go(-1);
       else if (action === 'next') go(1);
-      else if (action === 'fav') {
-        post('/photos/' + p.id + '/favori').then(function (answer) {
-          p.favorite = answer.favorite;
+      else if (action === 'rate') {
+        // Touching the photo's own number of stars again takes them off.
+        var before = p.rating;
+        var stars = Number(target.dataset.stars) === before ? 0 : Number(target.dataset.stars);
+        p.rating = stars;
+        update(p);
+        render();
+        post('/photos/' + p.id + '/note', { rating: stars }).then(function (answer) {
+          Object.assign(p, answer.photo);
+          update(p);
+          say(stars ? stars + (stars > 1 ? ' étoiles' : ' étoile') : 'Note retirée');
+        }).catch(function () {
+          p.rating = before;
           update(p);
           render();
-          say(p.favorite ? 'Ajoutée aux favorites' : 'Retirée des favorites');
-        }).catch(function () { say('Le Pi n\'a pas répondu.'); });
+          say('Le Pi n\'a pas répondu.');
+        });
+      } else if (action === 'species') {
+        var panel = view.querySelector('.viewer__panel');
+        panel.hidden = !panel.hidden;
+        target.classList.toggle('is-on', !panel.hidden);
+        view.querySelector('.viewer__choice').hidden = true;
+        speciesPanel(p);
+      } else if (action === 'tag') {
+        var id = Number(target.dataset.species);
+        var add = !p.species.some(function (s) { return s.id === id; });
+        target.classList.toggle('is-on', add);
+        post('/photos/' + p.id + '/especes', { species_id: id, on: add }).then(function (answer) {
+          Object.assign(p, answer.photo);
+          update(p);
+          render();
+        }).catch(function () {
+          target.classList.toggle('is-on', !add);
+          say('Le Pi n\'a pas répondu.');
+        });
       } else if (action === 'share') share(p);
       else if (action === 'sheet') {
         if (p.species.length === 1) return chooseSheet(p, p.species[0]);

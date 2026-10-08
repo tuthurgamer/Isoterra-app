@@ -4,7 +4,7 @@ const db = require('../db/db');
 const { uploadPhotos } = require('../lib/uploads');
 const { groupEntries, PHOTO_COLUMNS } = require('../lib/journal');
 const { noteForBac } = require('../lib/bac-log');
-const { savePhotos, removeUnusedPhotos, card } = require('../lib/photos');
+const { savePhotos, removeUnusedPhotos, attachSpecies, card } = require('../lib/photos');
 
 router.get('/', (req, res) => {
   const rows = db.prepare(`
@@ -16,7 +16,9 @@ router.get('/', (req, res) => {
     ORDER BY l.created_at DESC, l.id DESC
     LIMIT 400
   `).all();
-  res.render('journal/index', { title: 'Journal', active: 'journal', logs: groupEntries(rows).slice(0, 200), photoCard: card });
+  const logs = groupEntries(rows).slice(0, 200);
+  attachSpecies(logs.flatMap((e) => e.photos));
+  res.render('journal/index', { title: 'Journal', active: 'journal', logs, photoCard: card });
 });
 
 router.get('/new', (req, res) => {

@@ -138,11 +138,9 @@ router.get('/:id', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
   const bacs = db.prepare('SELECT id, bac_id, morph FROM bac_species WHERE species_id = ?').all(req.params.id);
-  const photos = listPhotos({ speciesId: sp.id, limit: 12 }).map(card);
-  const photoCount = db.prepare(`
-    SELECT COUNT(DISTINCT l.photo_path) AS n FROM log_entries l JOIN bac_species bs ON bs.id = l.bac_species_id
-    WHERE bs.species_id = ? AND l.photo_path IS NOT NULL
-  `).get(sp.id).n;
+  // The photos where this species is seen, the best rated first.
+  const photos = listPhotos({ speciesId: sp.id, best: true, limit: 12 }).map(card);
+  const photoCount = listPhotos({ speciesId: sp.id }).length;
   res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs, photos, photoCount, traitOptions: TRAIT_OPTIONS });
 });
 

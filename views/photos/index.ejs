@@ -47,14 +47,26 @@
   </form>
 </details>
 
-<nav class="gallery-filters" aria-label="Filtrer les photos">
-  <a class="gallery-chip<%= !filter.bacId && !filter.speciesId && !filter.favorite ? ' is-on' : '' %>" href="/photos">Toutes</a>
-  <a class="gallery-chip<%= filter.favorite ? ' is-on' : '' %>" href="/photos?favoris=1">★ Favorites<% if (favoriteCount) { %> (<%= favoriteCount %>)<% } %></a>
-  <% if (filter.speciesId) { %>
-    <a class="gallery-chip is-on" href="/photos" title="Retirer ce filtre"><em><%= filter.label %></em> ×</a>
-  <% } %>
-  <span class="gallery-filters__bac">
-    <select aria-label="Photos d'un bac" data-picker data-bac-filter>
+<nav class="gallery-filters" aria-label="Trier et filtrer les photos">
+  <span class="gallery-sort">
+    <a class="gallery-chip<%= filter.byStars ? '' : ' is-on' %>" href="<%= links.byDate %>">Par date</a>
+    <a class="gallery-chip<%= filter.byStars ? ' is-on' : '' %>" href="<%= links.byStars %>">★ Par note</a>
+  </span>
+  <span class="gallery-filters__pick">
+    <select aria-label="Photos d'une espèce" data-picker data-filter="espece">
+      <option value="">Toutes les espèces</option>
+      <% var cat = null; speciesList.slice().sort(function (x, y) {
+           var order = Object.keys(fmt.CATEGORY_LABELS);
+           return order.indexOf(x.category) - order.indexOf(y.category) || x.scientific_name.localeCompare(y.scientific_name, 'fr');
+         }).forEach(function (sp) { %>
+        <% if (sp.category !== cat) { %><%- cat !== null ? '</optgroup>' : '' %><optgroup label="<%= fmt.CATEGORY_LABELS[sp.category] || sp.category %>"><% cat = sp.category; } %>
+        <option value="<%= sp.id %>" data-pics="<%= icons.pic(sp) %>"<%= filter.speciesId === sp.id ? ' selected' : '' %>><%= sp.scientific_name %></option>
+      <% }); %>
+      <%- cat !== null ? '</optgroup>' : '' %>
+    </select>
+  </span>
+  <span class="gallery-filters__pick">
+    <select aria-label="Photos d'un bac" data-picker data-filter="bac">
       <option value="">Tous les bacs</option>
       <% bacs.forEach(function (b) { %>
         <option value="<%= b.id %>" data-pics="<%= bacPics(b) %>"<%= filter.bacId === b.id ? ' selected' : '' %>>Bac <%= fmt.numTag(b.id) %> — <%= b.residents %></option>
@@ -63,18 +75,29 @@
   </span>
 </nav>
 
-<% if (!months.length) { %>
+<% if (top.length) { %>
+  <section class="gallery-best">
+    <div class="section-title"><h2>Les meilleures</h2><div class="rule"></div><div class="count">4 et 5 étoiles</div></div>
+    <div class="photo-strip photo-strip--best" data-photo-group>
+      <% top.forEach(function (photo) { %><%- include('_thumb', { photo: photo, withSpecies: true }) %><% }); %>
+    </div>
+  </section>
+<% } else if (total && !filter.byStars) { %>
+  <p class="gallery-hint">Ouvre une photo et donne-lui des étoiles : les meilleures s'afficheront ici, et passeront en premier partout.</p>
+<% } %>
+
+<% if (!groups.length) { %>
   <div class="gallery-empty">
-    <p><%= filter.favorite ? "Pas encore de favorites : touche l'étoile d'une photo pour l'ajouter ici." : filter.label ? 'Pas encore de photo ici.' : "Pas encore de photo. Ajoute-en depuis la page d'un bac ou avec le bouton ci-dessus." %></p>
+    <p><%= filter.label ? 'Pas encore de photo ici.' : "Pas encore de photo. Ajoute-en depuis la page d'un bac ou avec le bouton ci-dessus." %></p>
   </div>
 <% } %>
 
 <div data-photo-group>
-  <% months.forEach(function (m) { %>
+  <% groups.forEach(function (g) { %>
     <section class="gallery-month">
-      <div class="section-title"><h2><%= m.label %></h2><div class="rule"></div><div class="count"><%= plural(m.photos.length, 'photo') %></div></div>
+      <div class="section-title"><h2><%= g.label %></h2><div class="rule"></div><div class="count"><%= plural(g.photos.length, 'photo') %></div></div>
       <div class="gallery-grid">
-        <% m.photos.forEach(function (photo) { %>
+        <% g.photos.forEach(function (photo) { %>
           <%- include('_thumb', { photo: photo, withSpecies: true }) %>
         <% }); %>
       </div>
@@ -84,9 +107,15 @@
 
 <script>
   (function () {
-    // The bac filter leads to that bac's photos.
-    document.querySelector('[data-bac-filter]').addEventListener('change', function (event) {
-      location.href = event.target.value ? '/photos?bac=' + event.target.value : '/photos';
+    // Choosing a species or a bac shows its photos (one filter at a time),
+    // keeping the order chosen.
+    document.querySelectorAll('[data-filter]').forEach(function (select) {
+      select.addEventListener('change', function () {
+        var url = new URL(location.href);
+        ['bac', 'espece', 'notice'].forEach(function (k) { url.searchParams.delete(k); });
+        if (select.value) url.searchParams.set(select.dataset.filter, select.value);
+        location.href = url.pathname + url.search;
+      });
     });
     // "+ Ajouter des photos" opens the panel above.
     var panel = document.getElementById('ajouter');

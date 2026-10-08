@@ -93,8 +93,17 @@ CREATE TABLE IF NOT EXISTS photos (
   width INTEGER,
   height INTEGER,
   taken_at TEXT,  -- when it was shot (read from the photo), else when it was sent
-  favorite INTEGER NOT NULL DEFAULT 0,
+  favorite INTEGER NOT NULL DEFAULT 0,  -- replaced by rating (a favourite became 5 stars)
+  rating INTEGER NOT NULL DEFAULT 0,    -- 1 to 5 stars, 0 = not rated yet
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+-- The species seen on a photo, chosen photo by photo (at first those of the
+-- journal entries it was sent with). A species' page shows these photos.
+CREATE TABLE IF NOT EXISTS photo_species (
+  photo_id INTEGER NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+  species_id INTEGER NOT NULL REFERENCES species(id) ON DELETE CASCADE,
+  PRIMARY KEY (photo_id, species_id)
 );
 
 -- App-wide preferences, e.g. the breeder's name printed on customer sheets.
@@ -107,4 +116,5 @@ CREATE INDEX IF NOT EXISTS idx_bac_species_bac ON bac_species(bac_id);
 CREATE INDEX IF NOT EXISTS idx_bac_species_species ON bac_species(species_id);
 CREATE INDEX IF NOT EXISTS idx_log_entries_bs ON log_entries(bac_species_id);
 CREATE INDEX IF NOT EXISTS idx_log_entries_photo ON log_entries(photo_path);
+CREATE INDEX IF NOT EXISTS idx_photo_species_species ON photo_species(species_id);
 CREATE INDEX IF NOT EXISTS idx_orders_bs ON orders(bac_species_id);

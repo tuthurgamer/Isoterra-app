@@ -7,7 +7,7 @@ const { moveFiches } = require('../lib/bac-move');
 const { evaluateGroup } = require('../lib/compatibility');
 const { groupEntries, PHOTO_COLUMNS } = require('../lib/journal');
 const { uploadPhotos } = require('../lib/uploads');
-const { savePhotos, removeUnusedPhotos, listPhotos, card } = require('../lib/photos');
+const { savePhotos, removeUnusedPhotos, listPhotos, attachSpecies, card } = require('../lib/photos');
 const { numTag } = require('../views/helpers/format');
 
 router.get('/', (req, res) => {
@@ -95,18 +95,20 @@ router.get('/bacs/:id', (req, res) => {
     ORDER BY l.created_at DESC, l.id DESC
     LIMIT 300
   `).all(bac.id);
+  const journal = groupEntries(rows).slice(0, 40);
+  attachSpecies(journal.flatMap((e) => e.photos));
 
   res.render('bacs/show', {
     title: fiches.length > 1 ? `Bac mixte ${numTag(bac.id)}` : fiches.length ? fiches[0].scientific_name : `Bac ${numTag(bac.id)}`,
     active: 'bacs', bac, fiches,
     bacCare: bacStatusOf([...care.values()]),
     compat: fiches.length > 1 ? evaluateGroup(fiches.map((f) => ({ ...f, id: f.species_id }))) : null,
-    journal: groupEntries(rows).slice(0, 40),
+    journal,
     journalCount: db.prepare(`
       SELECT COUNT(*) AS entries, COUNT(DISTINCT photo_path) AS photos FROM log_entries
       WHERE bac_species_id IN (SELECT id FROM bac_species WHERE bac_id = ?)
     `).get(bac.id),
-    photos: listPhotos({ bacId: bac.id, limit: 12 }).map(card),
+    photos: listPhotos({ bacId: bac.id, best: true, limit: 12 }).map(card),
     photoCard: card,
     speciesList: db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all(),
     // The bacs these animals could join ("Réunir", "Déplacer").
