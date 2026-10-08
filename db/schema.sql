@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   path TEXT NOT NULL UNIQUE,
   thumb_path TEXT,
+  view_path TEXT,  -- a lighter copy for viewing (the photo itself stays untouched)
   width INTEGER,
   height INTEGER,
   taken_at TEXT,  -- when it was shot (read from the photo), else when it was sent

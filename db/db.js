@@ -87,6 +87,9 @@ if (!photoColumns.includes('rating')) {
 if (!photoColumns.includes('caption')) {
   db.exec('ALTER TABLE photos ADD COLUMN caption TEXT');
 }
+if (!photoColumns.includes('view_path')) {
+  db.exec('ALTER TABLE photos ADD COLUMN view_path TEXT');
+}
 
 // The species of each photo are chosen photo by photo; when that arrives,
 // every photo starts with the species of the entries it was sent with.
