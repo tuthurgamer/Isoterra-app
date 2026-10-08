@@ -62,6 +62,19 @@ if (!speciesColumns.includes('lifespan')) {
   db.exec('COMMIT');
 }
 
+// The photo of their own animals shown on a species' customer sheet.
+if (!speciesColumns.includes('showcase_photo')) {
+  db.exec('ALTER TABLE species ADD COLUMN showcase_photo TEXT');
+}
+
+// Journal photos sent before the gallery existed get their gallery row
+// (the photo itself stands in for its thumbnail).
+db.exec(`
+  INSERT OR IGNORE INTO photos (path, thumb_path, taken_at, created_at)
+  SELECT photo_path, photo_path, MIN(created_at), MIN(created_at) FROM log_entries
+  WHERE photo_path IS NOT NULL GROUP BY photo_path
+`);
+
 const ficheColumns = db.prepare("PRAGMA table_info(bac_species)").all().map((c) => c.name);
 if (!ficheColumns.includes('feed_every_days')) {
   db.exec('ALTER TABLE bac_species ADD COLUMN feed_every_days INTEGER');

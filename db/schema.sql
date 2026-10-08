@@ -84,6 +84,19 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
+-- Every photo of the journal, kept once even when a note for a whole bac
+-- puts it in each species' journal (log_entries.photo_path = photos.path).
+CREATE TABLE IF NOT EXISTS photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  path TEXT NOT NULL UNIQUE,
+  thumb_path TEXT,
+  width INTEGER,
+  height INTEGER,
+  taken_at TEXT,  -- when it was shot (read from the photo), else when it was sent
+  favorite INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 -- App-wide preferences, e.g. the breeder's name printed on customer sheets.
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
@@ -93,4 +106,5 @@ CREATE TABLE IF NOT EXISTS settings (
 CREATE INDEX IF NOT EXISTS idx_bac_species_bac ON bac_species(bac_id);
 CREATE INDEX IF NOT EXISTS idx_bac_species_species ON bac_species(species_id);
 CREATE INDEX IF NOT EXISTS idx_log_entries_bs ON log_entries(bac_species_id);
+CREATE INDEX IF NOT EXISTS idx_log_entries_photo ON log_entries(photo_path);
 CREATE INDEX IF NOT EXISTS idx_orders_bs ON orders(bac_species_id);

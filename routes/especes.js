@@ -8,6 +8,7 @@ const { computeCompatibility, evaluateGroup, bestGroups } = require('../lib/comp
 const { TRAIT_OPTIONS, defaultTraits, binomial } = require('../db/trait-defaults');
 const { getSettings, setSetting } = require('../lib/settings');
 const { processIconInBackground, thumbPath } = require('../lib/icon-image');
+const { listPhotos, card } = require('../lib/photos');
 
 const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', escargot: 'Escargots', autre: 'Autres espèces' };
 const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'escargot', 'autre'];
@@ -137,7 +138,12 @@ router.get('/:id', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
   const bacs = db.prepare('SELECT id, bac_id, morph FROM bac_species WHERE species_id = ?').all(req.params.id);
-  res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs, traitOptions: TRAIT_OPTIONS });
+  const photos = listPhotos({ speciesId: sp.id, limit: 12 }).map(card);
+  const photoCount = db.prepare(`
+    SELECT COUNT(DISTINCT l.photo_path) AS n FROM log_entries l JOIN bac_species bs ON bs.id = l.bac_species_id
+    WHERE bs.species_id = ? AND l.photo_path IS NOT NULL
+  `).get(sp.id).n;
+  res.render('especes/show', { title: sp.scientific_name, active: 'especes', sp, bacs, photos, photoCount, traitOptions: TRAIT_OPTIONS });
 });
 
 router.get('/:id/edit', (req, res) => {

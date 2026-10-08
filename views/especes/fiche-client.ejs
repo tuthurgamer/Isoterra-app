@@ -6,7 +6,7 @@
 <title><%= title %></title>
 <meta name="theme-color" content="#2a2018">
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/css/style.css?v=20261011">
+<link rel="stylesheet" href="/css/style.css?v=20261012">
 </head>
 <body class="client-sheet-page">
 <%
@@ -51,6 +51,9 @@
 
   <div class="sheet-toolbar__label">Rubriques sur la fiche</div>
   <div class="sheet-toggles">
+    <% if (sp.showcase_photo) { %>
+      <label class="sheet-toggle"><input type="checkbox" data-toggle="photo" checked><span>Photo</span></label>
+    <% } %>
     <% sections.forEach(function (s) { %>
       <label class="sheet-toggle"><input type="checkbox" data-toggle="<%= s.key %>" <%= s.on ? 'checked' : '' %>><span><%= s.title %></span></label>
     <% }); %>
@@ -87,6 +90,12 @@
       <div class="client-sheet__sci"><%= sp.scientific_name %></div>
       <div class="client-sheet__diff"><span>Difficulté</span><%- icons.ratingDiamonds(sp.difficulty) %></div>
     </div>
+    <% if (sp.showcase_photo) { %>
+      <figure class="client-sheet__photo" data-section="photo">
+        <img src="<%= sp.showcase_photo %>" alt="<%= sp.scientific_name %>, photo de l'élevage">
+        <figcaption>Photo de l'élevage</figcaption>
+      </figure>
+    <% } %>
   </div>
 
   <dl class="client-sheet__facts">

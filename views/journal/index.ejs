@@ -14,7 +14,7 @@
   <p style="font-style:italic; color:var(--ink-muted);">Rien de consigné pour l'instant.</p>
 <% } %>
 
-<div class="ledger">
+<div class="ledger" data-photo-group>
   <% logs.forEach(function(log) { %>
     <div class="row ledger--wide">
       <div class="date"><%= fmt.dateShort(log.created_at) %></div>
@@ -22,9 +22,14 @@
         <% log.species.forEach(function (s, k) { %><a href="/fiches/<%= s.bac_species_id %>" style="color:var(--ink); font-style:italic;"><%= s.scientific_name %><%= s.morph ? " '" + s.morph + "'" : '' %></a><%= k < log.species.length - 1 ? ', ' : '' %><% }); %>
         <span style="font-family:'Special Elite',monospace; font-size:10px; color:var(--ink-faint);"><%= fmt.numTag(log.bac_id) %></span>
         <% if (log.note) { %><div style="font-style:italic; color:var(--ink-muted); font-size:12.5px; margin-top:2px;"><%= log.note %></div><% } %>
+        <% if (log.photos.length) { %>
+          <div class="hub-journal__photos">
+            <% log.photos.forEach(function (p) { %><%- include('../photos/_thumb', { photo: photoCard(p) }) %><% }); %>
+          </div>
+        <% } %>
       </div>
       <div style="font-style:italic; color:var(--ink-muted);"><%= fmt.LOG_TYPE_LABELS[log.type] || log.type %></div>
-      <div><% if (log.photo_path) { %><a href="<%= log.photo_path %>" target="_blank" style="font-size:11px;">photo</a><% } %></div>
+      <div></div>
     </div>
   <% }); %>
 </div>

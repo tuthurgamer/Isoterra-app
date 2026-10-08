@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
 const { careStatuses, bacStatusOf, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
-const fs = require('node:fs');
 const { logForBac, noteForBac } = require('../lib/bac-log');
 const { moveFiches } = require('../lib/bac-move');
 const { evaluateGroup } = require('../lib/compatibility');
-const { groupEntries } = require('../lib/journal');
-const { uploadPhoto } = require('../lib/uploads');
+const { groupEntries, PHOTO_COLUMNS } = require('../lib/journal');
+const { uploadPhotos } = require('../lib/uploads');
+const { savePhotos, removeUnusedPhotos, listPhotos, card } = require('../lib/photos');
 const { numTag } = require('../views/helpers/format');
 
 router.get('/', (req, res) => {
@@ -86,13 +86,14 @@ router.get('/bacs/:id', (req, res) => {
   for (const f of fiches) f.care = care.get(f.id);
 
   const rows = db.prepare(`
-    SELECT l.*, bs.bac_id, bs.morph, s.scientific_name
+    SELECT l.*, bs.bac_id, bs.morph, bs.species_id, s.scientific_name, s.category, s.icon_path, s.showcase_photo, ${PHOTO_COLUMNS}
     FROM log_entries l
     JOIN bac_species bs ON bs.id = l.bac_species_id
     JOIN species s ON s.id = bs.species_id
+    LEFT JOIN photos p ON p.path = l.photo_path
     WHERE bs.bac_id = ?
     ORDER BY l.created_at DESC, l.id DESC
-    LIMIT 150
+    LIMIT 300
   `).all(bac.id);
 
   res.render('bacs/show', {
@@ -102,9 +103,11 @@ router.get('/bacs/:id', (req, res) => {
     compat: fiches.length > 1 ? evaluateGroup(fiches.map((f) => ({ ...f, id: f.species_id }))) : null,
     journal: groupEntries(rows).slice(0, 40),
     journalCount: db.prepare(`
-      SELECT COUNT(*) AS entries, COUNT(photo_path) AS photos FROM log_entries
+      SELECT COUNT(*) AS entries, COUNT(DISTINCT photo_path) AS photos FROM log_entries
       WHERE bac_species_id IN (SELECT id FROM bac_species WHERE bac_id = ?)
     `).get(bac.id),
+    photos: listPhotos({ bacId: bac.id, limit: 12 }).map(card),
+    photoCard: card,
     speciesList: db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all(),
     // The bacs these animals could join ("Réunir", "Déplacer").
     otherBacs: db.prepare(`
@@ -135,24 +138,25 @@ router.post('/bacs/:id/merge', (req, res) => {
 
 const NOTE_TYPES = ['observation', 'ponte', 'vente', 'nourrissage', 'nettoyage', 'pulverisation'];
 
-// A note and/or a photo from the bac's page, for one species or the whole bac.
-router.post('/bacs/:id/note', uploadPhoto.single('photo'), (req, res) => {
+// A note and/or photos from the bac's page, for one species or the whole bac.
+router.post('/bacs/:id/note', uploadPhotos, (req, res) => {
   const b = req.body || {};
   const bacId = Number(req.params.id);
   const note = String(b.note || '').trim() || null;
-  const photoPath = req.file ? '/uploads/' + req.file.filename : null;
-  if (!note && !photoPath) {
+  const photos = savePhotos(req.files, b);
+  if (!note && !photos.length) {
     return res.redirect(`/bacs/${bacId}?notice=${encodeURIComponent('Rien à enregistrer : écris une note ou ajoute une photo')}`);
   }
   const written = noteForBac(bacId, {
     type: NOTE_TYPES.includes(b.type) ? b.type : 'observation',
-    note, photoPath, ficheId: Number(b.fiche_id) || null
+    note, photos, ficheId: Number(b.fiche_id) || null
   });
   if (!written) {
-    if (req.file) fs.unlink(req.file.path, () => {});
+    removeUnusedPhotos(photos);
     return res.status(404).render('404', { path: req.path });
   }
-  res.redirect(`/bacs/${bacId}?notice=${encodeURIComponent('Ajouté au journal')}#journal`);
+  const notice = photos.length > 1 ? `${photos.length} photos ajoutées` : 'Ajouté au journal';
+  res.redirect(`/bacs/${bacId}?notice=${encodeURIComponent(notice)}#journal`);
 });
 
 // The bac's name and substrate.

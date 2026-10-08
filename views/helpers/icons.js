@@ -12,6 +12,7 @@ const NAV_ICONS = {
   journal: svg('<path d="M19 4c-5 0-11 4-13 11l-1 5 5-1C17 17 21 11 21 6"/><path d="M9 15l-3 3"/>', { stroke: 1.6 }),
   pontes: svg('<ellipse cx="12" cy="13" rx="5" ry="7"/><path d="M4 18c2-2 5-2 8-2s6 0 8 2"/>', { stroke: 1.6 }),
   vente: svg('<path d="M12 3v18M6 21h12"/><path d="M4 7h6M14 7h6"/><path d="M4 7l-2 5a3 3 0 0 0 6 0zM20 7l-2 5a3 3 0 0 0 6 0z"/>', { stroke: 1.6 }),
+  photos: svg('<path d="M4 8h3.2l1.8-2.6h6l1.8 2.6H20v11H4z"/><circle cx="12" cy="13.2" r="3.4"/>', { stroke: 1.6 }),
   serveur: svg('<rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/>', { stroke: 1.6 })
 };
 

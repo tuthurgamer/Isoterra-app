@@ -33,8 +33,9 @@
   </div>
 
   <div class="field">
-    <label>Photo (optionnel — elle compte à elle seule comme observation)</label>
-    <input type="file" name="photo" accept="image/*" capture="environment">
+    <label>Photos (optionnel — une ou plusieurs)</label>
+    <input type="file" name="photo" accept="image/*" multiple data-photo-input>
+    <div class="photo-preview" data-photo-preview hidden></div>
   </div>
 
   <button type="submit" class="btn">Consigner l'entrée</button>

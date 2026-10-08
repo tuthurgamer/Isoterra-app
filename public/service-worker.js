@@ -1,5 +1,6 @@
 const SHELL_CACHE = 'isoterra-shell-v6';
 const ICON_CACHE = 'isoterra-icones-v1';
+const THUMB_CACHE = 'isoterra-vignettes-v1';
 const SHELL_ASSETS = [
   '/css/style.css',
   '/manifest.json',
@@ -20,7 +21,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== SHELL_CACHE && k !== ICON_CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => ![SHELL_CACHE, ICON_CACHE, THUMB_CACHE].includes(k)).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -61,10 +62,10 @@ self.addEventListener('message', (event) => {
   if (event.data === 'icones') event.waitUntil(syncIcons());
 });
 
-// An icon comes from the phone when it has it, else from the Pi (and is
-// kept for next time).
-async function iconResponse(request, path) {
-  const cache = await caches.open(ICON_CACHE);
+// An icon (or a photo's thumbnail) comes from the phone when it has it,
+// else from the Pi, and is kept for next time: it never changes.
+async function iconResponse(request, path, cacheName = ICON_CACHE) {
+  const cache = await caches.open(cacheName);
   const stored = await cache.match(path);
   if (stored) return stored;
   const response = await fetch(request);
@@ -98,7 +99,7 @@ async function shellResponse(event, url) {
   return fresh.catch(() => cache.match(url.pathname, { ignoreSearch: true }));
 }
 
-// Everything else (pages, forms, journal photos) goes straight to the
+// Everything else (pages, forms, full-size photos) goes straight to the
 // network, since the data changes constantly and staleness would be
 // misleading in a log.
 self.addEventListener('fetch', (event) => {
@@ -107,6 +108,8 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/uploads/species-icons/')) {
     event.respondWith(iconResponse(event.request, url.pathname));
+  } else if (url.pathname.startsWith('/uploads/photos/') && /-sm\.\w+$/.test(url.pathname)) {
+    event.respondWith(iconResponse(event.request, url.pathname, THUMB_CACHE));
   } else if (SHELL_ASSETS.includes(url.pathname)) {
     event.respondWith(shellResponse(event, url));
   }

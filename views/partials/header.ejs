@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Isoterra">
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<link rel="stylesheet" href="/css/style.css?v=20261011">
+<link rel="stylesheet" href="/css/style.css?v=20261012">
 </head>
 <body>
 <div class="app-shell">
@@ -36,6 +36,10 @@
     <a class="tab-item <%= active === 'journal' ? 'active' : '' %>" href="/journal">
       <%- icons.nav('journal') %>
       <span class="tab-caption">JOURNAL</span>
+    </a>
+    <a class="tab-item <%= active === 'photos' ? 'active' : '' %>" href="/photos">
+      <%- icons.nav('photos') %>
+      <span class="tab-caption">PHOTOS</span>
     </a>
     <a class="tab-item <%= active === 'pontes' ? 'active' : '' %>" href="/pontes">
       <%- icons.nav('pontes') %>

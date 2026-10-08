@@ -1,14 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const path = require('node:path');
-const fs = require('node:fs');
 const db = require('../db/db');
 const { evaluateGroup } = require('../lib/compatibility');
 const { careStatuses, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
 const { moveFiches } = require('../lib/bac-move');
+const { removeUnusedPhotos } = require('../lib/photos');
 const { numTag } = require('../views/helpers/format');
-
-const publicDir = path.join(__dirname, '..', 'public');
 
 // Deletes fiches — their journal goes with them (ON DELETE CASCADE, and
 // linked orders are kept, unlinked) — then the photos those journal entries
@@ -29,10 +26,7 @@ function deleteFiches(ficheIds, bacId) {
     db.exec('ROLLBACK');
     throw err;
   }
-  const stillUsed = db.prepare('SELECT 1 FROM log_entries WHERE photo_path = ? LIMIT 1');
-  for (const p of photos) {
-    if (!stillUsed.get(p)) fs.unlink(path.join(publicDir, p), () => {});
-  }
+  removeUnusedPhotos(photos);
 }
 
 // A rhythm field left empty means "use the species' rhythm".

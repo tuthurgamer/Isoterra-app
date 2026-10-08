@@ -98,15 +98,25 @@
     <div class="field">
       <textarea name="note" aria-label="Note" placeholder="Ce que tu as observé, fait ou vendu…"></textarea>
     </div>
+    <div class="photo-preview" data-photo-preview hidden></div>
     <div class="hub-note__foot">
       <label class="hub-photo">
-        <input type="file" name="photo" accept="image/*" data-photo-input>
-        <span data-photo-label>+ Ajouter une photo</span>
+        <input type="file" name="photo" accept="image/*" multiple data-photo-input>
+        <span data-photo-label>+ Ajouter des photos</span>
       </label>
       <button type="submit" class="btn">Enregistrer</button>
     </div>
   </form>
 </section>
+
+<% if (photos.length) { %>
+  <section class="hub-section" id="photos">
+    <div class="section-title"><h2>Photos du bac</h2><div class="rule"></div><a class="count section-link" href="/photos?bac=<%= bac.id %>">Tout voir (<%= journalCount.photos %>)</a></div>
+    <div class="photo-strip" data-photo-group>
+      <% photos.forEach(function (photo) { %><%- include('../photos/_thumb', { photo: photo }) %><% }); %>
+    </div>
+  </section>
+<% } %>
 
 <section class="hub-section" id="animaux">
   <div class="section-title">
@@ -254,7 +264,7 @@
   <% if (!journal.length) { %>
     <p class="empty-hint">Rien de noté pour l'instant.</p>
   <% } %>
-  <ol class="hub-journal">
+  <ol class="hub-journal" data-photo-group>
     <% journal.forEach(function (e) {
          var who = mixed ? (e.species.length === fiches.length ? 'tout le bac' : e.species.map(nameOf).join(', ')) : null; %>
       <li class="hub-journal__item">
@@ -262,8 +272,10 @@
         <div class="hub-journal__what">
           <div class="hub-journal__type"><%- icons.action(e.type) %><strong><%= fmt.LOG_TYPE_LABELS[e.type] || e.type %></strong><% if (who) { %><em><%= who %></em><% } %></div>
           <% if (e.note) { %><p><%= e.note %></p><% } %>
-          <% if (e.photo_path) { %>
-            <a href="<%= e.photo_path %>" target="_blank" class="hub-journal__photo"><img src="<%= e.photo_path %>" alt="Photo du <%= fmt.dateShort(e.created_at) %>" loading="lazy"></a>
+          <% if (e.photos.length) { %>
+            <div class="hub-journal__photos">
+              <% e.photos.forEach(function (p) { %><%- include('../photos/_thumb', { photo: photoCard(p) }) %><% }); %>
+            </div>
           <% } %>
         </div>
       </li>
@@ -313,12 +325,6 @@
     }
     window.addEventListener('hashchange', openTarget);
     document.addEventListener('DOMContentLoaded', openTarget);
-
-    // The chosen photo shows its name in place of the button's text.
-    var photo = document.querySelector('[data-photo-input]');
-    photo.addEventListener('change', function () {
-      document.querySelector('[data-photo-label]').textContent = photo.files.length ? 'Photo : ' + photo.files[0].name : '+ Ajouter une photo';
-    });
 
     <% if (notice) { %>
     // What the last action did, as a short toast; the URL forgets it.

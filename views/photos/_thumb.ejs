@@ -1,0 +1,13 @@
+<%# One photo as a thumbnail; a tap opens it in the viewer (footer script),
+    which reads its details from data-photo. `withSpecies` adds the animals'
+    icons in a corner. %>
+<button type="button" class="photo-thumb<%= photo.favorite ? ' is-favorite' : '' %>" data-photo="<%= JSON.stringify(photo) %>" data-photo-id="<%= photo.id %>"
+        aria-label="Photo du <%= photo.taken %><%= photo.species.length ? ' — ' + photo.species.map(function (s) { return s.name; }).join(', ') : '' %>">
+  <img src="<%= photo.thumb %>" alt="" loading="lazy" decoding="async">
+  <span class="photo-thumb__star" aria-hidden="true">★</span>
+  <% if (typeof withSpecies !== 'undefined' && withSpecies && photo.species.length) { %>
+    <span class="photo-thumb__who" aria-hidden="true">
+      <% photo.species.slice(0, 3).forEach(function (s) { %><%- s.pic.charAt(0) === '/' ? '<img src="' + fmt.escape(s.pic) + '" alt="" class="species-icon-img">' : icons.species(s.pic, 20) %><% }); %>
+    </span>
+  <% } %>
+</button>

@@ -1,0 +1,113 @@
+<%- include('../partials/header', { title, active }) %>
+
+<%
+  var speciesById = {};
+  speciesList.forEach(function (sp) { speciesById[sp.id] = sp; });
+  var bacPics = function (b) {
+    return String(b.species_ids || '').split(',').map(function (id) { return speciesById[id]; }).filter(Boolean).map(icons.pic).join('|');
+  };
+  var plural = function (n, word) { return n + ' ' + word + (n > 1 ? 's' : ''); };
+%>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">GALERIE</div>
+    <h1>Photos de l'élevage</h1>
+    <div class="subtitle"><%= filter.label ? plural(total, 'photo') + ' · ' + filter.label : plural(allCount, 'photo') %></div>
+  </div>
+  <a href="#ajouter" class="btn" data-open-add>+ Ajouter des photos</a>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<details class="gallery-add" id="ajouter">
+  <summary>Ajouter des photos</summary>
+  <form method="POST" action="/photos" enctype="multipart/form-data" class="gallery-add__form">
+    <div class="field">
+      <label>Bac</label>
+      <select name="bac_id" data-picker required>
+        <option value="">— choisir le bac —</option>
+        <% bacs.forEach(function (b) { %>
+          <option value="<%= b.id %>" data-pics="<%= bacPics(b) %>"<%= filter.bacId === b.id ? ' selected' : '' %>>Bac <%= fmt.numTag(b.id) %><%= b.name ? ' « ' + b.name + ' »' : '' %> — <%= b.residents %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="field">
+      <label>Note (optionnelle, pour toutes ces photos)</label>
+      <textarea name="note" rows="2" placeholder="ex. Première mue des juvéniles"></textarea>
+    </div>
+    <div class="field">
+      <label class="hub-photo">
+        <input type="file" name="photo" accept="image/*" multiple required data-photo-input>
+        <span data-photo-label>+ Choisir les photos</span>
+      </label>
+    </div>
+    <div class="photo-preview" data-photo-preview hidden></div>
+    <button type="submit" class="btn">Ajouter</button>
+  </form>
+</details>
+
+<nav class="gallery-filters" aria-label="Filtrer les photos">
+  <a class="gallery-chip<%= !filter.bacId && !filter.speciesId && !filter.favorite ? ' is-on' : '' %>" href="/photos">Toutes</a>
+  <a class="gallery-chip<%= filter.favorite ? ' is-on' : '' %>" href="/photos?favoris=1">★ Favorites<% if (favoriteCount) { %> (<%= favoriteCount %>)<% } %></a>
+  <% if (filter.speciesId) { %>
+    <a class="gallery-chip is-on" href="/photos" title="Retirer ce filtre"><em><%= filter.label %></em> ×</a>
+  <% } %>
+  <span class="gallery-filters__bac">
+    <select aria-label="Photos d'un bac" data-picker data-bac-filter>
+      <option value="">Tous les bacs</option>
+      <% bacs.forEach(function (b) { %>
+        <option value="<%= b.id %>" data-pics="<%= bacPics(b) %>"<%= filter.bacId === b.id ? ' selected' : '' %>>Bac <%= fmt.numTag(b.id) %> — <%= b.residents %></option>
+      <% }); %>
+    </select>
+  </span>
+</nav>
+
+<% if (!months.length) { %>
+  <div class="gallery-empty">
+    <p><%= filter.favorite ? "Pas encore de favorites : touche l'étoile d'une photo pour l'ajouter ici." : filter.label ? 'Pas encore de photo ici.' : "Pas encore de photo. Ajoute-en depuis la page d'un bac ou avec le bouton ci-dessus." %></p>
+  </div>
+<% } %>
+
+<div data-photo-group>
+  <% months.forEach(function (m) { %>
+    <section class="gallery-month">
+      <div class="section-title"><h2><%= m.label %></h2><div class="rule"></div><div class="count"><%= plural(m.photos.length, 'photo') %></div></div>
+      <div class="gallery-grid">
+        <% m.photos.forEach(function (photo) { %>
+          <%- include('_thumb', { photo: photo, withSpecies: true }) %>
+        <% }); %>
+      </div>
+    </section>
+  <% }); %>
+</div>
+
+<script>
+  (function () {
+    // The bac filter leads to that bac's photos.
+    document.querySelector('[data-bac-filter]').addEventListener('change', function (event) {
+      location.href = event.target.value ? '/photos?bac=' + event.target.value : '/photos';
+    });
+    // "+ Ajouter des photos" opens the panel above.
+    var panel = document.getElementById('ajouter');
+    document.querySelector('[data-open-add]').addEventListener('click', function (event) {
+      event.preventDefault();
+      panel.open = !panel.open;
+      if (panel.open) panel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+    if (location.hash === '#ajouter') panel.open = true;
+    <% if (notice) { %>
+    document.addEventListener('DOMContentLoaded', function () {
+      var toast = document.getElementById('toast');
+      toast.textContent = <%- JSON.stringify(notice).replace(/</g, '\\u003c') %>;
+      toast.hidden = false;
+      setTimeout(function () { toast.hidden = true; }, 2600);
+      var url = new URL(location.href);
+      url.searchParams.delete('notice');
+      history.replaceState(null, '', url.pathname + url.search);
+    });
+    <% } %>
+  })();
+</script>
+
+<%- include('../partials/footer') %>
