@@ -818,7 +818,9 @@
   (function () {
     var CAT_ICONS = <%- JSON.stringify(icons.categoryIcons(28)).replace(/</g, '\\u003c') %>;
     window.isoCatIcons = CAT_ICONS;
-    var sheet, list, title;
+    var sheet, list, title, search;
+    // Accents ignored when searching: "blatte geante" finds "Blatte géante".
+    function plain(text) { return String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
 
     function picsHtml(pics) {
       return String(pics || '').split('|').filter(Boolean).slice(0, 4).map(function (p) {
@@ -839,13 +841,36 @@
       sheet.className = 'picker-sheet';
       sheet.innerHTML = '<div class="picker-sheet__head"><span class="picker-sheet__title"></span>'
         + '<button type="button" class="picker-sheet__close" aria-label="Fermer">&times;</button></div>'
+        + '<input type="search" class="picker-sheet__search" placeholder="Chercher…" aria-label="Chercher dans la liste" hidden>'
         + '<div class="picker-sheet__list" role="listbox"></div>';
       document.body.appendChild(sheet);
       list = sheet.querySelector('.picker-sheet__list');
       title = sheet.querySelector('.picker-sheet__title');
+      search = sheet.querySelector('.picker-sheet__search');
+      search.addEventListener('input', filter);
       sheet.querySelector('.picker-sheet__close').addEventListener('click', function () { sheet.close(); });
       // A tap on the dimmed backdrop closes it too.
       sheet.addEventListener('click', function (event) { if (event.target === sheet) sheet.close(); });
+    }
+
+    // Long lists (the whole species guide) get a search field; a group's
+    // heading hides with its last matching option.
+    function filter() {
+      var words = plain(search.value).split(/\s+/).filter(Boolean);
+      var head = null;
+      var headShown = false;
+      Array.prototype.forEach.call(list.children, function (el) {
+        if (el.classList.contains('picker-sheet__group')) {
+          if (head) head.hidden = !headShown;
+          head = el;
+          headShown = false;
+          return;
+        }
+        var ok = words.every(function (w) { return el._text.indexOf(w) !== -1; });
+        el.hidden = !ok;
+        if (ok) headShown = true;
+      });
+      if (head) head.hidden = !headShown;
     }
 
     function open(select) {
@@ -862,6 +887,8 @@
         b.disabled = opt.disabled;
         b.innerHTML = '<span class="picker-pics">' + picsHtml(opt.dataset.pics) + '</span><span class="picker-opt__label"></span>';
         b.lastChild.textContent = opt.textContent.trim();
+        var group = opt.parentNode.tagName === 'OPTGROUP' ? opt.parentNode.label : '';
+        b._text = plain(opt.textContent + ' ' + (opt.dataset.search || '') + ' ' + group);
         b.addEventListener('click', function () {
           sheet.close();
           if (select.value === opt.value) return;
@@ -882,6 +909,9 @@
           add(node);
         }
       });
+      search.value = '';
+      search.hidden = select.options.length <= 15;
+      filter();
       sheet.showModal();
       if (chosen) {
         chosen.scrollIntoView({ block: 'center' });

@@ -8,18 +8,12 @@
   var allPics = fiches.map(function (f) { return icons.pic(f); }).join('|');
   var w = compat && compat.weakest;
   var speciesOptions = function (selectedId) {
-    var out = '';
-    var cat = null;
-    speciesList.forEach(function (sp) {
-      if (sp.category !== cat) {
-        if (cat !== null) out += '</optgroup>';
-        out += '<optgroup label="' + fmt.escape(fmt.CATEGORY_LABELS[sp.category] || sp.category) + '">';
-        cat = sp.category;
-      }
-      out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '"' + (sp.id === selectedId ? ' selected' : '') + '>'
-        + fmt.escape(sp.scientific_name) + '</option>';
-    });
-    return out + (cat !== null ? '</optgroup>' : '');
+    return fmt.speciesGroups(speciesList).map(function (group) {
+      return '<optgroup label="' + fmt.escape(group.label) + '">' + group.items.map(function (sp) {
+        return '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '" data-search="' + fmt.escape(sp.common_name || '') + '"' + (sp.id === selectedId ? ' selected' : '') + '>'
+          + fmt.escape(sp.scientific_name) + '</option>';
+      }).join('') + '</optgroup>';
+    }).join('');
   };
   var speciesById = {};
   speciesList.forEach(function (sp) { speciesById[sp.id] = sp; });

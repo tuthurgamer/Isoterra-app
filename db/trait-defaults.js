@@ -37,8 +37,16 @@ const TRAIT_OPTIONS = {
 const BY_CATEGORY = {
   iule: { diet_type: 'detritivore', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'humide' },
   cloporte: { diet_type: 'detritivore', size_class: 'petit', niche: 'litiere', substrate_type: 'humide' },
+  blatte: { diet_type: 'omnivore', size_class: 'moyen', niche: 'litiere', substrate_type: 'humide' },
   cetoine: { diet_type: 'detritivore', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'flake' },
+  coleoptere: { diet_type: 'detritivore', size_class: 'grand', niche: 'fouisseur', substrate_type: 'flake' },
   escargot: { diet_type: 'herbivore', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' },
+  crabe: { diet_type: 'opportuniste', size_class: 'moyen', niche: 'semi-aquatique', substrate_type: 'paludarium' },
+  reduve: { diet_type: 'predateur', size_class: 'moyen', niche: 'surface', substrate_type: 'sec' },
+  mante: { diet_type: 'predateur', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' },
+  phasme: { diet_type: 'herbivore', size_class: 'grand', niche: 'surface', substrate_type: 'humide' },
+  arachnide: { diet_type: 'predateur', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'humide' },
+  scolopendre: { diet_type: 'predateur', size_class: 'grand', niche: 'fouisseur', substrate_type: 'humide' },
   autre: { diet_type: 'omnivore', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' }
 };
 
@@ -62,8 +70,10 @@ function binomial(scientificName) {
   return String(scientificName || '').replace(/\s*".*"\s*$/, '').trim();
 }
 
-function defaultTraits({ category, scientific_name }) {
-  return { ...(BY_CATEGORY[category] || BY_CATEGORY.autre), ...(BY_SPECIES[binomial(scientific_name)] || {}) };
+// A fiche can bring its own traits (the catalogue's do); they win.
+function defaultTraits({ category, scientific_name, ...own }) {
+  const given = Object.fromEntries(Object.keys(TRAIT_OPTIONS).filter((k) => own[k]).map((k) => [k, own[k]]));
+  return { ...(BY_CATEGORY[category] || BY_CATEGORY.autre), ...(BY_SPECIES[binomial(scientific_name)] || {}), ...given };
 }
 
 module.exports = { TRAIT_OPTIONS, defaultTraits, binomial };

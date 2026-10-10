@@ -10,7 +10,7 @@ const { isFingerprint } = require('../lib/empreinte');
 const { pic } = require('../views/helpers/icons');
 const { numTag, CATEGORY_LABELS } = require('../views/helpers/format');
 
-const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
+const { allSpecies } = require('../lib/species-list');
 
 // The gallery: every photo, or those taken in a bac (?bac=), or showing a
 // species (?espece=); by month, the best rated on top, or all of them by
@@ -40,6 +40,7 @@ router.get('/', (req, res) => {
     const s = params.toString();
     return '/photos' + (s ? '?' + s : '');
   };
+  const withPhotos = new Set(db.prepare('SELECT DISTINCT species_id FROM photo_species').all().map((r) => r.species_id));
 
   res.render('photos/index', {
     title: 'Photos', active: 'photos',
@@ -50,7 +51,8 @@ router.get('/', (req, res) => {
     filter: { bacId, speciesId, byStars, label: filterLabel },
     links: { byDate: query({}), byStars: query({ tri: 'note' }) },
     bacs,
-    speciesList: db.prepare('SELECT * FROM species').all(),
+    // Only the species seen in at least one photo can filter the gallery.
+    speciesList: allSpecies().filter((s) => withPhotos.has(s.id) || s.id === speciesId),
     notice: req.query.notice || null
   });
 });
@@ -60,11 +62,14 @@ router.get('/', (req, res) => {
 router.get('/especes.json', (req, res) => {
   const bacId = Number(req.query.bac) || null;
   const inBac = new Set(bacId ? db.prepare('SELECT species_id FROM bac_species WHERE bac_id = ?').all(bacId).map((r) => r.species_id) : []);
-  const rank = (c) => (CATEGORY_ORDER.includes(c) ? CATEGORY_ORDER.indexOf(c) : CATEGORY_ORDER.length);
-  const list = db.prepare('SELECT * FROM species').all()
-    .sort((a, b) => rank(a.category) - rank(b.category) || a.scientific_name.localeCompare(b.scientific_name, 'fr'))
-    .map((s) => ({ id: s.id, name: s.scientific_name, pic: pic(s), group: inBac.has(s.id) ? 'Dans ce bac' : CATEGORY_LABELS[s.category] || 'Autres' }));
-  res.json([...list.filter((s) => s.group === 'Dans ce bac'), ...list.filter((s) => s.group !== 'Dans ce bac')]);
+  const all = allSpecies();
+  const groupOf = (s) => (inBac.has(s.id) ? 0 : s.kept ? 1 : 2);
+  const list = [0, 1, 2].flatMap((rank) => all.filter((s) => groupOf(s) === rank))
+    .map((s) => ({
+      id: s.id, name: s.scientific_name, pic: pic(s),
+      group: inBac.has(s.id) ? 'Dans ce bac' : s.kept ? 'Dans mon élevage' : CATEGORY_LABELS[s.category] || 'Autres'
+    }));
+  res.json(list);
 });
 
 // Photos sent from the gallery, for a bac (or one species of it).

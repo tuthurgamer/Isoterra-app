@@ -2232,3 +2232,92 @@ html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
 .doublons__text small { font-size: 12px; color: var(--ink-muted); overflow-wrap: anywhere; }
 .doublons__tick { padding: 8px 0 4px; border-top: 1px solid var(--line); }
 .doublons__actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 8px; }
+
+/* Species guide: the breeder's own species first, then the catalogue. */
+.guide-jump { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: -12px 0 22px; }
+.guide-jump__item { display: flex; align-items: baseline; gap: 8px; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: 6px; color: var(--ink-muted); text-decoration: none; }
+.guide-jump__item strong { font-family: 'IM Fell English SC', Georgia, serif; font-size: 26px; font-weight: normal; line-height: 1; color: var(--ink); }
+.guide-jump__item span { font-size: 13px; font-style: italic; }
+.guide-jump__item--kept { border-color: var(--moss); background: var(--moss); color: var(--paper); }
+.guide-jump__item--kept strong { color: var(--paper); }
+@media (hover: hover) { a.guide-jump__item:hover { color: inherit; filter: brightness(1.06); } }
+
+.breeding { padding: 18px 18px 20px; border: 1px solid var(--line-strong); border-left: 5px solid var(--moss); border-radius: 6px; background: var(--paper-alt); scroll-margin-top: 12px; }
+.breeding__head, .catalogue__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 4px; }
+.breeding__head h2, .catalogue__head h2 { margin: 0; font-family: 'IM Fell English SC', Georgia, serif; font-size: 26px; font-weight: normal; letter-spacing: 0.06em; }
+.breeding__head h2 { color: var(--moss); }
+.breeding__head p, .catalogue__head p { margin: 0; font-size: 14px; font-style: italic; color: var(--ink-muted); }
+.breeding__empty { margin: 12px 0 0; font-style: italic; color: var(--ink-muted); }
+.breeding__cat { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--moss); }
+.breeding__cat svg { flex-shrink: 0; }
+.breeding__cat em { font-family: 'Vollkorn', Georgia, serif; font-size: 12.5px; letter-spacing: 0; text-transform: none; color: var(--ink-faint); }
+.breeding__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 12px; }
+
+.kept-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line-strong); border-top: 3px solid var(--moss); border-radius: 6px; background: var(--paper); color: var(--ink); text-decoration: none; box-shadow: 0 1px 3px oklch(24% 0.035 55 / 0.12); transition: transform 0.15s, box-shadow 0.15s; }
+@media (hover: hover) { .kept-card:hover { color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 16px oklch(24% 0.035 55 / 0.18); } }
+.kept-card:active { transform: scale(0.98); }
+.kept-card__pic { display: flex; align-items: center; justify-content: center; height: 112px; padding: 8px; background: radial-gradient(ellipse at center, var(--paper) 0%, var(--paper-alt) 100%); }
+.kept-card__pic .species-icon-img { width: 100%; height: 100%; object-fit: contain; }
+.kept-card__pic--drawn { color: var(--ink-faint); }
+.kept-card__pic--drawn svg { width: 60px; height: 60px; }
+.kept-card__body { display: flex; flex: 1; flex-direction: column; gap: 2px; padding: 8px 10px 10px; border-top: 1px solid var(--line); }
+.kept-card__name { font-size: 14px; font-style: italic; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.kept-card__common { font-size: 12.5px; line-height: 1.3; color: var(--ink-muted); }
+.kept-card__bacs { margin-top: 4px; font-family: 'Special Elite', monospace; font-size: 11px; color: var(--moss); }
+.kept-card__stamps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.kept-card__stamps .stamp { box-shadow: none; }
+
+.catalogue { margin-top: 38px; scroll-margin-top: 12px; }
+.catalogue__head h2 { color: var(--ink); }
+.catalogue__filters { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 6px; }
+.catalogue__search { width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--paper); font-size: 15px; }
+.catalogue__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.catalogue__chips--scroll { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.catalogue__chips--scroll::-webkit-scrollbar { display: none; }
+.catalogue__chips .gallery-chip { background: none; cursor: pointer; }
+.catalogue__chips .gallery-chip.is-on { background: var(--rust); color: var(--paper); }
+.catalogue__count { min-height: 1em; margin: 2px 0 0; font-size: 12.5px; font-style: italic; color: var(--ink-muted); }
+.catalogue__empty { font-style: italic; color: var(--ink-muted); }
+.catalogue__taxon { font-size: 13px; font-style: italic; color: var(--ink-faint); }
+.catalogue__family-name { margin: 14px 0 2px; font-size: 12.5px; color: var(--ink-muted); }
+.catalogue__family-name b { font-weight: 600; color: var(--ink); }
+
+.cat-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--ink); }
+.cat-row[hidden], .catalogue__family[hidden], .catalogue__group[hidden] { display: none; }
+.cat-row__icon { display: flex; align-items: center; justify-content: center; height: 40px; color: var(--ink-faint); }
+.cat-row__icon svg { width: 32px; height: 32px; }
+.cat-row__icon .species-icon-img { width: 48px; height: 40px; object-fit: contain; }
+.cat-row__text { display: flex; min-width: 0; flex-direction: column; }
+.cat-row__name { font-size: 13.5px; font-style: italic; font-weight: 600; overflow-wrap: anywhere; }
+.cat-row__common { font-size: 12px; color: var(--ink-muted); }
+.cat-row__facts { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.cat-row__diff .rating-icons { margin: 0; }
+.cat-row__climate { font-family: 'Special Elite', monospace; font-size: 10.5px; color: var(--ink-muted); white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .guide-jump { margin-top: -18px; }
+  .breeding { padding: 14px 12px 16px; border-left-width: 4px; }
+  .breeding__head h2, .catalogue__head h2 { font-size: 23px; }
+  .breeding__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .kept-card__pic { height: 96px; }
+  .cat-row { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; }
+  .cat-row__icon svg { width: 28px; height: 28px; }
+  .cat-row__diff .d { width: 9px; height: 9px; }
+}
+
+/* "In breeding" mark next to a species name in lists. */
+.kept-tag { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 999px; background: var(--moss); color: var(--paper); font-family: 'Special Elite', monospace; font-size: 9.5px; font-style: normal; font-weight: normal; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: 2px; white-space: nowrap; }
+
+/* Species page: whether the breeder keeps it. */
+.species-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: -14px 0 22px; padding: 10px 14px; border: 1px dashed var(--line-strong); border-radius: 6px; font-size: 13.5px; }
+.species-status__label { font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); }
+.species-status__links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.species-status--kept { border: 1px solid var(--moss); border-left: 5px solid var(--moss); background: oklch(46% 0.11 145 / 0.1); }
+.species-status--kept .species-status__label { color: var(--moss); font-weight: bold; }
+.species-status--kept a { font-weight: 600; color: var(--moss); }
+.species-taxon { margin-bottom: 18px; font-size: 13px; color: var(--ink-muted); }
+.species-taxon b { font-weight: 600; color: var(--ink); }
+
+/* Search field of long icon menus. */
+.picker-sheet__search { flex-shrink: 0; margin: 0 14px 8px; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--paper); font-size: 15px; }
+.picker-sheet__search[hidden], .picker-opt[hidden], .picker-sheet__group[hidden] { display: none; }

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
+const { allSpecies } = require('../lib/species-list');
 const { careStatuses, bacStatusOf, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
 const { logForBac, noteForBac } = require('../lib/bac-log');
 const { moveFiches } = require('../lib/bac-move');
@@ -110,7 +111,7 @@ router.get('/bacs/:id', (req, res) => {
     `).get(bac.id),
     photos: listPhotos({ bacId: bac.id, best: true, limit: 12 }).map(card),
     photoCard: card,
-    speciesList: db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all(),
+    speciesList: allSpecies(),
     // The bacs these animals could join ("Réunir", "Déplacer").
     otherBacs: db.prepare(`
       SELECT b.id, b.name, GROUP_CONCAT(s.scientific_name, ', ') AS residents, GROUP_CONCAT(s.id) AS species_ids

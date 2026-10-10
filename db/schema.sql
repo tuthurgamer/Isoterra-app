@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS species (
   category TEXT NOT NULL,
   common_name TEXT NOT NULL,
   scientific_name TEXT NOT NULL,
+  family TEXT,
   difficulty INTEGER NOT NULL DEFAULT 3,
   humidity_min INTEGER,
   humidity_max INTEGER,

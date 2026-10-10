@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
+const { allSpecies } = require('../lib/species-list');
 const { evaluateGroup } = require('../lib/compatibility');
 const { careStatuses, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
 const { moveFiches } = require('../lib/bac-move');
@@ -36,7 +37,7 @@ function rhythm(value) {
 }
 
 function getSpeciesList() {
-  return db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all();
+  return allSpecies();
 }
 
 function getBacList() {

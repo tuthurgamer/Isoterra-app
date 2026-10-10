@@ -23,7 +23,8 @@
       <div class="cam__dest">
         <select aria-label="Ranger les photos dans" data-picker data-cam-dest>
           <option value="">— où ranger les photos ? —</option>
-          <% ['Bacs', 'Une espèce, sans bac'].forEach(function (group) { %>
+          <% ['Bacs', 'Une espèce de mon élevage, sans bac', 'Une autre espèce du guide'].forEach(function (group) { %>
+            <% if (!destinations.some(function (d) { return d.group === group; })) return; %>
             <optgroup label="<%= group %>">
               <% destinations.filter(function (d) { return d.group === group; }).forEach(function (d) { %>
                 <option value="<%= d.value %>" data-pics="<%= d.pics %>"<%= d.value === chosen ? ' selected' : '' %>><%= d.label %></option>

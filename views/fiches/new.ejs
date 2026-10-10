@@ -10,18 +10,16 @@
   var scoreColor = function (n) { return n >= 70 ? 'var(--moss)' : n >= 50 ? 'var(--rust)' : 'var(--stampred)'; };
   var speciesOptions = function (selectedId) {
     var out = '<option value="">— choisir une espèce —</option>';
-    var cat = null;
-    speciesList.forEach(function (sp) {
-      if (sp.category !== cat) {
-        if (cat !== null) out += '</optgroup>';
-        out += '<optgroup label="' + fmt.escape(fmt.CATEGORY_LABELS[sp.category] || sp.category) + '">';
-        cat = sp.category;
-      }
-      var inBac = occupantIds.indexOf(sp.id) !== -1;
-      out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '"' + (selectedId === sp.id ? ' selected' : '') + (inBac ? ' disabled' : '') + '>'
-        + fmt.escape(sp.scientific_name) + (inBac ? ' (déjà dans le bac)' : '') + '</option>';
+    fmt.speciesGroups(speciesList).forEach(function (group) {
+      out += '<optgroup label="' + fmt.escape(group.label) + '">';
+      group.items.forEach(function (sp) {
+        var inBac = occupantIds.indexOf(sp.id) !== -1;
+        out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '" data-search="' + fmt.escape(sp.common_name || '') + '"' + (selectedId === sp.id ? ' selected' : '') + (inBac ? ' disabled' : '') + '>'
+          + fmt.escape(sp.scientific_name) + (inBac ? ' (déjà dans le bac)' : '') + '</option>';
+      });
+      out += '</optgroup>';
     });
-    return out + (cat !== null ? '</optgroup>' : '');
+    return out;
   };
   var entry = function (selectedId) {
     return '<div class="species-entry" data-entry>'

@@ -1,0 +1,50 @@
+module.exports = [
+  {
+    category: 'autre', common_name: 'Collembole blanc', scientific_name: 'Folsomia candida',
+    difficulty: 1, humidity_min: 80, humidity_max: 100, temp_min: 18, temp_max: 25,
+    sociability: 'Colonie très nombreuse', diet_summary: 'Détritivore : moisissures, levure',
+    vigilance: 'Aucune',
+    presentation: "Minuscule collembole blanc (2 mm) qui mange les moisissures. Une culture sur charbon ou terreau fournit l'équipe de nettoyage de tous les terrariums humides.",
+    habitat: "Boîte avec du charbon de bois ou du terreau toujours mouillé, un peu d'aération.",
+    feeding_detail: "Levure de boulanger sèche en petite pincée, flocons de riz, restes de légumes.",
+    repro_sexing: "Inutile : les femelles se reproduisent seules.",
+    repro_conditions: "Humidité constante.",
+    repro_mating: "Pas d'accouplement (parthénogenèse).",
+    repro_incubation: "Environ 1 semaine.",
+    repro_juveniles: "La culture double en quelques semaines.",
+    repro_pitfalls: "Culture qui sèche, trop de levure (acariens, odeur).",
+    lifespan: 'quelques mois', diet_type: 'detritivore', size_class: 'petit', niche: 'fouisseur', feed_every_days: 7
+  },
+  {
+    category: 'autre', common_name: 'Grillon domestique', scientific_name: 'Acheta domesticus',
+    difficulty: 1, humidity_min: 40, humidity_max: 60, temp_min: 26, temp_max: 32,
+    sociability: 'Colonie', diet_summary: 'Omnivore : céréales, légumes',
+    vigilance: 'Chant nocturne, odeur, évasions',
+    presentation: "Le grillon brun des animaleries, nourriture vivante classique. Facile à produire soi-même pour nourrir réduves, mantes et arachnides.",
+    habitat: "Bac aéré, boîtes à œufs, pas de substrat sauf un pot de ponte. Chaleur de 28 à 30 °C.",
+    feeding_detail: "Flocons de céréales, légumes, croquettes ; une éponge ou un gel d'eau.",
+    repro_sexing: "La femelle porte un long ovipositeur au bout de l'abdomen ; le mâle n'en a pas et chante.",
+    repro_conditions: "Chaleur.",
+    repro_mating: "Les femelles pondent dans un pot de fibre de coco humide.",
+    repro_incubation: "10 à 14 jours à 30 °C.",
+    repro_juveniles: "Adultes en 6 à 8 semaines.",
+    repro_pitfalls: "Pot de ponte sec, bac humide (mortalité, odeur), évasions.",
+    lifespan: '2 à 3 mois', diet_type: 'omnivore', size_class: 'petit', niche: 'surface', substrate_type: 'sec', feed_every_days: 2
+  },
+  {
+    category: 'autre', common_name: 'Criquet migrateur', scientific_name: 'Locusta migratoria',
+    difficulty: 2, humidity_min: 30, humidity_max: 50, temp_min: 28, temp_max: 35,
+    sociability: 'Colonie', diet_summary: 'Herbivore : herbes fraîches',
+    vigilance: 'Évasions (les adultes volent)',
+    presentation: "Grand criquet (5 à 6 cm) apprécié comme proie pour les mantes et les gros arachnides. Il demande beaucoup de chaleur et de l'herbe fraîche tous les jours.",
+    habitat: "Cage grillagée haute, lampe chauffante (30 à 35 °C le jour), branches pour grimper. Pots de sable humide de 10 cm de profondeur pour la ponte.",
+    feeding_detail: "Herbes fraîches (graminées, blé en herbe), son, un peu de légumes.",
+    repro_sexing: "La femelle est plus grande avec des valves de ponte au bout de l'abdomen.",
+    repro_conditions: "Chaleur forte et lumière.",
+    repro_mating: "La femelle enfonce son abdomen dans le sable humide pour pondre.",
+    repro_incubation: "Environ 2 semaines à 30 °C.",
+    repro_juveniles: "Adultes en 5 à 6 semaines.",
+    repro_pitfalls: "Manque de chaleur, herbe fanée, sable de ponte sec.",
+    lifespan: '2 à 3 mois en adulte', diet_type: 'herbivore', size_class: 'moyen', niche: 'surface', substrate_type: 'sec', feed_every_days: 1
+  }
+];

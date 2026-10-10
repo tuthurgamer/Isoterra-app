@@ -12,8 +12,9 @@ const { listPhotos, card, savePhotos, photosOfSpecies, removeUnusedPhotos } = re
 const { uploadPhotos } = require('../lib/uploads');
 const { noteForBac } = require('../lib/bac-log');
 
-const CATEGORY_LABELS = { iule: 'Iules', cloporte: 'Cloportes', cetoine: 'Cétoines', escargot: 'Escargots', autre: 'Autres espèces' };
-const CATEGORY_ORDER = ['iule', 'cloporte', 'cetoine', 'escargot', 'autre'];
+const { CATEGORY_LABELS, CATEGORY_TAXA, FAMILY_NOTES } = require('../views/helpers/format');
+const { allSpecies } = require('../lib/species-list');
+const { familyOf } = require('../db/taxonomy');
 
 const iconDir = path.join(__dirname, '..', 'public', 'uploads', 'species-icons');
 const iconOriginalsDir = path.join(__dirname, '..', 'data', 'icon-originals');
@@ -47,15 +48,61 @@ async function storeIcon(file) {
   return '/uploads/species-icons/' + file.filename;
 }
 
-router.get('/', (req, res) => {
-  const all = db.prepare('SELECT * FROM species ORDER BY scientific_name').all();
-  const byCategory = CATEGORY_ORDER.map(cat => ({
-    key: cat,
-    label: CATEGORY_LABELS[cat],
-    items: all.filter(s => s.category === cat)
-  })).filter(g => g.items.length > 0);
+// Species grouped by category, in the guide's order; with `byFamily`, each
+// category with several families is split by family too.
+function byCategory(list, byFamily = false) {
+  const groups = [];
+  for (const sp of list) {
+    let group = groups[groups.length - 1];
+    if (!group || group.key !== sp.category) {
+      group = { key: sp.category, label: CATEGORY_LABELS[sp.category] || sp.category, taxon: CATEGORY_TAXA[sp.category] || null, items: [] };
+      groups.push(group);
+    }
+    group.items.push(sp);
+  }
+  if (byFamily) {
+    for (const group of groups) {
+      const families = new Map();
+      for (const sp of group.items) {
+        const name = sp.family || '';
+        if (!families.has(name)) families.set(name, []);
+        families.get(name).push(sp);
+      }
+      group.families = families.size > 1
+        ? [...families.entries()]
+          .sort(([x], [y]) => (!x) - (!y) || x.localeCompare(y))
+          .map(([name, items]) => ({ name: name || null, note: FAMILY_NOTES[name] || null, items }))
+        : null;
+    }
+  }
+  return groups;
+}
 
-  res.render('especes/index', { title: 'Guide des espèces', active: 'especes', byCategory, total: all.length });
+// The guide: the species of the breeder's bacs first, as cards, then the
+// catalogue of the others to choose the next ones from.
+router.get('/', (req, res) => {
+  const all = allSpecies();
+  const fiches = new Map();
+  for (const f of db.prepare('SELECT species_id, bac_id, status, for_sale_quantity FROM bac_species ORDER BY bac_id').all()) {
+    if (!fiches.has(f.species_id)) fiches.set(f.species_id, []);
+    fiches.get(f.species_id).push(f);
+  }
+  const kept = all.filter((sp) => sp.kept).map((sp) => {
+    const list = fiches.get(sp.id) || [];
+    return {
+      ...sp,
+      bacIds: [...new Set(list.map((f) => f.bac_id))],
+      breeding: list.some((f) => f.status === 'reproduction'),
+      forSale: list.filter((f) => f.status === 'vente').reduce((n, f) => n + (f.for_sale_quantity || 0), 0)
+    };
+  });
+  const catalogue = all.filter((sp) => !sp.kept);
+  res.render('especes/index', {
+    title: 'Guide des espèces', active: 'especes',
+    kept: byCategory(kept), catalogue: byCategory(catalogue, true),
+    keptCount: kept.length, catalogueCount: catalogue.length,
+    categoryLabels: CATEGORY_LABELS
+  });
 });
 
 router.get('/new', (req, res) => {
@@ -65,17 +112,20 @@ router.get('/new', (req, res) => {
 // Comparator, three modes: every partner of one species ranked, the detail
 // of one pair, and the best groups for a multi-species bac.
 router.get('/compatibilite', (req, res) => {
-  const all = db.prepare('SELECT * FROM species ORDER BY category, scientific_name').all();
+  const all = allSpecies();
   const byId = new Map(all.map((s) => [String(s.id), s]));
+  // Checkboxes come with a hidden "0" before them, so unticked is explicit.
+  const ticked = (name, byDefault) => (req.query[name] === undefined ? byDefault : [].concat(req.query[name]).includes('1'));
   const a = byId.get(String(req.query.a || '')) || null;
   const b = byId.get(String(req.query.b || '')) || null;
   let mode = req.query.mode || (a && b ? 'paire' : 'espece');
   if (!['espece', 'paire', 'groupes'].includes(mode)) mode = 'espece';
   const view = { title: "Comparateur d'espèces", active: 'especes', mode, speciesList: all, a, b };
 
+  if (mode === 'espece') view.onlyKept = ticked('elevage', false);
   if (mode === 'espece' && a) {
     view.partners = all
-      .filter((s) => s.id !== a.id)
+      .filter((s) => s.id !== a.id && (!view.onlyKept || s.kept))
       .map((s) => ({ species: s, result: computeCompatibility(a, s) }))
       .sort((x, y) => y.result.total - x.result.total);
   }
@@ -83,17 +133,12 @@ router.get('/compatibilite', (req, res) => {
     view.result = computeCompatibility(a, b);
   }
   if (mode === 'groupes') {
-    // Checkboxes come with a hidden "0" before them, so unticked is explicit.
-    const ticked = (name, byDefault) => (req.query[name] === undefined ? byDefault : [].concat(req.query[name]).includes('1'));
     const size = Math.min(4, Math.max(2, parseInt(req.query.taille, 10) || 3));
     const mustHave = byId.get(String(req.query.inclure || '')) || null;
     const onlyKept = ticked('elevage', false);
     const mixedOnly = ticked('mixte', true);
     let pool = all;
-    if (onlyKept) {
-      const kept = new Set(db.prepare('SELECT DISTINCT species_id FROM bac_species').all().map((r) => r.species_id));
-      pool = all.filter((s) => kept.has(s.id) || (mustHave && s.id === mustHave.id));
-    }
+    if (onlyKept) pool = all.filter((s) => s.kept || (mustHave && s.id === mustHave.id));
     view.groups = bestGroups(pool, { size, mustInclude: mustHave && mustHave.id, mixedOnly, limit: 12 });
     Object.assign(view, { size, mustHave, onlyKept, mixedOnly });
   }
@@ -147,7 +192,9 @@ router.get('/:id', (req, res) => {
   const photos = listPhotos({ speciesId: sp.id, best: true, limit: 12 }).map(card);
   const photoCount = listPhotos({ speciesId: sp.id }).length;
   res.render('especes/show', {
-    title: sp.scientific_name, active: 'especes', sp, bacs, photos, photoCount, traitOptions: TRAIT_OPTIONS, notice: req.query.notice || null
+    title: sp.scientific_name, active: 'especes', sp, bacs, photos, photoCount, traitOptions: TRAIT_OPTIONS, notice: req.query.notice || null,
+    categoryLabel: CATEGORY_LABELS[sp.category] || null, categoryTaxon: CATEGORY_TAXA[sp.category] || null,
+    familyNote: FAMILY_NOTES[sp.family] || null
   });
 });
 
@@ -197,7 +244,8 @@ router.get('/:id/fiche-client', (req, res) => {
   const fiche = req.query.fiche
     ? db.prepare('SELECT id, bac_id, lineage FROM bac_species WHERE id = ? AND species_id = ?').get(req.query.fiche, sp.id) || null
     : null;
-  const others = db.prepare('SELECT * FROM species WHERE id != ?').all(sp.id);
+  // Tankmates named to a buyer come from the breeder's own bacs, not the catalogue.
+  const others = db.prepare('SELECT * FROM species WHERE id != ? AND id IN (SELECT species_id FROM bac_species)').all(sp.id);
   res.render('especes/fiche-client', {
     title: 'Fiche élevage - ' + sp.scientific_name.replace(/"/g, ''),
     sp, fiche, traitOptions: TRAIT_OPTIONS, settings: getSettings(),
@@ -237,6 +285,7 @@ function insertOrUpdate(b, id, iconPath) {
   const trait = (key) => (TRAIT_OPTIONS[key].some(([value]) => value === b[key]) ? b[key] : traits[key]);
   const fields = {
     category: b.category, common_name: b.common_name, scientific_name: b.scientific_name,
+    family: String(b.family || '').trim().slice(0, 60) || familyOf(b.scientific_name),
     difficulty: Number(b.difficulty) || 3,
     humidity_min: Number(b.humidity_min) || null, humidity_max: Number(b.humidity_max) || null,
     temp_min: Number(b.temp_min) || null, temp_max: Number(b.temp_max) || null,
@@ -256,7 +305,7 @@ function insertOrUpdate(b, id, iconPath) {
   if (id) {
     db.prepare(`
       UPDATE species SET category=:category, common_name=:common_name, scientific_name=:scientific_name,
-        difficulty=:difficulty, humidity_min=:humidity_min, humidity_max=:humidity_max,
+        family=:family, difficulty=:difficulty, humidity_min=:humidity_min, humidity_max=:humidity_max,
         temp_min=:temp_min, temp_max=:temp_max, sociability=:sociability, diet_summary=:diet_summary, lifespan=:lifespan,
         vigilance=:vigilance, presentation=:presentation, habitat=:habitat, feeding_detail=:feeding_detail,
         repro_sexing=:repro_sexing, repro_conditions=:repro_conditions, repro_mating=:repro_mating,
@@ -269,11 +318,11 @@ function insertOrUpdate(b, id, iconPath) {
     return { id };
   }
   const info = db.prepare(`
-    INSERT INTO species (category, common_name, scientific_name, difficulty, humidity_min, humidity_max,
+    INSERT INTO species (category, common_name, scientific_name, family, difficulty, humidity_min, humidity_max,
       temp_min, temp_max, sociability, diet_summary, lifespan, vigilance, presentation, habitat, feeding_detail,
       repro_sexing, repro_conditions, repro_mating, repro_incubation, repro_juveniles, repro_pitfalls,
       icon_path, feed_every_days, mist_every_days, diet_type, size_class, niche, substrate_type, is_draft)
-    VALUES (:category, :common_name, :scientific_name, :difficulty, :humidity_min, :humidity_max,
+    VALUES (:category, :common_name, :scientific_name, :family, :difficulty, :humidity_min, :humidity_max,
       :temp_min, :temp_max, :sociability, :diet_summary, :lifespan, :vigilance, :presentation, :habitat, :feeding_detail,
       :repro_sexing, :repro_conditions, :repro_mating, :repro_incubation, :repro_juveniles, :repro_pitfalls,
       :icon_path, :feed_every_days, :mist_every_days, :diet_type, :size_class, :niche, :substrate_type, :is_draft)

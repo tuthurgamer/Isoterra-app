@@ -58,14 +58,13 @@
   <span class="gallery-filters__pick">
     <select aria-label="Photos d'une espèce" data-picker data-filter="espece">
       <option value="">Toutes les espèces</option>
-      <% var cat = null; speciesList.slice().sort(function (x, y) {
-           var order = Object.keys(fmt.CATEGORY_LABELS);
-           return order.indexOf(x.category) - order.indexOf(y.category) || x.scientific_name.localeCompare(y.scientific_name, 'fr');
-         }).forEach(function (sp) { %>
-        <% if (sp.category !== cat) { %><%- cat !== null ? '</optgroup>' : '' %><optgroup label="<%= fmt.CATEGORY_LABELS[sp.category] || sp.category %>"><% cat = sp.category; } %>
-        <option value="<%= sp.id %>" data-pics="<%= icons.pic(sp) %>"<%= filter.speciesId === sp.id ? ' selected' : '' %>><%= sp.scientific_name %></option>
+      <% fmt.speciesGroups(speciesList).forEach(function (group) { %>
+        <optgroup label="<%= group.label %>">
+          <% group.items.forEach(function (sp) { %>
+            <option value="<%= sp.id %>" data-pics="<%= icons.pic(sp) %>" data-search="<%= sp.common_name %>"<%= filter.speciesId === sp.id ? ' selected' : '' %>><%= sp.scientific_name %></option>
+          <% }); %>
+        </optgroup>
       <% }); %>
-      <%- cat !== null ? '</optgroup>' : '' %>
     </select>
   </span>
   <span class="gallery-filters__pick">

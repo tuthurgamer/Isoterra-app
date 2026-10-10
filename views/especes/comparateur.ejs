@@ -5,12 +5,14 @@
   var range = function (r, unit) { return r ? (r[0] === r[1] ? r[0] : r[0] + '–' + r[1]) + unit : null; };
   var speciesSelect = function (name, selected, placeholder) {
     var out = '<select name="' + name + '" data-picker><option value="">' + placeholder + '</option>';
-    var cat = null;
-    speciesList.forEach(function (sp) {
-      if (sp.category !== cat) { if (cat !== null) out += '</optgroup>'; out += '<optgroup label="' + fmt.escape(fmt.CATEGORY_LABELS[sp.category] || sp.category) + '">'; cat = sp.category; }
-      out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '"' + (selected && selected.id === sp.id ? ' selected' : '') + '>' + fmt.escape(sp.scientific_name) + '</option>';
+    fmt.speciesGroups(speciesList).forEach(function (group) {
+      out += '<optgroup label="' + fmt.escape(group.label) + '">';
+      group.items.forEach(function (sp) {
+        out += '<option value="' + sp.id + '" data-pics="' + fmt.escape(icons.pic(sp)) + '" data-search="' + fmt.escape(sp.common_name || '') + '"' + (selected && selected.id === sp.id ? ' selected' : '') + '>' + fmt.escape(sp.scientific_name) + '</option>';
+      });
+      out += '</optgroup>';
     });
-    return out + (cat !== null ? '</optgroup>' : '') + '</select>';
+    return out + '</select>';
   };
 %>
 
@@ -38,17 +40,18 @@
       <label>Espèce à comparer avec toutes les autres</label>
       <%- speciesSelect('a', a, '— choisir —') %>
     </div>
+    <label class="check-line"><input type="hidden" name="elevage" value="0"><input type="checkbox" name="elevage" value="1" <%= onlyKept ? 'checked' : '' %>> Seulement les espèces que j'ai en bac</label>
     <button type="submit" class="btn">Voir</button>
   </form>
 
   <% if (a) { %>
-    <div class="section-title"><h2>Avec <%= a.scientific_name %></h2><div class="rule"></div></div>
+    <div class="section-title"><h2>Avec <%= a.scientific_name %></h2><div class="rule"></div><div class="count"><%= onlyKept ? 'espèces de mon élevage' : 'tout le guide' %></div></div>
     <div class="partner-list">
       <% partners.forEach(function (p) { var r = p.result; %>
         <a class="partner-row" href="/especes/compatibilite?mode=paire&a=<%= a.id %>&b=<%= p.species.id %>">
           <span class="partner-row__icon"><%- icons.species(p.species, 48) %></span>
           <span class="partner-row__main">
-            <span class="partner-row__name"><%= p.species.scientific_name %></span>
+            <span class="partner-row__name"><%= p.species.scientific_name %><% if (p.species.kept) { %> <span class="kept-tag">en élevage</span><% } %></span>
             <span class="partner-row__note"><%= r.notes[0] || r.strengths[0] || '' %></span>
           </span>
           <span class="partner-row__score" style="color:<%= scoreColor(r.total) %>;"><%= r.total %> %</span>
@@ -130,7 +133,7 @@
       <%- speciesSelect('inclure', mustHave, '— n\'importe quelle espèce —') %>
     </div>
     <label class="check-line"><input type="hidden" name="elevage" value="0"><input type="checkbox" name="elevage" value="1" <%= onlyKept ? 'checked' : '' %>> Seulement les espèces que j'ai en bac</label>
-    <label class="check-line"><input type="hidden" name="mixte" value="0"><input type="checkbox" name="mixte" value="1" <%= mixedOnly ? 'checked' : '' %>> Mélanger des familles différentes (iules, cloportes…)</label>
+    <label class="check-line"><input type="hidden" name="mixte" value="0"><input type="checkbox" name="mixte" value="1" <%= mixedOnly ? 'checked' : '' %>> Mélanger des catégories différentes (iules, cloportes, blattes…)</label>
     <button type="submit" class="btn">Trouver les meilleurs groupes</button>
   </form>
 
@@ -148,7 +151,7 @@
         </div>
         <ul class="group-card__species">
           <% g.species.forEach(function (s) { %>
-            <li><a href="/especes/<%= s.id %>"><%- icons.species(s, 48) %><span><%= s.scientific_name %></span></a></li>
+            <li><a href="/especes/<%= s.id %>"><%- icons.species(s, 48) %><span><%= s.scientific_name %><% if (s.kept) { %> <span class="kept-tag">en élevage</span><% } %></span></a></li>
           <% }); %>
         </ul>
         <% if (g.alsoWith.length) { %>

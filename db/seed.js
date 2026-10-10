@@ -317,7 +317,7 @@ const species = [
     repro_pitfalls: "Déterrer les larves pour les compter (stress inutile), terreau de larve trop sec ou trop détrempé."
   },
   {
-    category: 'autre', common_name: 'Réduve à deux points', scientific_name: 'Platymeris biguttatus',
+    category: 'reduve', common_name: 'Réduve à deux points', scientific_name: 'Platymeris biguttatus',
     difficulty: 3, humidity_min: 50, humidity_max: 65, temp_min: 24, temp_max: 28,
     sociability: 'Grégaire si proies abondantes', diet_summary: 'Prédateur : grillons, blattes',
     vigilance: 'Piqûre douloureuse — ne jamais manipuler à main nue',
@@ -332,7 +332,7 @@ const species = [
     repro_pitfalls: "Manque de proies (cannibalisme immédiat), manipulation directe à main nue, densité trop élevée sans cachettes suffisantes."
   },
   {
-    category: 'autre', common_name: 'Blatte panda', scientific_name: 'Therea olegrandjeani',
+    category: 'blatte', common_name: 'Blatte panda', scientific_name: 'Therea olegrandjeani',
     difficulty: 2, humidity_min: 55, humidity_max: 70, temp_min: 23, temp_max: 27,
     sociability: 'Grégaire, vit en colonie', diet_summary: 'Omnivore : granulés, légumes, feuilles',
     vigilance: 'Aucune, espèce non grimpante',
@@ -347,7 +347,7 @@ const species = [
     repro_pitfalls: "Substrat trop humide en permanence (favorise moisissures et acariens), absence de zone sèche pour se retirer."
   },
   {
-    category: 'autre', common_name: 'Crabe vampire de Riani', scientific_name: 'Geosesarma riani',
+    category: 'crabe', common_name: 'Crabe vampire de Riani', scientific_name: 'Geosesarma riani',
     difficulty: 4, humidity_min: 75, humidity_max: 90, temp_min: 24, temp_max: 28,
     sociability: 'Grégaire, prévoir des cachettes', diet_summary: 'Omnivore opportuniste',
     vigilance: 'Juvéniles très fragiles',
@@ -407,7 +407,7 @@ const species = [
     repro_pitfalls: "Substrat trop sec (œufs qui se dessèchent) ou détrempé (œufs qui moisissent), manque de calcium (coquille fine, apex abîmé). Ne jamais relâcher d'escargot ni jeter d'œufs vivants : congeler les pontes en surplus."
   },
   {
-    category: 'autre', common_name: 'Vinaigrier de Thaïlande', scientific_name: 'Thelyphonus sp. "Thaïlande"',
+    category: 'arachnide', common_name: 'Vinaigrier de Thaïlande', scientific_name: 'Thelyphonus sp. "Thaïlande"',
     difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 27,
     sociability: 'Solitaire, un individu par bac (cannibale)', diet_summary: 'Prédateur : grillons, blattes, vers',
     vigilance: "Projette de l'acide acétique (odeur de vinaigre) — protéger les yeux ; pinces sans venin",
@@ -448,6 +448,8 @@ const setCare = db.prepare('UPDATE species SET feed_every_days = :feed_every_day
 const setTraits = db.prepare(`UPDATE species SET diet_type = :diet_type, size_class = :size_class,
   niche = :niche, substrate_type = :substrate_type WHERE id = :id`);
 const setLifespan = db.prepare('UPDATE species SET lifespan = ? WHERE id = ?');
+const { familyOf } = require('./taxonomy');
+const setFamily = db.prepare('UPDATE species SET family = ? WHERE id = ?');
 
 const speciesIds = {};
 for (const sp of species) {
@@ -456,6 +458,7 @@ for (const sp of species) {
   setCare.run({ id: info.lastInsertRowid, ...defaultCare(sp) });
   setTraits.run({ id: info.lastInsertRowid, ...defaultTraits(sp) });
   setLifespan.run(defaultLifespan(sp.scientific_name), info.lastInsertRowid);
+  setFamily.run(familyOf(sp.scientific_name), info.lastInsertRowid);
 }
 
 const insertBac = db.prepare('INSERT INTO bacs (substrate) VALUES (?)');

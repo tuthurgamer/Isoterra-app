@@ -14,9 +14,31 @@
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
+<% if (bacs.length) { %>
+  <div class="species-status species-status--kept">
+    <span class="species-status__label">Dans mon élevage</span>
+    <span class="species-status__links">
+      <% bacs.forEach(function (b) { %><a href="/fiches/<%= b.id %>">Bac <%= fmt.numTag(b.bac_id) %><%= b.bac_name ? ' « ' + b.bac_name + ' »' : '' %><%= b.morph ? " '" + b.morph + "'" : '' %></a><% }); %>
+    </span>
+  </div>
+<% } else { %>
+  <div class="species-status">
+    <span class="species-status__label">Pas encore dans mon élevage</span>
+    <span class="species-status__links">
+      <a href="/especes/compatibilite?mode=espece&a=<%= sp.id %>&elevage=1">Avec quelles espèces de mon élevage ?</a>
+      <a href="/fiches/new?species=<%= sp.id %>">Commencer un bac</a>
+    </span>
+  </div>
+<% } %>
+
 <div class="grid-2col">
   <div>
-    <div class="wordmark" style="font-size:24px; font-style:italic; margin-bottom:18px;"><%= sp.scientific_name %></div>
+    <div class="wordmark" style="font-size:24px; font-style:italic; margin-bottom:<%= sp.family || categoryLabel ? 4 : 18 %>px;"><%= sp.scientific_name %></div>
+    <% if (sp.family || categoryLabel) { %>
+      <div class="species-taxon">
+        <%= categoryLabel %><% if (categoryTaxon) { %> (<em><%= categoryTaxon %></em>)<% } %><% if (sp.family) { %> · famille des <b><%= sp.family %></b><% if (familyNote) { %>, <%= familyNote %><% } %><% } %>
+      </div>
+    <% } %>
 
     <div class="plate-frame">
       <div class="inner"><%- icons.species(sp, sp.icon_path ? 320 : 100) %></div>
@@ -125,11 +147,6 @@
       </details>
     </div>
 
-    <% if (bacs.length) { %>
-      <div style="margin-top:18px; font-size:12.5px; color:var(--ink-muted);">
-        Élevé dans : <% bacs.forEach(function(b, i) { %><a href="/fiches/<%= b.id %>"><%= b.morph || fmt.numTag(b.bac_id) %></a><%= i < bacs.length - 1 ? ', ' : '' %><% }); %>
-      </div>
-    <% } %>
   </div>
 
   <div>

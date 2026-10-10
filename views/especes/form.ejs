@@ -42,6 +42,11 @@
     </select>
   </div>
 
+  <div class="field">
+    <label>Famille <span style="font-weight:normal;">(laisser vide : trouvée d'après le genre quand elle est connue)</span></label>
+    <input type="text" name="family" maxlength="60" value="<%= sp.family || '' %>" placeholder="ex. Blaberidae">
+  </div>
+
   <div class="form-grid-3">
     <div class="field">
       <label>Difficulté (1-5)</label>

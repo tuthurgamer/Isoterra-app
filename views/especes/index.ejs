@@ -4,9 +4,9 @@
   <div>
     <div class="eyebrow">ESPÈCES</div>
     <h1>Guide des espèces</h1>
-    <div class="subtitle"><%= total %> fiches — organisées comme tu les penses</div>
+    <div class="subtitle"><%= keptCount %> espèce<%= keptCount > 1 ? 's' : '' %> dans mon élevage, <%= catalogueCount %> fiche<%= catalogueCount > 1 ? 's' : '' %> pour choisir les prochaines</div>
   </div>
-  <div style="display:flex; gap:8px;">
+  <div class="masthead-actions">
     <a href="/especes/compatibilite" class="stamp stamp--rust">Comparateur &amp; groupes</a>
     <a href="/especes/new" class="stamp stamp--muted">+ nouvelle espèce</a>
   </div>
@@ -14,24 +14,168 @@
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
-<% byCategory.forEach(function(group) { %>
-  <div class="section-title" style="margin-top:34px;">
-    <%- icons.species(group.key, 24) %>
-    <h2><%= group.label %></h2>
-    <div class="rule"></div>
-    <div class="count"><%= group.items.length %></div>
+<nav class="guide-jump" aria-label="Aller à">
+  <a href="#elevage" class="guide-jump__item guide-jump__item--kept"><strong><%= keptCount %></strong><span>dans mon élevage</span></a>
+  <a href="#catalogue" class="guide-jump__item"><strong><%= catalogueCount %></strong><span>à découvrir</span></a>
+</nav>
+
+<section class="breeding" id="elevage">
+  <div class="breeding__head">
+    <h2>Mon élevage</h2>
+    <p>Les espèces qui vivent dans tes bacs.</p>
+  </div>
+  <% if (!kept.length) { %>
+    <p class="breeding__empty">Aucune espèce dans tes bacs pour l'instant : choisis-en une dans le catalogue ci-dessous.</p>
+  <% } %>
+  <% kept.forEach(function (group) { %>
+    <div class="breeding__cat">
+      <%- icons.species(group.key, 22) %><span><%= group.label %></span><% if (group.taxon) { %><em><%= group.taxon %></em><% } %>
+    </div>
+    <div class="breeding__grid">
+      <% group.items.forEach(function (sp) { %>
+        <a href="/especes/<%= sp.id %>" class="kept-card">
+          <span class="kept-card__pic<%= sp.icon_path ? '' : ' kept-card__pic--drawn' %>"><%- icons.species(sp, 120) %></span>
+          <span class="kept-card__body">
+            <span class="kept-card__name"><%= sp.scientific_name %></span>
+            <span class="kept-card__common"><%= sp.common_name %></span>
+            <span class="kept-card__bacs"><%= sp.bacIds.length > 1 ? 'Bacs' : 'Bac' %> <%= sp.bacIds.map(function (id) { return fmt.numTag(id); }).join(' · ') %></span>
+            <% if (sp.breeding || sp.forSale) { %>
+              <span class="kept-card__stamps">
+                <% if (sp.breeding) { %><span class="stamp stamp--sm stamp--rust">Reproduction</span><% } %>
+                <% if (sp.forSale) { %><span class="stamp stamp--sm stamp--moss"><%= sp.forSale %> en vente</span><% } %>
+              </span>
+            <% } %>
+          </span>
+        </a>
+      <% }); %>
+    </div>
+  <% }); %>
+</section>
+
+<section class="catalogue" id="catalogue">
+  <div class="catalogue__head">
+    <h2>Catalogue</h2>
+    <p>Des fiches pour choisir tes prochaines espèces, rangées par groupe et par famille.</p>
   </div>
 
-  <% group.items.forEach(function(sp) { %>
-    <a href="/especes/<%= sp.id %>" class="species-row">
-      <span class="species-row__icon"><%- icons.species(sp, 56) %></span>
-      <span class="species-row__name"><%= sp.scientific_name %></span>
-      <span class="species-row__diff"><%- icons.ratingDiamonds(sp.difficulty) %></span>
-      <span class="species-row__hum">
-        <% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %>%<% } else { %>—<% } %>
-      </span>
-    </a>
+  <div class="catalogue__filters">
+    <input type="search" class="catalogue__search" placeholder="Chercher un nom, une famille…" aria-label="Chercher dans le catalogue" data-cat-search>
+    <div class="catalogue__chips" role="group" aria-label="Difficulté">
+      <button type="button" class="gallery-chip is-on" data-cat-diff="">Toutes</button>
+      <button type="button" class="gallery-chip" data-cat-diff="1-2">Faciles</button>
+      <button type="button" class="gallery-chip" data-cat-diff="3">Moyennes</button>
+      <button type="button" class="gallery-chip" data-cat-diff="4-5">Difficiles</button>
+    </div>
+    <div class="catalogue__chips catalogue__chips--scroll" role="group" aria-label="Catégorie">
+      <button type="button" class="gallery-chip is-on" data-cat-group="">Tout</button>
+      <% catalogue.forEach(function (group) { %>
+        <button type="button" class="gallery-chip" data-cat-group="<%= group.key %>"><%= group.label %></button>
+      <% }); %>
+    </div>
+  </div>
+  <p class="catalogue__count" data-cat-count></p>
+
+  <% catalogue.forEach(function (group) { %>
+    <div class="catalogue__group" data-group="<%= group.key %>">
+      <div class="section-title">
+        <%- icons.species(group.key, 24) %>
+        <h2><%= group.label %></h2>
+        <% if (group.taxon) { %><span class="catalogue__taxon"><%= group.taxon %></span><% } %>
+        <div class="rule"></div>
+        <div class="count" data-group-count><%= group.items.length %></div>
+      </div>
+      <% (group.families || [{ name: null, items: group.items }]).forEach(function (family) { %>
+        <div class="catalogue__family" data-family>
+          <% if (family.name) { %>
+            <div class="catalogue__family-name"><b><%= family.name %></b><% if (family.note) { %> — <%= family.note %><% } %></div>
+          <% } else if (group.families) { %>
+            <div class="catalogue__family-name">Famille à préciser</div>
+          <% } %>
+          <% family.items.forEach(function (sp) { %>
+            <a href="/especes/<%= sp.id %>" class="cat-row" data-diff="<%= sp.difficulty %>"
+               data-search="<%= (sp.scientific_name + ' ' + sp.common_name + ' ' + (sp.family || '')).toLowerCase() %>">
+              <span class="cat-row__icon"><%- icons.species(sp, 44) %></span>
+              <span class="cat-row__text">
+                <span class="cat-row__name"><%= sp.scientific_name %></span>
+                <span class="cat-row__common"><%= sp.common_name %></span>
+              </span>
+              <span class="cat-row__facts">
+                <span class="cat-row__diff"><%- icons.ratingDiamonds(sp.difficulty) %></span>
+                <span class="cat-row__climate"><% if (sp.temp_min) { %><%= sp.temp_min %>–<%= sp.temp_max %> °C<% } %><% if (sp.temp_min && sp.humidity_min) { %> · <% } %><% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %> %<% } %></span>
+              </span>
+            </a>
+          <% }); %>
+        </div>
+      <% }); %>
+    </div>
   <% }); %>
-<% }); %>
+  <p class="catalogue__empty" data-cat-empty hidden>Aucune fiche ne correspond. <button type="button" class="btn-quiet" data-cat-reset>Tout afficher</button></p>
+</section>
+
+<script>
+  // Catalogue filters: text, difficulty and category, all together.
+  (function () {
+    var search = document.querySelector('[data-cat-search]');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.cat-row'));
+    var state = { text: '', diff: '', group: '' };
+    // Accents ignored, so "blatte geante" finds "Blatte géante".
+    function plain(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+    rows.forEach(function (row) { row._text = plain(row.dataset.search); });
+
+    function inRange(value, range) {
+      if (!range) return true;
+      var bounds = range.split('-').map(Number);
+      return value >= bounds[0] && value <= (bounds[1] || bounds[0]);
+    }
+
+    function apply() {
+      var words = plain(state.text).split(/\s+/).filter(Boolean);
+      var shown = 0;
+      rows.forEach(function (row) {
+        var group = row.closest('[data-group]').dataset.group;
+        var ok = (!state.group || group === state.group)
+          && inRange(Number(row.dataset.diff), state.diff)
+          && words.every(function (w) { return row._text.indexOf(w) !== -1; });
+        row.hidden = !ok;
+        if (ok) shown++;
+      });
+      document.querySelectorAll('[data-family]').forEach(function (family) {
+        family.hidden = !family.querySelector('.cat-row:not([hidden])');
+      });
+      document.querySelectorAll('[data-group]').forEach(function (group) {
+        var n = group.querySelectorAll('.cat-row:not([hidden])').length;
+        group.hidden = n === 0;
+        group.querySelector('[data-group-count]').textContent = n;
+      });
+      var filtered = state.text || state.diff || state.group;
+      document.querySelector('[data-cat-count]').textContent = filtered ? shown + ' fiche' + (shown > 1 ? 's' : '') + ' sur ' + rows.length : '';
+      document.querySelector('[data-cat-empty]').hidden = shown > 0;
+    }
+
+    function chips(attr, key) {
+      var buttons = document.querySelectorAll('[' + attr + ']');
+      buttons.forEach(function (b) {
+        b.addEventListener('click', function () {
+          buttons.forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          state[key] = b.getAttribute(attr);
+          apply();
+        });
+      });
+    }
+    chips('data-cat-diff', 'diff');
+    chips('data-cat-group', 'group');
+    search.addEventListener('input', function () { state.text = search.value; apply(); });
+    document.querySelector('[data-cat-reset]').addEventListener('click', function () {
+      search.value = '';
+      state = { text: '', diff: '', group: '' };
+      document.querySelectorAll('[data-cat-diff], [data-cat-group]').forEach(function (b) {
+        b.classList.toggle('is-on', b.getAttribute('data-cat-diff') === '' || b.getAttribute('data-cat-group') === '');
+      });
+      apply();
+    });
+    // A search kept by the browser on "back" applies again.
+    if (search.value) { state.text = search.value; apply(); }
+  })();
+</script>
 
 <%- include('../partials/footer') %>

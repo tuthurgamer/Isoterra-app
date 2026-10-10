@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
 const { pic } = require('../views/helpers/icons');
-const { numTag, CATEGORY_LABELS } = require('../views/helpers/format');
-
-const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
+const { numTag } = require('../views/helpers/format');
+const { allSpecies } = require('../lib/species-list');
 
 // Where the photos of a camera session go: a whole bac ("bac:12"), one
 // species of a mixed bac ("fiche:34"), or a species alone, without a bac
@@ -35,12 +34,13 @@ function destinations() {
       }
     }
   }
-  const rank = (c) => (CATEGORY_ORDER.includes(c) ? CATEGORY_ORDER.indexOf(c) : CATEGORY_ORDER.length);
-  db.prepare('SELECT * FROM species').all()
-    .sort((a, b) => rank(a.category) - rank(b.category) || a.scientific_name.localeCompare(b.scientific_name, 'fr'))
-    .forEach((s) => list.push({
-      value: 'espece:' + s.id, group: 'Une espèce, sans bac', pics: pic(s), label: s.scientific_name, back: '/especes/' + s.id + '#photos'
-    }));
+  const species = allSpecies();
+  for (const s of [...species.filter((x) => x.kept), ...species.filter((x) => !x.kept)]) {
+    list.push({
+      value: 'espece:' + s.id, group: s.kept ? 'Une espèce de mon élevage, sans bac' : 'Une autre espèce du guide',
+      pics: pic(s), label: s.scientific_name, back: '/especes/' + s.id + '#photos'
+    });
+  }
   return list;
 }
 

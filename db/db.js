@@ -70,6 +70,27 @@ if (!speciesColumns.includes('showcase_photo')) {
   db.exec('ALTER TABLE species ADD COLUMN showcase_photo TEXT');
 }
 
+// Each species' family, filled once from its genus when the column appears;
+// at the same time, the species of "Autres espèces" whose group now has its
+// own category (blattes, crabes, réduves, arachnides...) move there.
+if (!speciesColumns.includes('family')) {
+  const { familyOf, CATEGORY_OF_FAMILY } = require('./taxonomy');
+  db.exec('BEGIN');
+  db.exec('ALTER TABLE species ADD COLUMN family TEXT');
+  const setFamily = db.prepare('UPDATE species SET family = ? WHERE id = ?');
+  const move = db.prepare("UPDATE species SET category = ? WHERE id = ? AND category = 'autre'");
+  for (const sp of db.prepare('SELECT id, scientific_name FROM species').all()) {
+    const family = familyOf(sp.scientific_name);
+    if (!family) continue;
+    setFamily.run(family, sp.id);
+    if (CATEGORY_OF_FAMILY[family]) move.run(CATEGORY_OF_FAMILY[family], sp.id);
+  }
+  db.exec('COMMIT');
+}
+
+// The catalogue of species to discover (db/catalogue), added to the guide.
+require('./catalogue').installCatalogue(db);
+
 // Journal photos sent before the gallery existed get their gallery row
 // (the photo itself stands in for its thumbnail).
 db.exec(`
