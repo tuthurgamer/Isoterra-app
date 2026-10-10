@@ -11,7 +11,7 @@
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
 
-<form method="POST" action="/journal" enctype="multipart/form-data" style="max-width:640px;">
+<form method="POST" action="/journal" enctype="multipart/form-data" style="max-width:640px;" data-envoi>
   <input type="hidden" name="fiche_id" value="<%= bacSpecies.id %>">
 
   <div class="field">
@@ -33,8 +33,8 @@
   </div>
 
   <div class="field">
-    <label>Photos (optionnel — une ou plusieurs)</label>
-    <input type="file" name="photo" accept="image/*" multiple data-photo-input>
+    <label>Photos ou vidéos (optionnel — autant que tu veux)</label>
+    <input type="file" name="photo" accept="image/*,video/*" multiple data-photo-input>
     <div class="photo-preview" data-photo-preview hidden></div>
   </div>
 

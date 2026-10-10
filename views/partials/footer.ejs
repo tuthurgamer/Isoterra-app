@@ -1,7 +1,8 @@
   </main>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-<script src="/js/photo-prep.js?v=1"></script>
+<script src="/js/photo-prep.js?v=2"></script>
+<script src="/js/envois.js?v=1"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -224,12 +225,42 @@
       });
     }
 
+    // Photos and videos of a form marked data-envoi go into the sending queue
+    // (public/js/envois.js): any number, one at a time, resumed after a cut.
+    // The form is emptied at once; a pill shows the progress on every page.
+    // Where they go: the form's fiche, else its bac, else data-envoi.
+    function queue(form, files) {
+      var f = form.elements;
+      var fiche = f.fiche_id && f.fiche_id.value;
+      var bac = f.bac_id && f.bac_id.value;
+      var dest = fiche ? 'fiche:' + fiche : bac ? 'bac:' + bac : form.dataset.envoi;
+      var checked = form.querySelector('[name="type"]:checked') || (f.type && f.type.value ? f.type : null);
+      var n = files.length;
+      show('Préparation de ' + (n > 1 ? n + ' fichiers' : '1 fichier') + '…', null, 'Ils sont gardés dans le téléphone, puis envoyés un par un.');
+      window.isoEnvois.add(files, { dest: dest, type: checked ? checked.value : 'observation', note: f.note ? f.note.value : '' }).then(function () {
+        veil.hidden = true;
+        form.reset();
+        form.querySelectorAll('input[type="file"]').forEach(function (input) { input.dispatchEvent(new Event('change', { bubbles: true })); });
+        var toast = document.getElementById('toast');
+        if (toast) {
+          toast.textContent = (n > 1 ? n + ' fichiers partent' : 'Le fichier part') + ' vers le Pi : suis l’envoi en bas de l’écran.';
+          toast.hidden = false;
+          setTimeout(function () { toast.hidden = true; }, 3500);
+        }
+      });
+    }
+
     document.addEventListener('submit', function (event) {
       var form = event.target;
       if (event.defaultPrevented || !form.matches('form[enctype="multipart/form-data"]')) return;
       var hasFile = Array.prototype.some.call(form.querySelectorAll('input[type="file"]'), function (i) { return i.files.length; });
       if (!hasFile || !window.FormData || !window.XMLHttpRequest) return;
       event.preventDefault();
+      if (form.hasAttribute('data-envoi') && window.isoEnvois && window.indexedDB) {
+        var files = [];
+        form.querySelectorAll('input[type="file"][name="photo"]').forEach(function (i) { files = files.concat(Array.prototype.slice.call(i.files)); });
+        return queue(form, files);
+      }
       if (!form.dataset.sending) send(form, event.submitter);
     });
   })();
@@ -246,7 +277,7 @@
       var n = input.files.length;
       if (label) {
         if (!label.dataset.empty) label.dataset.empty = label.textContent;
-        label.textContent = n ? (n > 1 ? n + ' photos choisies' : '1 photo choisie') + ' · en ajouter' : label.dataset.empty;
+        label.textContent = n ? (n > 1 ? n + ' fichiers choisis' : '1 fichier choisi') + ' · en ajouter' : label.dataset.empty;
       }
       if (!box) return;
       (urls.get(box) || []).forEach(URL.revokeObjectURL);
@@ -256,7 +287,9 @@
         var url = URL.createObjectURL(file);
         var tile = document.createElement('div');
         tile.className = 'photo-preview__tile';
-        tile.innerHTML = '<img alt=""><button type="button" class="photo-preview__remove" aria-label="Retirer cette photo">×</button>';
+        var video = /^video\//.test(file.type);
+        tile.innerHTML = (video ? '<video muted playsinline preload="metadata"></video><span class="photo-preview__play">▶</span>' : '<img alt="" loading="lazy" decoding="async">')
+          + '<button type="button" class="photo-preview__remove" aria-label="Retirer ce fichier">×</button>';
         tile.firstChild.src = url;
         tile.lastChild.addEventListener('click', function () {
           var kept = new DataTransfer();
@@ -285,7 +318,7 @@
       before.delete(input);
       if (input.multiple && earlier.length && window.DataTransfer) {
         var all = new DataTransfer();
-        earlier.concat(Array.prototype.slice.call(input.files)).slice(0, 30).forEach(function (f) { all.items.add(f); });
+        earlier.concat(Array.prototype.slice.call(input.files)).forEach(function (f) { all.items.add(f); });
         input.files = all.files;
       }
       render(input);
@@ -331,7 +364,7 @@
       view.setAttribute('role', 'dialog');
       view.setAttribute('aria-modal', 'true');
       view.setAttribute('aria-label', 'Photo');
-      view.innerHTML = '<div class="viewer__stage"><img class="viewer__img" alt="" draggable="false"></div>'
+      view.innerHTML = '<div class="viewer__stage"><img class="viewer__img" alt="" draggable="false"><video class="viewer__video" controls playsinline preload="metadata" hidden></video></div>'
         + '<div class="viewer__bar"><span class="viewer__count"></span><button type="button" class="viewer__close" data-v="close" aria-label="Fermer">×</button></div>'
         + '<button type="button" class="viewer__nav viewer__nav--prev" data-v="prev" aria-label="Photo précédente">‹</button>'
         + '<button type="button" class="viewer__nav viewer__nav--next" data-v="next" aria-label="Photo suivante">›</button>'
@@ -387,10 +420,10 @@
       var sheet = view.querySelector('[data-v="sheet"]');
       sheet.classList.toggle('is-on', onSheet);
       sheet.lastChild.textContent = onSheet ? 'Sur la fiche' : 'Fiche client';
-      sheet.hidden = !p.species.length;
+      sheet.hidden = !p.species.length || Boolean(p.video);
       var save = view.querySelector('[data-v="save"]');
       save.href = p.full;
-      save.setAttribute('download', 'isoterra-photo-' + p.id + '.jpg');
+      save.setAttribute('download', 'isoterra-' + (p.video ? 'video' : 'photo') + '-' + p.id + (p.full.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0]);
       view.querySelector('.viewer__choice').hidden = true;
       speciesPanel(p);
       view.querySelector('[data-v="prev"]').hidden = index === 0;
@@ -403,6 +436,21 @@
       var p = list[index];
       reset();
       delete img.dataset.sharp;
+      var player = view.querySelector('.viewer__video');
+      view.classList.toggle('is-video', Boolean(p.video));
+      img.hidden = Boolean(p.video);
+      player.hidden = !p.video;
+      player.pause();
+      if (p.video) {
+        // A video plays with its own controls (swipes stay for photos).
+        img.removeAttribute('src');
+        if (p.thumb && p.thumb !== p.full) player.poster = p.thumb; else player.removeAttribute('poster');
+        player.src = p.full;
+        render();
+        return;
+      }
+      player.removeAttribute('src');
+      player.load();
       img.src = p.thumb;
       img.classList.add('is-loading');
       var shown = new Image();
@@ -412,7 +460,7 @@
         img.classList.remove('is-loading');
       };
       shown.src = p.view || p.full;
-      [list[index + 1], list[index - 1]].forEach(function (n) { if (n) new Image().src = n.view || n.full; });
+      [list[index + 1], list[index - 1]].forEach(function (n) { if (n && !n.video) new Image().src = n.view || n.full; });
       render();
     }
 
@@ -461,6 +509,10 @@
       view.hidden = true;
       document.documentElement.classList.remove('viewer-open');
       img.removeAttribute('src');
+      var player = view.querySelector('.viewer__video');
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
       if (!fromHistory) history.back();
     }
 
@@ -519,7 +571,7 @@
     function share(p) {
       var title = p.species.map(function (s) { return s.name; }).join(', ');
       fetch(p.full).then(function (r) { return r.blob(); }).then(function (blob) {
-        var file = new File([blob], 'isoterra-photo-' + p.id + '.jpg', { type: blob.type || 'image/jpeg' });
+        var file = new File([blob], 'isoterra-' + (p.video ? 'video' : 'photo') + '-' + p.id + (p.full.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0], { type: blob.type || 'image/jpeg' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: title, text: p.note || title });
         say('Le partage n\'est pas possible ici : utilise « Enregistrer ».');
       }).catch(function (err) {
@@ -635,6 +687,7 @@
       var pair = function () { var k = Object.keys(points); return [points[k[0]], points[k[1]]]; };
 
       stage.addEventListener('pointerdown', function (e) {
+        if (e.target.closest && e.target.closest('video')) return;
         points[e.pointerId] = { x: e.clientX, y: e.clientY };
         try { stage.setPointerCapture(e.pointerId); } catch (err) { /* finger already gone */ }
         var n = Object.keys(points).length;

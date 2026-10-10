@@ -95,7 +95,7 @@
 
       <details class="species-photos__add" id="ajouter-photos">
         <summary>+ Ajouter des photos</summary>
-        <form method="POST" action="/especes/<%= sp.id %>/photos" enctype="multipart/form-data" class="species-photos__form">
+        <form method="POST" action="/especes/<%= sp.id %>/photos" enctype="multipart/form-data" class="species-photos__form" data-envoi="espece:<%= sp.id %>">
           <a href="/appareil?espece=<%= sp.id %>" class="btn camera-link species-photos__camera"><%- icons.nav('photos') %><span>Prendre avec l'appareil photo</span></a>
           <% if (bacs.length) { %>
             <div class="field">
@@ -116,8 +116,8 @@
             <textarea name="note" rows="2" placeholder="ex. Adulte en train de muer"></textarea>
           </div>
           <label class="hub-photo">
-            <input type="file" name="photo" accept="image/*" multiple required data-photo-input>
-            <span data-photo-label>+ Choisir les photos</span>
+            <input type="file" name="photo" accept="image/*,video/*" multiple required data-photo-input>
+            <span data-photo-label>+ Choisir photos et vidéos</span>
           </label>
           <div class="photo-preview" data-photo-preview hidden></div>
           <button type="submit" class="btn">Ajouter</button>

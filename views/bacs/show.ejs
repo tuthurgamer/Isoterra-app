@@ -78,7 +78,7 @@
 
 <section class="hub-section" id="note">
   <div class="section-title"><h2>Ajouter une note ou une photo</h2><div class="rule"></div></div>
-  <form method="POST" action="/bacs/<%= bac.id %>/note" enctype="multipart/form-data" class="hub-note">
+  <form method="POST" action="/bacs/<%= bac.id %>/note" enctype="multipart/form-data" class="hub-note" data-envoi="bac:<%= bac.id %>">
     <div class="type-chips">
       <% noteTypes.forEach(function (t, i) { %>
         <label class="sheet-toggle"><input type="radio" name="type" value="<%= t[0] %>"<%= i === 0 ? ' checked' : '' %>><span><%= t[1] %></span></label>
@@ -101,8 +101,8 @@
     <div class="photo-preview" data-photo-preview hidden></div>
     <div class="hub-note__foot">
       <label class="hub-photo">
-        <input type="file" name="photo" accept="image/*" multiple data-photo-input>
-        <span data-photo-label>+ Ajouter des photos</span>
+        <input type="file" name="photo" accept="image/*,video/*" multiple data-photo-input>
+        <span data-photo-label>+ Photos ou vidéos</span>
       </label>
       <a href="/appareil?bac=<%= bac.id %>" class="hub-photo camera-link"><%- icons.nav('photos') %><span>Appareil photo</span></a>
       <button type="submit" class="btn">Enregistrer</button>

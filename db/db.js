@@ -90,6 +90,12 @@ if (!photoColumns.includes('caption')) {
 if (!photoColumns.includes('view_path')) {
   db.exec('ALTER TABLE photos ADD COLUMN view_path TEXT');
 }
+// Videos live in the gallery alongside the photos.
+if (!photoColumns.includes('kind')) {
+  db.exec("ALTER TABLE photos ADD COLUMN kind TEXT NOT NULL DEFAULT 'photo'");
+  db.exec('ALTER TABLE photos ADD COLUMN duration REAL');
+  db.exec('ALTER TABLE photos ADD COLUMN mime TEXT');
+}
 
 // The species of each photo are chosen photo by photo; when that arrives,
 // every photo starts with the species of the entries it was sent with.

@@ -3,7 +3,12 @@
     icons in a corner. %>
 <button type="button" class="photo-thumb" data-photo="<%= JSON.stringify(photo) %>" data-photo-id="<%= photo.id %>"
         aria-label="Photo du <%= photo.taken %><%= photo.species.length ? ' — ' + photo.species.map(function (s) { return s.name; }).join(', ') : '' %>">
-  <img src="<%= photo.thumb %>" alt="" loading="lazy" decoding="async">
+  <% if (photo.video && photo.thumb === photo.full) { %>
+    <span class="photo-thumb__novideo" aria-hidden="true"></span>
+  <% } else { %>
+    <img src="<%= photo.thumb %>" alt="" loading="lazy" decoding="async">
+  <% } %>
+  <% if (photo.video) { %><span class="photo-thumb__play" aria-hidden="true">▶<%= photo.length ? ' ' + photo.length : '' %></span><% } %>
   <span class="photo-thumb__stars<%= photo.rating === 5 ? ' is-top' : '' %>" data-stars aria-hidden="true"<%= photo.rating ? '' : ' hidden' %>><%= photo.rating %>★</span>
   <% if (typeof withSpecies !== 'undefined' && withSpecies && photo.species.length) { %>
     <span class="photo-thumb__who" aria-hidden="true">

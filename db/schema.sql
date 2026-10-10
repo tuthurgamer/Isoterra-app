@@ -98,6 +98,9 @@ CREATE TABLE IF NOT EXISTS photos (
   favorite INTEGER NOT NULL DEFAULT 0,  -- replaced by rating (a favourite became 5 stars)
   rating INTEGER NOT NULL DEFAULT 0,    -- 1 to 5 stars, 0 = not rated yet
   caption TEXT,  -- the note of a photo added from a species' page without a bac
+  kind TEXT NOT NULL DEFAULT 'photo',  -- 'photo' or 'video'
+  duration REAL,  -- a video's length, in seconds
+  mime TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 

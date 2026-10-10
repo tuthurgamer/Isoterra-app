@@ -29,7 +29,7 @@
   var shutter = $('[data-cam-shoot]');
   var SESSION = String(Date.now());
   var KEYS = {
-    prefs: 'isoterra.appareil.prefs', dest: 'isoterra.appareil.dest', sessions: 'isoterra.appareil.seances',
+    prefs: 'isoterra.appareil.prefs', dest: 'isoterra.appareil.dest',
     lens: 'isoterra.appareil.capteur', names: 'isoterra.appareil.noms', infos: 'isoterra.appareil.infos'
   };
   var load = function (key, fallback) { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (e) { return fallback; } };
@@ -37,7 +37,7 @@
 
   var state = {
     stream: null, track: null, capture: null, caps: {}, photoCaps: null,
-    devices: [], deviceId: load(KEYS.lens, null), busy: false, manual: {}, shots: [], openDial: null
+    devices: [], deviceId: load(KEYS.lens, null), busy: false, manual: {}, openDial: null
   };
   var m = state.manual;
   var prefs = Object.assign({ grid: false, histo: false, level: false, timer: 0, burst: 1, flash: 'off', resolution: 'max' }, load(KEYS.prefs, {}));
@@ -863,167 +863,90 @@
     this.value = '';
   });
 
-  // ---------- The queue: kept in the phone until the Pi has the photo ----------
+  // ---------- Sending: the shared queue (public/js/envois.js) ----------
 
-  var dbPromise = null;
-  function idb() {
-    if (!window.indexedDB) return Promise.reject(new Error('pas de stockage'));
-    if (!dbPromise) {
-      dbPromise = new Promise(function (resolve, reject) {
-        var r = indexedDB.open('isoterra-appareil', 1);
-        r.onupgradeneeded = function () { r.result.createObjectStore('envois', { keyPath: 'id' }); };
-        r.onsuccess = function () { resolve(r.result); };
-        r.onerror = function () { reject(r.error); };
-      });
-    }
-    return dbPromise;
-  }
-  function store(mode, fn) {
-    return idb().then(function (db) {
-      return new Promise(function (resolve, reject) {
-        var tx = db.transaction('envois', mode);
-        var req = fn(tx.objectStore('envois'));
-        tx.oncomplete = function () { resolve(req && req.result); };
-        tx.onerror = function () { reject(tx.error); };
-      });
-    }).catch(function () { return null; });
-  }
-
-  var sessions = load(KEYS.sessions, {});
-
+  // Each photo joins the queue at once, kept in the phone until the Pi has
+  // it; the session's photos make one batch, so one line in the journal.
   function addShot(blob, name, time) {
     if (!blob) return Promise.resolve();
     var d = new Date(time);
-    var item = {
-      id: time + '-' + Math.round(Math.random() * 1e6),
-      blob: blob,
-      name: name || 'isoterra-' + stamp(d).slice(0, 10).replace(/-/g, '') + '-' + stamp(d).slice(11).replace(/:/g, '') + '.jpg',
-      time: time,
-      dest: destination(),
-      session: SESSION
-    };
-    state.shots.push({ item: item, status: 'attente', url: URL.createObjectURL(blob) });
-    renderRoll();
-    return store('readwrite', function (s) { return s.put(item); }).then(function () { pump(); });
+    var file = new File([blob], name || 'isoterra-' + stamp(d).slice(0, 10).replace(/-/g, '') + '-' + stamp(d).slice(11).replace(/:/g, '') + '.jpg', {
+      type: blob.type || 'image/jpeg', lastModified: time
+    });
+    return window.isoEnvois.add([file], { dest: destination(), type: 'observation', batch: SESSION });
   }
 
-  var pumping = false;
-  function pump() {
-    if (pumping) return;
-    var shot = state.shots.find(function (s) { return s.status === 'attente' || (s.status === 'erreur' && s.retryAt <= Date.now()); });
-    if (!shot) return;
-    pumping = true;
-    shot.status = 'envoi';
-    renderRoll();
-    var item = shot.item;
-    var file = new File([item.blob], item.name, { type: item.blob.type || 'image/jpeg', lastModified: item.time });
-    window.isoPhotoPrep.preparePhoto(file).then(function (p) {
-      var data = new FormData();
-      data.append('dest', item.dest);
-      data.append('at', sessions[item.session] || '');
-      data.append('photo', p.file, p.file.name);
-      if (p.view) data.append('photo_view', p.view, p.view.name);
-      if (p.thumb) data.append('photo_thumb', p.thumb, p.thumb.name);
-      data.append('photo_meta', JSON.stringify(p.meta));
-      return fetch('/appareil/envoi', { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, body: data });
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (answer) {
-        if (r.ok && answer.ok) {
-          shot.status = 'ok';
-          shot.photo = answer.photo;
-          if (answer.at && !sessions[item.session]) {
-            sessions[item.session] = answer.at;
-            save(KEYS.sessions, sessions);
-          }
-          return store('readwrite', function (s) { return s.delete(item.id); });
-        }
-        if (r.status === 400 || r.status === 413) {
-          shot.status = 'refus';
-          shot.error = answer.message || (r.status === 413 ? 'Photo trop lourde.' : 'Refusée par le Pi.');
-          say(shot.error);
-          return null;
-        }
-        throw new Error('Erreur ' + r.status);
-      });
-    }).catch(function () {
-      shot.status = 'erreur';
-      shot.retryAt = Date.now() + 15000;
-      setTimeout(pump, 15500);
-    }).then(function () {
-      pumping = false;
-      renderRoll();
-      pump();
+  // This session's photos, and any other still waiting to go.
+  function shots() {
+    return window.isoEnvois.entries().filter(function (e) {
+      return e.item.batch === SESSION || e.item.session === SESSION || e.status !== 'ok';
     });
   }
-
-  // Photos left waiting by an earlier session (app closed, Pi out of reach).
-  store('readonly', function (s) { return s.getAll(); }).then(function (items) {
-    (items || []).forEach(function (item) {
-      if (state.shots.some(function (s) { return s.item.id === item.id; })) return;
-      state.shots.push({ item: item, status: 'attente', url: URL.createObjectURL(item.blob) });
-    });
-    if (items && items.length) {
-      say(items.length > 1 ? items.length + ' photos en attente reprennent leur envoi' : 'Une photo en attente reprend son envoi');
-      renderRoll();
-      pump();
-    }
-  });
+  window.isoEnvois.on(function () { renderRoll(); });
 
   // ---------- The session's photos ----------
 
   var sheet = $('[data-cam-sheet]');
 
   function renderRoll() {
-    var shots = state.shots;
+    var list = shots();
     var roll = $('[data-cam-roll]');
-    var lastShot = shots[shots.length - 1];
+    var lastShot = list[list.length - 1];
     var img = roll.querySelector('img');
-    img.hidden = !lastShot;
-    if (lastShot) img.src = lastShot.url;
+    var url = lastShot && window.isoEnvois.preview(lastShot);
+    img.hidden = !url;
+    if (url) img.src = url;
     var count = roll.querySelector('.cam__roll-count');
-    count.hidden = !shots.length;
-    count.textContent = shots.length;
-    var waiting = shots.filter(function (s) { return s.status !== 'ok'; });
+    count.hidden = !list.length;
+    count.textContent = list.length;
+    var waiting = list.filter(function (e) { return e.status !== 'ok'; });
     var badge = roll.querySelector('.cam__roll-state');
     badge.hidden = !waiting.length;
-    badge.className = 'cam__roll-state' + (waiting.some(function (s) { return s.status === 'erreur' || s.status === 'refus'; }) ? ' is-error' : '');
+    badge.className = 'cam__roll-state' + (waiting.some(function (e) { return e.status === 'erreur' || e.status === 'refus'; }) ? ' is-error' : '');
     if (!sheet.hidden) renderSheet();
   }
 
   function renderSheet() {
-    var shots = state.shots;
-    var sent = shots.filter(function (s) { return s.status === 'ok'; }).length;
-    var problems = shots.filter(function (s) { return s.status === 'erreur'; }).length;
-    $('[data-cam-sheet-sub]').textContent = shots.length
-      ? sent + ' sur ' + shots.length + ' envoyée' + (sent > 1 ? 's' : '') + (problems ? ' · le Pi ne répond pas, nouvel essai bientôt' : '')
+    var list = shots();
+    var sent = list.filter(function (e) { return e.status === 'ok'; }).length;
+    var problems = list.filter(function (e) { return e.status === 'erreur'; }).length;
+    $('[data-cam-sheet-sub]').textContent = list.length
+      ? sent + ' sur ' + list.length + ' envoyée' + (sent > 1 ? 's' : '') + (problems ? ' · le Pi ne répond pas, nouvel essai bientôt' : '')
       : 'Aucune photo pour l’instant';
     var grid = $('[data-cam-sheet-grid]');
     grid.innerHTML = '';
-    shots.slice().reverse().forEach(function (shot) {
+    list.slice().reverse().forEach(function (entry) {
       var tile;
-      if (shot.status === 'ok' && shot.photo) {
+      if (entry.status === 'ok' && entry.photo) {
         // Sent: it opens in the viewer (stars, species, delete…).
         tile = document.createElement('button');
         tile.type = 'button';
         tile.className = 'photo-thumb cam-roll__tile';
-        tile.dataset.photo = JSON.stringify(shot.photo);
-        tile.dataset.photoId = shot.photo.id;
+        tile.dataset.photo = JSON.stringify(entry.photo);
+        tile.dataset.photoId = entry.photo.id;
       } else {
         tile = document.createElement('div');
         tile.className = 'cam-roll__tile';
       }
-      var img = document.createElement('img');
-      img.src = shot.url;
-      img.alt = '';
-      tile.appendChild(img);
-      var label = { attente: 'En attente', envoi: 'Envoi…', erreur: 'Nouvel essai bientôt', refus: shot.error || 'Refusée' }[shot.status];
+      var url = window.isoEnvois.preview(entry);
+      if (url) {
+        var img = document.createElement('img');
+        img.src = url;
+        img.alt = '';
+        img.decoding = 'async';
+        tile.appendChild(img);
+      }
+      var label = {
+        attente: 'En attente', envoi: 'Envoi ' + Math.round((entry.progress || 0) * 100) + ' %',
+        erreur: 'Nouvel essai bientôt', refus: entry.error || 'Refusée'
+      }[entry.status];
       if (label) {
         var badge = document.createElement('span');
-        badge.className = 'cam-roll__badge is-' + shot.status;
+        badge.className = 'cam-roll__badge is-' + entry.status;
         badge.textContent = label;
         tile.appendChild(badge);
       }
-      if (shot.status === 'refus' || shot.status === 'erreur' || shot.status === 'attente') {
+      if (entry.status === 'refus' || entry.status === 'erreur' || entry.status === 'attente') {
         var drop = document.createElement('button');
         drop.type = 'button';
         drop.className = 'cam-roll__drop';
@@ -1031,10 +954,7 @@
         drop.textContent = '×';
         drop.addEventListener('click', function (event) {
           event.stopPropagation();
-          if (shot.status === 'envoi') return;
-          state.shots.splice(state.shots.indexOf(shot), 1);
-          store('readwrite', function (s) { return s.delete(shot.item.id); });
-          renderRoll();
+          window.isoEnvois.remove(entry);
         });
         tile.appendChild(drop);
       }
@@ -1051,18 +971,16 @@
   // A photo deleted from the viewer leaves the session too.
   new MutationObserver(function () {
     if (sheet.hidden) return;
-    var before = state.shots.length;
-    state.shots = state.shots.filter(function (s) {
-      return !(s.status === 'ok' && s.photo && !document.querySelector('[data-photo-id="' + s.photo.id + '"]'));
+    shots().forEach(function (e) {
+      if (e.status === 'ok' && e.photo && !document.querySelector('[data-photo-id="' + e.photo.id + '"]')) window.isoEnvois.remove(e);
     });
-    if (state.shots.length !== before) renderRoll();
   }).observe($('[data-cam-sheet-grid]'), { childList: true });
 
-  function pending() { return state.shots.filter(function (s) { return s.status !== 'ok' && s.status !== 'refus'; }).length; }
+  function pending() { return shots().filter(function (e) { return e.status !== 'ok' && e.status !== 'refus'; }).length; }
   function leaving(event) {
     var n = pending();
     if (!n) return;
-    if (!confirm(n + (n > 1 ? ' photos ne sont' : ' photo n’est') + " pas encore sur le Pi. Elles restent gardées dans le téléphone et partiront à la prochaine ouverture de l'appareil. Quitter quand même ?")) event.preventDefault();
+    if (!confirm(n + (n > 1 ? ' photos ne sont' : ' photo n’est') + " pas encore sur le Pi. Elles restent gardées dans le téléphone et partiront depuis la page que tu ouvres. Quitter quand même ?")) event.preventDefault();
   }
   $('[data-cam-close]').addEventListener('click', leaving);
   $('[data-cam-done]').addEventListener('click', leaving);

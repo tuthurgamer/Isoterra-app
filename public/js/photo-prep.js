@@ -148,5 +148,51 @@
     });
   }
 
-  window.isoPhotoPrep = { preparePhoto: preparePhoto, shrinkIcon: shrinkIcon };
+  // A video to send: the file itself, untouched, its thumbnail (a picture
+  // from its first second) and its details. A video the phone can't read
+  // goes without a thumbnail.
+  function prepareVideo(file) {
+    var d = new Date(file.lastModified || Date.now());
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    var taken = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file);
+      var video = document.createElement('video');
+      var finished = false;
+      var done = function (result) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        video.removeAttribute('src');
+        video.load();
+        URL.revokeObjectURL(url);
+        resolve(result);
+      };
+      var timer = setTimeout(function () { done({ file: file, meta: { taken: taken } }); }, 20000);
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      video.onloadedmetadata = function () {
+        video.currentTime = Math.min(1, (video.duration || 0) / 3);
+      };
+      video.onseeked = function () {
+        var w = video.videoWidth, h = video.videoHeight;
+        var meta = { taken: taken, duration: video.duration || null, w: w || null, h: h || null };
+        if (!w || !h) return done({ file: file, meta: meta });
+        var scale = Math.min(1, 640 / Math.max(w, h));
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        toFile(canvas, 'image/jpeg', 0.8, file.name.replace(/\.[^.]*$/, '') + '-sm.jpg').then(function (thumb) {
+          meta.thumb = Boolean(thumb);
+          done({ file: file, thumb: thumb, meta: meta });
+        });
+      };
+      video.onerror = function () { done({ file: file, meta: { taken: taken } }); };
+      video.src = url;
+    });
+  }
+
+  window.isoPhotoPrep = { preparePhoto: preparePhoto, prepareVideo: prepareVideo, shrinkIcon: shrinkIcon };
 })();

@@ -17,7 +17,7 @@
   </div>
   <div class="masthead-actions">
     <a href="/appareil<%= filter.bacId ? '?bac=' + filter.bacId : filter.speciesId ? '?espece=' + filter.speciesId : '' %>" class="btn camera-link"><%- icons.nav('photos') %><span>Appareil photo</span></a>
-    <a href="#ajouter" class="btn" data-open-add>+ Ajouter des photos</a>
+    <a href="#ajouter" class="btn" data-open-add>+ Ajouter photos ou vidéos</a>
   </div>
 </div>
 <div class="rule-double"></div>
@@ -25,7 +25,7 @@
 
 <details class="gallery-add" id="ajouter">
   <summary>Ajouter des photos</summary>
-  <form method="POST" action="/photos" enctype="multipart/form-data" class="gallery-add__form">
+  <form method="POST" action="/photos" enctype="multipart/form-data" class="gallery-add__form" data-envoi>
     <div class="field">
       <label>Bac</label>
       <select name="bac_id" data-picker required>
@@ -41,8 +41,8 @@
     </div>
     <div class="field">
       <label class="hub-photo">
-        <input type="file" name="photo" accept="image/*" multiple required data-photo-input>
-        <span data-photo-label>+ Choisir les photos</span>
+        <input type="file" name="photo" accept="image/*,video/*" multiple required data-photo-input>
+        <span data-photo-label>+ Choisir photos et vidéos</span>
       </label>
     </div>
     <div class="photo-preview" data-photo-preview hidden></div>
