@@ -4,8 +4,9 @@ const db = require('../db/db');
 const { uploadPhotos } = require('../lib/uploads');
 const { noteForBac } = require('../lib/bac-log');
 const {
-  savePhotos, removeUnusedPhotos, deletePhoto, setRating, setSpecies, toggleShowcase, listPhotos, photoCard, byMonth, byRating, card
+  savePhotos, removeUnusedPhotos, deletePhoto, setRating, setSpecies, toggleShowcase, listPhotos, photoCard, byMonth, byRating, card, validTaken
 } = require('../lib/photos');
+const { isFingerprint } = require('../lib/empreinte');
 const { pic } = require('../views/helpers/icons');
 const { numTag, CATEGORY_LABELS } = require('../views/helpers/format');
 
@@ -81,6 +82,32 @@ router.post('/', uploadPhotos, (req, res) => {
   }
   const notice = photos.length > 1 ? `${photos.length} photos ajoutées` : 'Photo ajoutée';
   res.redirect(`/photos?notice=${encodeURIComponent(notice)}`);
+});
+
+// Before sending, the phone asks which of its files are already here: the
+// very same file (same fingerprint, see lib/empreinte.js), or probably the
+// same photo (shot at the same second, for photos stored before
+// fingerprints). Body: { files: [{ key, hashes: [...], taken }] }.
+router.post('/doublons', express.json({ limit: '1mb' }), (req, res) => {
+  if (req.get('X-Requested-With') !== 'fetch') return res.status(403).json({ ok: false });
+  const files = Array.isArray((req.body || {}).files) ? req.body.files.slice(0, 2000) : [];
+  const exact = db.prepare('SELECT id FROM photos WHERE source_hash = ? OR file_hash = ? LIMIT 1');
+  const sameSecond = db.prepare("SELECT id FROM photos WHERE kind = 'photo' AND taken_at = ? LIMIT 1");
+  const results = {};
+  for (const f of files) {
+    const hashes = (Array.isArray(f.hashes) ? f.hashes : []).filter(isFingerprint);
+    let found = null;
+    for (const h of hashes) {
+      const row = exact.get(h, h);
+      if (row) { found = { match: 'exact', id: row.id }; break; }
+    }
+    if (!found && validTaken(f.taken)) {
+      const row = sameSecond.get(f.taken);
+      if (row) found = { match: 'probable', id: row.id };
+    }
+    if (found) results[f.key] = { match: found.match, photo: photoCard(found.id) };
+  }
+  res.json({ ok: true, results });
 });
 
 // The viewer's buttons, sent by script only (a custom header that another

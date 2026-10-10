@@ -32,8 +32,9 @@
 
   // When a photo was shot: the date the camera wrote in it (EXIF), else the
   // file's date. "2026-10-08 14:32:05", in the phone's time.
-  function shotDate(file) {
+  function shotDate(file, strict) {
     var fallback = function () {
+      if (strict) return null;
       var d = new Date(file.lastModified || Date.now());
       var p = function (n) { return String(n).padStart(2, '0'); };
       return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
@@ -194,5 +195,20 @@
     });
   }
 
-  window.isoPhotoPrep = { preparePhoto: preparePhoto, prepareVideo: prepareVideo, shrinkIcon: shrinkIcon };
+  // The fingerprint of a file, the same as the Pi's (lib/empreinte.js):
+  // SHA-256 of the whole file up to 16 MB, else of its size and its first
+  // and last 4 MB.
+  function fingerprint(blob) {
+    var whole = 16 * 1048576, edge = 4 * 1048576;
+    var parts = blob.size <= whole ? [blob] : [new Blob(['isoterra-taille:' + blob.size]), blob.slice(0, edge), blob.slice(blob.size - edge)];
+    return new Blob(parts).arrayBuffer().then(function (buffer) { return crypto.subtle.digest('SHA-256', buffer); }).then(function (digest) {
+      return Array.prototype.map.call(new Uint8Array(digest), function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    });
+  }
+
+  window.isoPhotoPrep = {
+    preparePhoto: preparePhoto, prepareVideo: prepareVideo, shrinkIcon: shrinkIcon,
+    fingerprint: fingerprint, withoutGps: withoutGps,
+    cameraDate: function (file) { return shotDate(file, true); }
+  };
 })();

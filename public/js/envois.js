@@ -67,11 +67,11 @@
     var batch = opts.batch || uuid();
     var chain = Promise.resolve();
     var warned = false;
-    Array.prototype.forEach.call(files, function (file) {
+    Array.prototype.forEach.call(files, function (file, i) {
       var item = {
         id: uuid(), blob: file, name: file.name || 'photo.jpg', time: file.lastModified || Date.now(),
         dest: opts.dest, type: opts.type || 'observation', note: opts.note || '', batch: batch,
-        kind: isVideo(file) ? 'video' : 'photo'
+        kind: isVideo(file) ? 'video' : 'photo', hash: (opts.hashes || [])[i] || null
       };
       var entry = { item: item, status: 'attente', progress: 0 };
       entries.push(entry);
@@ -107,9 +107,13 @@
     var item = entry.item;
     entry.status = 'envoi';
     notify();
-    var prepare = entry.prepared ? Promise.resolve(entry.prepared)
-      : item.kind === 'video' ? window.isoPhotoPrep.prepareVideo(new File([item.blob], item.name, { type: item.blob.type, lastModified: item.time }))
+    // Its fingerprint goes with it, to tell later if the same file comes again.
+    var fingerprinted = item.hash ? Promise.resolve() : window.isoPhotoPrep.fingerprint(item.blob).then(function (h) { item.hash = h; }, function () {});
+    var prepare = fingerprinted.then(function () {
+      if (entry.prepared) return entry.prepared;
+      return item.kind === 'video' ? window.isoPhotoPrep.prepareVideo(new File([item.blob], item.name, { type: item.blob.type, lastModified: item.time }))
         : window.isoPhotoPrep.preparePhoto(new File([item.blob], item.name, { type: item.blob.type || 'image/jpeg', lastModified: item.time }));
+    });
     return prepare.then(function (p) {
       entry.prepared = p;
       var body = p.file;
@@ -146,7 +150,7 @@
     var meta = {
       name: item.name, size: size, mime: p.file.type || item.blob.type, kind: item.kind,
       w: p.meta && p.meta.w, h: p.meta && p.meta.h, duration: p.meta && p.meta.duration, taken: p.meta && p.meta.taken,
-      dest: item.dest, type: item.type, note: item.note, at: batches[item.batch || item.session] || ''
+      dest: item.dest, type: item.type, note: item.note, at: batches[item.batch || item.session] || '', hash: item.hash || ''
     };
     var data = new FormData();
     data.append('meta', JSON.stringify(meta));
@@ -367,7 +371,134 @@
     });
   }
 
+  // ---------- Before sending: files already in the app ----------
+
+  // Which of these files are already in the app (the very same file, or
+  // probably the same photo: shot at the same second), twice in this choice
+  // (kept once) or already on their way? For those, the person chooses.
+  // Resolves to { files, hashes, repeated, skipped }, or null if cancelled.
+  function screen(files, onProgress) {
+    files = Array.prototype.slice.call(files);
+    var prep = window.isoPhotoPrep;
+    var info = [];
+    var chain = Promise.resolve();
+    files.forEach(function (file, i) {
+      chain = chain.then(function () {
+        if (onProgress) onProgress(i + 1, files.length);
+        var video = isVideo(file);
+        return Promise.all([
+          prep.fingerprint(file),
+          // As stored on the Pi (without its GPS position), when different.
+          video ? null : prep.withoutGps(file).then(function (clean) { return clean === file ? null : prep.fingerprint(clean); }),
+          video ? null : prep.cameraDate(file)
+        ]).then(function (r) { info.push({ key: String(i), file: file, hash: r[0], stored: r[1], taken: r[2] }); });
+      });
+    });
+    return chain.then(function () {
+      var seen = {}, unique = [], repeated = 0;
+      info.forEach(function (x) { if (seen[x.hash]) repeated++; else { seen[x.hash] = true; unique.push(x); } });
+      var onTheirWay = {};
+      entries.forEach(function (e) { if (e.item.hash && e.status !== 'refus' && e.status !== 'ok') onTheirWay[e.item.hash] = true; });
+      return call('/photos/doublons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: unique.map(function (x) { return { key: x.key, hashes: [x.hash, x.stored].filter(Boolean), taken: x.taken }; }) })
+      }).then(function (r) { return r.ok ? r.body.results || {} : {}; }, function () { return {}; }).then(function (results) {
+        var doubts = [];
+        unique.forEach(function (x) {
+          if (results[x.key]) { x.match = results[x.key].match; x.photo = results[x.key].photo; doubts.push(x); }
+          else if (onTheirWay[x.hash]) { x.match = 'envoi'; doubts.push(x); }
+        });
+        var fresh = unique.filter(function (x) { return !x.match; });
+        var result = function (again) {
+          var chosen = fresh.concat(again);
+          return { files: chosen.map(function (x) { return x.file; }), hashes: chosen.map(function (x) { return x.hash; }), repeated: repeated, skipped: doubts.length - again.length };
+        };
+        if (!doubts.length) return result([]);
+        return ask(doubts, fresh.length).then(function (again) { return again === null ? null : result(again); });
+      });
+    });
+  }
+
+  // The files already in the app, each next to the one in the app, to tick
+  // those to send all the same. Resolves to the ticked ones, or null.
+  function ask(doubts, freshCount) {
+    return new Promise(function (resolve) {
+      var urls = [];
+      var box = document.createElement('div');
+      box.className = 'doublons';
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-modal', 'true');
+      var exact = doubts.filter(function (x) { return x.match === 'exact'; }).length;
+      var title = doubts.length > 1 ? doubts.length + ' fichiers sont déjà là' : 'Ce fichier est déjà là';
+      box.innerHTML = '<div class="doublons__card"><h2></h2><p class="doublons__intro"></p><ul class="doublons__list"></ul>'
+        + '<div class="doublons__tick"><button type="button" class="btn-quiet" data-all>Tout cocher</button></div>'
+        + '<div class="doublons__actions"><button type="button" class="btn-quiet" data-cancel>Annuler</button><button type="button" class="btn" data-go></button></div></div>';
+      box.querySelector('h2').textContent = title;
+      box.querySelector('.doublons__intro').textContent = (exact ? (exact > 1 ? exact + ' sont exactement' : '1 est exactement') + ' le même fichier que dans l’app. ' : '')
+        + 'Coche ceux à envoyer quand même ; les autres ne seront pas renvoyés.';
+      var list = box.querySelector('.doublons__list');
+      doubts.forEach(function (x) {
+        var li = document.createElement('li');
+        li.innerHTML = '<label><input type="checkbox"><span class="doublons__pair"><span class="doublons__new"></span><span class="doublons__arrow">=</span><span class="doublons__old"></span></span>'
+          + '<span class="doublons__text"><b></b><small></small></span></label>';
+        var mine = li.querySelector('.doublons__new');
+        if (isVideo(x.file)) mine.textContent = '▶';
+        else {
+          var url = URL.createObjectURL(x.file);
+          urls.push(url);
+          var img = document.createElement('img');
+          img.src = url;
+          img.alt = '';
+          img.decoding = 'async';
+          mine.appendChild(img);
+        }
+        var theirs = li.querySelector('.doublons__old');
+        if (x.photo && x.photo.thumb && !(x.photo.video && x.photo.thumb === x.photo.full)) {
+          var old = document.createElement('img');
+          old.src = x.photo.thumb;
+          old.alt = '';
+          theirs.appendChild(old);
+        } else {
+          theirs.textContent = x.match === 'envoi' ? '↑' : '▶';
+        }
+        li.querySelector('b').textContent = x.match === 'exact' ? 'Exactement le même fichier, déjà dans l’app'
+          : x.match === 'probable' ? 'Sans doute la même photo : prise à la même seconde'
+            : 'Déjà en cours d’envoi';
+        var where = [];
+        if (x.photo) {
+          var place = x.photo.bacLabel || x.photo.species.map(function (s) { return s.name; }).join(', ');
+          if (place) where.push(place);
+          if (x.photo.taken) where.push('prise le ' + x.photo.taken);
+        }
+        li.querySelector('small').textContent = x.file.name + (where.length ? ' · ' + where.join(' · ') : '');
+        list.appendChild(li);
+      });
+      var boxes = function () { return Array.prototype.slice.call(list.querySelectorAll('input')); };
+      var go = box.querySelector('[data-go]');
+      var count = function () {
+        var n = freshCount + boxes().filter(function (b) { return b.checked; }).length;
+        go.textContent = n ? 'Envoyer ' + (n > 1 ? 'les ' + n + ' fichiers' : 'le fichier') : 'Ne rien envoyer';
+      };
+      list.addEventListener('change', count);
+      box.querySelector('[data-all]').addEventListener('click', function () { boxes().forEach(function (b) { b.checked = true; }); count(); });
+      var close = function (value) {
+        urls.forEach(URL.revokeObjectURL);
+        box.remove();
+        resolve(value);
+      };
+      box.querySelector('[data-cancel]').addEventListener('click', function () { close(null); });
+      go.addEventListener('click', function () {
+        close(doubts.filter(function (x, k) { return boxes()[k].checked; }));
+      });
+      count();
+      document.body.appendChild(box);
+      go.focus();
+    });
+  }
+
   window.isoEnvois = {
+    screen: screen,
     add: add,
     entries: function () { return entries; },
     on: function (fn) { listeners.push(fn); },

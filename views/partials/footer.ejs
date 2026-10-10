@@ -1,8 +1,8 @@
   </main>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-<script src="/js/photo-prep.js?v=2"></script>
-<script src="/js/envois.js?v=1"></script>
+<script src="/js/photo-prep.js?v=3"></script>
+<script src="/js/envois.js?v=2"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -235,18 +235,42 @@
       var bac = f.bac_id && f.bac_id.value;
       var dest = fiche ? 'fiche:' + fiche : bac ? 'bac:' + bac : form.dataset.envoi;
       var checked = form.querySelector('[name="type"]:checked') || (f.type && f.type.value ? f.type : null);
-      var n = files.length;
-      show('Préparation de ' + (n > 1 ? n + ' fichiers' : '1 fichier') + '…', null, 'Ils sont gardés dans le téléphone, puis envoyés un par un.');
-      window.isoEnvois.add(files, { dest: dest, type: checked ? checked.value : 'observation', note: f.note ? f.note.value : '' }).then(function () {
-        veil.hidden = true;
+      var tell = function (text) {
+        var toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.textContent = text;
+        toast.hidden = false;
+        setTimeout(function () { toast.hidden = true; }, 4500);
+      };
+      var emptyForm = function () {
         form.reset();
         form.querySelectorAll('input[type="file"]').forEach(function (input) { input.dispatchEvent(new Event('change', { bubbles: true })); });
-        var toast = document.getElementById('toast');
-        if (toast) {
-          toast.textContent = (n > 1 ? n + ' fichiers partent' : 'Le fichier part') + ' vers le Pi : suis l’envoi en bas de l’écran.';
-          toast.hidden = false;
-          setTimeout(function () { toast.hidden = true; }, 3500);
+      };
+      // First, the files already in the app (the person chooses), then the queue.
+      show('Vérification des doublons…', null, 'Chaque fichier est comparé à ceux déjà dans l’app.');
+      var screened = window.isoEnvois.screen(files, function (i, total) {
+        show('Vérification des doublons… ' + i + ' / ' + total, null, 'Chaque fichier est comparé à ceux déjà dans l’app.');
+      }).catch(function () {
+        // Can't check (old browser): everything goes.
+        return { files: files, hashes: [], repeated: 0, skipped: 0 };
+      });
+      screened.then(function (chosen) {
+        veil.hidden = true;
+        if (!chosen) return;
+        var extra = (chosen.repeated ? ' ' + chosen.repeated + ' en double dans ta sélection, gardé' + (chosen.repeated > 1 ? 's' : '') + ' une fois.' : '')
+          + (chosen.skipped ? ' ' + chosen.skipped + ' déjà dans l’app, pas renvoyé' + (chosen.skipped > 1 ? 's' : '') + '.' : '');
+        var n = chosen.files.length;
+        if (!n) {
+          emptyForm();
+          tell('Rien à envoyer.' + extra);
+          return;
         }
+        show('Préparation de ' + (n > 1 ? n + ' fichiers' : '1 fichier') + '…', null, 'Ils sont gardés dans le téléphone, puis envoyés un par un.');
+        window.isoEnvois.add(chosen.files, { dest: dest, type: checked ? checked.value : 'observation', note: f.note ? f.note.value : '', hashes: chosen.hashes }).then(function () {
+          veil.hidden = true;
+          emptyForm();
+          tell((n > 1 ? n + ' fichiers partent' : 'Le fichier part') + ' vers le Pi : suis l’envoi en bas de l’écran.' + extra);
+        });
       });
     }
 

@@ -101,6 +101,8 @@ CREATE TABLE IF NOT EXISTS photos (
   kind TEXT NOT NULL DEFAULT 'photo',  -- 'photo' or 'video'
   duration REAL,  -- a video's length, in seconds
   mime TEXT,
+  source_hash TEXT,  -- fingerprint of the file as it was on the phone (lib/empreinte.js)
+  file_hash TEXT,    -- fingerprint of the file as stored
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 

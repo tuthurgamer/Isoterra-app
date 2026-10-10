@@ -66,4 +66,6 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
   console.log(`Isoterra tourne sur http://${HOST}:${PORT}`);
+  // Photos stored before fingerprints existed get theirs, in the background.
+  require('./lib/empreinte').backfill();
 });

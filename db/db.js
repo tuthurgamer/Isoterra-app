@@ -96,6 +96,15 @@ if (!photoColumns.includes('kind')) {
   db.exec('ALTER TABLE photos ADD COLUMN duration REAL');
   db.exec('ALTER TABLE photos ADD COLUMN mime TEXT');
 }
+// Fingerprints to tell a file sent twice (lib/empreinte.js): of the file as
+// it was on the phone, and of the file as stored.
+if (!photoColumns.includes('source_hash')) {
+  db.exec('ALTER TABLE photos ADD COLUMN source_hash TEXT');
+  db.exec('ALTER TABLE photos ADD COLUMN file_hash TEXT');
+}
+db.exec('CREATE INDEX IF NOT EXISTS idx_photos_source_hash ON photos(source_hash)');
+db.exec('CREATE INDEX IF NOT EXISTS idx_photos_file_hash ON photos(file_hash)');
+db.exec('CREATE INDEX IF NOT EXISTS idx_photos_taken ON photos(taken_at)');
 
 // The species of each photo are chosen photo by photo; when that arrives,
 // every photo starts with the species of the entries it was sent with.
