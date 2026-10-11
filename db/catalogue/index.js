@@ -1,18 +1,22 @@
 // The species catalogue: fiches of species the breeder doesn't keep (yet),
 // to help choose the next ones. Each version is added to the guide once —
 // never again, so a fiche deleted from the guide doesn't come back. The next
-// batch gets `since: 3` and CATALOGUE_VERSION goes up to 3.
+// batch gets `since: 4` and CATALOGUE_VERSION goes up to 4.
 const { defaultCare } = require('../care-defaults');
 const { defaultTraits } = require('../trait-defaults');
-const { familyOf } = require('../taxonomy');
+const { familyOf, CATEGORY_OF_FAMILY } = require('../taxonomy');
 
-const CATALOGUE_VERSION = 2;
+const CATALOGUE_VERSION = 3;
 
 const ENTRIES = [
   'iules', 'cloportes', 'blattes', 'cetoines', 'coleopteres', 'escargots', 'crabes',
   'reduves', 'mantes', 'phasmes', 'arachnides', 'scolopendres', 'autres',
   // Version 2: isopods and millipedes sold in France.
-  'cloportes-france', 'iules-france'
+  'cloportes-france', 'iules-france',
+  // Version 3: the other species of those shops.
+  'mantes-boutiques', 'phasmes-boutiques', 'blattes-boutiques', 'cetoines-boutiques',
+  'coleopteres-boutiques', 'divers-boutiques', 'orthopteres-autres-boutiques',
+  'araignees-boutiques', 'scorpions-boutiques'
 ].flatMap((file) => require('./' + file));
 
 const COLUMNS = [
@@ -31,6 +35,24 @@ function speciesRow(entry) {
   return Object.fromEntries(COLUMNS.map((c) => [c, row[c] ?? null]));
 }
 
+// Categories that a broader one gave way to: species of "Autres espèces",
+// and the spiders and scorpions of "Autres arachnides", move to their own.
+const NARROWED = { autre: null, arachnide: ['araignee', 'scorpion'] };
+const SCORPION_RULES = 'Réglementé en France : souvent soumis au certificat de capacité (CDC), à vérifier auprès de la DDPP avant l’achat';
+
+function refile(db) {
+  const move = db.prepare('UPDATE species SET category = ? WHERE id = ?');
+  for (const sp of db.prepare('SELECT id, category, family FROM species WHERE family IS NOT NULL').all()) {
+    const target = CATEGORY_OF_FAMILY[sp.family];
+    if (!target || target === sp.category || !(sp.category in NARROWED)) continue;
+    const allowed = NARROWED[sp.category];
+    if (!allowed || allowed.includes(target)) move.run(target, sp.id);
+  }
+  // Scorpions already in the guide get the French rules in their warning.
+  db.prepare(`UPDATE species SET vigilance = ? || CASE WHEN vigilance IS NULL OR vigilance = '' OR vigilance = 'Aucune' THEN '' ELSE ' ; ' || vigilance END
+    WHERE category = 'scorpion' AND (vigilance IS NULL OR vigilance NOT LIKE 'Réglementé%')`).run(SCORPION_RULES);
+}
+
 function installCatalogue(db) {
   const done = db.prepare("SELECT value FROM settings WHERE key = 'catalogue_version'").get();
   const installed = Number(done && done.value) || 0;
@@ -47,6 +69,7 @@ function installCatalogue(db) {
       insert.run(speciesRow(entry));
       added++;
     }
+    if (installed < 3) refile(db);
     db.prepare(`INSERT INTO settings (key, value) VALUES ('catalogue_version', ?)
       ON CONFLICT(key) DO UPDATE SET value = excluded.value`).run(String(CATALOGUE_VERSION));
     db.exec('COMMIT');

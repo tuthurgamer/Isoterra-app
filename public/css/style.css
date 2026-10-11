@@ -2321,3 +2321,10 @@ html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
 /* Search field of long icon menus. */
 .picker-sheet__search { flex-shrink: 0; margin: 0 14px 8px; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--paper); font-size: 15px; }
 .picker-sheet__search[hidden], .picker-opt[hidden], .picker-sheet__group[hidden] { display: none; }
+
+/* Category drawings shared by long lists (icons.categorySprite). */
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.cat-use { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dmd { display: inline-flex; gap: 4px; padding: 0 2px; }
+.dmd i { width: 7px; height: 7px; border: 1px solid var(--ink-faint); transform: rotate(45deg); }
+.dmd i.on { border-color: var(--ink); background: var(--ink); }

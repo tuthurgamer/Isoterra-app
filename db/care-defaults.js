@@ -4,7 +4,7 @@
 
 const FEED_BY_CATEGORY = {
   iule: 7, cloporte: 5, blatte: 4, cetoine: 14, coleoptere: 14, escargot: 2, crabe: 2,
-  reduve: 4, mante: 3, phasme: 3, arachnide: 7, scolopendre: 7, autre: 4
+  reduve: 4, mante: 3, phasme: 3, orthoptere: 2, araignee: 5, scorpion: 7, arachnide: 7, scolopendre: 7, autre: 4
 };
 
 // Species whose needs differ from their category's default. Keyed by the

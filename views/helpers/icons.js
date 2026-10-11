@@ -27,7 +27,10 @@ const SPECIES_ICONS = {
   reduve: '<path d="M24 21c4.5 0 7.5 4 7.5 10S28.5 43 24 43s-7.5-6-7.5-12 3-10 7.5-10z"/><path d="M17 26c2 1 4.5 1.5 7 1.5s5-.5 7-1.5"/><path d="M24 21v-4"/><ellipse cx="24" cy="13.5" rx="2.3" ry="3.5"/><path d="M24 10V6.5c0-1-1-2-2-2"/><path d="M22.5 11C20 7 16 5 11 5M25.5 11C28 7 32 5 37 5"/><path d="M17.5 28l-8-5-3 2M17 34l-9 2-2 6M19 39l-5 6M30.5 28l8-5 3 2M31 34l9 2 2 6M29 39l5 6"/>',
   mante: '<path d="M19.5 7.5c3 1.3 6 1.3 9 0L24 14z"/><path d="M21 8C19 5 16 3.5 12 3M27 8c2-3 5-4.5 9-5"/><path d="M24 14v10"/><path d="M24 17c-4 0-7.5 1.5-9 5l4 4.5M15 22l-1 3"/><path d="M24 17c4 0 7.5 1.5 9 5l-4 4.5M33 22l1 3"/><path d="M24 24c3.6 0 5.6 4.5 5.6 9.5S27.5 45 24 45s-5.6-6.5-5.6-11.5S20.4 24 24 24z"/><path d="M20.5 26.5l-8 4-2 6M27.5 26.5l8 4 2 6M20 30.5l-6 9M28 30.5l6 9"/>',
   phasme: '<path d="M9 42L35 13"/><path d="M35 13l2.5-2.5"/><path d="M37 11l1.5-7M37 11l7-1.5"/><path d="M31.5 17l-5-5.5-1-5.5M31.5 17l7.5 3 5-1"/><path d="M24.5 25l-8-3-4.5 2M24.5 25l4 7.5-1 5.5"/><path d="M17 33.5l-8-1-3 3.5M17 33.5l3 7.5-1.5 5"/>',
-  arachnide: '<ellipse cx="24" cy="32" rx="7" ry="8.5"/><ellipse cx="24" cy="18.5" rx="5" ry="5"/><path d="M22 14l-1.5-4M26 14l1.5-4"/><path d="M20 16.5l-6-6-3.5 1.5M19.2 18.5l-8.5-2-3.5 4M19.3 21l-8 4-2.5 5.5M20.5 22.5l-6 8-1 5.5M28 16.5l6-6 3.5 1.5M28.8 18.5l8.5-2 3.5 4M28.7 21l8 4 2.5 5.5M27.5 22.5l6 8 1 5.5"/>',
+  orthoptere: '<path d="M9 27c6-4 17-6 29-4.5 3.5.5 3.5 4 0 5-12 2-23 2-29-.5z"/><circle cx="9.5" cy="27" r="3.2"/><path d="M14 24.5c8-2.5 16-3 24-1.5"/><path d="M25 27.5l9-11 7 16"/><path d="M14 29l-2 7M18 29.5l1 6.5"/><path d="M8 24C6 18 4 14 2 12M10 23.8c0-6 1-10 3-13"/>',
+  araignee: '<ellipse cx="24" cy="32" rx="7" ry="8.5"/><ellipse cx="24" cy="18.5" rx="5" ry="5"/><path d="M22 14l-1.5-4M26 14l1.5-4"/><path d="M20 16.5l-6-6-3.5 1.5M19.2 18.5l-8.5-2-3.5 4M19.3 21l-8 4-2.5 5.5M20.5 22.5l-6 8-1 5.5M28 16.5l6-6 3.5 1.5M28.8 18.5l8.5-2 3.5 4M28.7 21l8 4 2.5 5.5M27.5 22.5l6 8 1 5.5"/>',
+  scorpion: '<path d="M19.5 21c0-3 2-4.5 4.5-4.5s4.5 1.5 4.5 4.5v9c0 3-2 4.5-4.5 4.5s-4.5-1.5-4.5-4.5z"/><path d="M19.5 25h9M19.5 29h9"/><path d="M21 17.5l-5-4-3-5"/><path d="M13 8.5c-3-.5-5.5 1-6 3.5 2.5 1 5 0 6-2M13 8.5c1-2.5 3.5-3.5 5.5-2.5-1 2-3 3-5 3"/><path d="M27 17.5l5-4 3-5"/><path d="M35 8.5c3-.5 5.5 1 6 3.5-2.5 1-5 0-6-2M35 8.5c-1-2.5-3.5-3.5-5.5-2.5 1 2 3 3 5 3"/><path d="M19.5 22.5l-6 1-3 3M19.5 26l-7 3-2 4M19.5 29.5l-6 5-1 4M28.5 22.5l6 1 3 3M28.5 26l7 3 2 4M28.5 29.5l6 5 1 4"/><path d="M24 35c0 4 1.5 7.5 5 8.5s6.5-1.5 6-4.5-3-4.5-5-4"/><path d="M30 35l-2.5-1"/>',
+  arachnide: '<ellipse cx="24" cy="29" rx="6" ry="8"/><path d="M18 23.5c0-3.5 3-5.5 6-5.5s6 2 6 5.5"/><path d="M21.5 19l-4-5 3-3.5M26.5 19l4-5-3-3.5"/><path d="M19 21C12 17 6 11 2 4M29 21c7-4 13-10 17-17"/><path d="M18.5 26l-8 2-4 6M18.5 30l-7 6-2 6M29.5 26l8 2 4 6M29.5 30l7 6 2 6M20.5 35l-4 8M27.5 35l4 8"/>',
   scolopendre: '<rect x="20" y="9" width="8" height="32" rx="4"/><path d="M20 14.5h8M20 19.5h8M20 24.5h8M20 29.5h8M20 34.5h8"/><path d="M20 12l-6-2.5M20 17l-7-.5M20 22l-7 1M20 27l-7 2.5M20 32l-6.5 3.5M20.5 37l-5 4.5M28 12l6-2.5M28 17l7-.5M28 22l7 1M28 27l7 2.5M28 32l6.5 3.5M27.5 37l5 4.5"/><path d="M22 9.5C20 6 18 4.5 14.5 3.5M26 9.5c2-3.5 4-5 7.5-6"/><path d="M22 41l-2 5.5M26 41l2 5.5"/>',
   autre: '<ellipse cx="24" cy="24" rx="12" ry="9"/><path d="M13 19l-6-5m-1 8l-7-2m2 9l-7 3M35 19l6-5m1 8l7-2m-2 9l7 3"/><path d="M9 12c-3-1-6 1-6 4M39 12c3-1 6 1 6 4"/><path d="M18 15l-2-3M30 15l2-3"/>'
 };
@@ -70,6 +73,29 @@ function species(sp, size = 30) {
 function pic(sp) {
   if (!sp) return '';
   return sp.icon_path ? thumbPath(sp.icon_path) : sp.category || 'autre';
+}
+
+// Long lists (the species guide, the comparator) draw each category once
+// per page and reuse it on every row, instead of repeating the drawing
+// hundreds of times: categorySprite() goes once in the page, speciesLite()
+// on each row.
+function categorySprite() {
+  return '<svg class="icon-sprite" aria-hidden="true">'
+    + Object.entries(SPECIES_ICONS).map(([cat, inner]) => `<symbol id="cat-${cat}" viewBox="0 0 48 48">${inner}</symbol>`).join('')
+    + '</svg>';
+}
+
+function speciesLite(sp, size = 30) {
+  if (sp && sp.icon_path) return species(sp, size);
+  const category = sp && SPECIES_ICONS[sp.category] ? sp.category : 'autre';
+  return `<svg class="cat-use" width="${size}" height="${size}" aria-hidden="true"><use href="#cat-${category}"/></svg>`;
+}
+
+// The difficulty as five small diamonds drawn in CSS, light enough for lists.
+function difficultyDots(score, max = 5) {
+  let out = '';
+  for (let i = 1; i <= max; i++) out += i <= score ? '<i class="on"></i>' : '<i></i>';
+  return `<span class="dmd" role="img" aria-label="Difficulté ${score} sur ${max}">${out}</span>`;
 }
 
 function categoryIcons(size = 28) {
@@ -124,4 +150,4 @@ function gear(size = 20) {
   return svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', { size, stroke: 1.6 });
 }
 
-module.exports = { nav, species, pic, categoryIcons, action, diamond, droplet, thermometer, group, leaf, warning, ratingDiamonds, humidityDroplets, gear };
+module.exports = { nav, species, speciesLite, categorySprite, difficultyDots, pic, categoryIcons, action, diamond, droplet, thermometer, group, leaf, warning, ratingDiamonds, humidityDroplets, gear };

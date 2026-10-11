@@ -1,0 +1,120 @@
+// Third batch (catalogue version 3): stick and leaf insects sold by eBugz,
+// Insectorus and Isopods Mania in 2026, grouped by way of life.
+const TALL = "Bac aéré au moins trois fois plus haut que l'insecte, pour les mues ; les feuilles en bouquet dans un pot d'eau fermé (pour que les jeunes ne s'y noient pas).";
+
+const BASE = { category: 'phasme', sociability: 'Groupe', vigilance: 'Aucune', since: 3 };
+// Stick insects living in the foliage, eggs dropped to the ground.
+const BRANCH = {
+  ...BASE, diet_summary: 'Herbivore : ronce, chêne, noisetier',
+  habitat: TALL + " Brumisation légère tous les deux ou trois jours.",
+  feeding_detail: "Ronce fraîche toute l'année, chêne, noisetier, rosier ; changer le feuillage avant qu'il ne fane.",
+  repro_sexing: "Le mâle est nettement plus fin et plus petit que la femelle, souvent ailé ; la femelle a un abdomen épais terminé par un ovipositeur.",
+  repro_conditions: 'Feuillage frais en continu, aération.',
+  repro_mating: 'La femelle lance ses œufs au sol.',
+  repro_incubation: '3 à 5 mois sur du sable ou de la fibre de coco légèrement humides.',
+  repro_juveniles: 'Petits à mettre sur de la ronce jeune ; adultes en 4 à 6 mois.',
+  repro_pitfalls: 'Feuillage fané, bac trop bas (mues ratées), œufs qui moisissent ou sèchent.'
+};
+// Leaf insects (Phylliidae): flat, green, delicate first instars.
+const LEAFY = {
+  ...BASE, diet_summary: 'Herbivore : ronce, chêne, goyavier',
+  habitat: TALL + " Bonne aération et brumisation quotidienne légère.",
+  feeding_detail: "Ronce et chêne surtout. Pour les nouveau-nés, couper le bord des feuilles : ils ont du mal à entamer une feuille entière.",
+  repro_sexing: "Femelle large et plate ; mâle fin, ailé et plus petit.",
+  repro_conditions: 'Humidité, aération, ronce fraîche.',
+  repro_mating: 'Œufs lâchés au sol, souvent sans mâle (parthénogenèse).',
+  repro_incubation: '3 à 6 mois.',
+  repro_juveniles: 'Les petits, rougeâtres à la naissance, verdissent en mangeant. Adultes en 4 à 6 mois.',
+  repro_pitfalls: 'Premiers stades qui ne mangent pas, bac confiné.'
+};
+// Heteropterygidae: stocky ground-dwellers that bury their eggs.
+const GROUND = {
+  ...BASE, diet_summary: 'Herbivore : ronce, chêne, lierre',
+  habitat: "Bac plus large que haut, 5 à 10 cm de substrat humide (fibre de coco, terreau) pour la ponte, écorces et liège pour se cacher le jour, feuillage. Brumisation tous les deux jours.",
+  feeding_detail: "Ronce, chêne, noisetier, lierre, goyavier.",
+  repro_sexing: "Le mâle est plus petit et plus fin ; la femelle porte un ovipositeur pointu au bout de l'abdomen.",
+  repro_conditions: 'Substrat de ponte toujours humide.',
+  repro_mating: 'La femelle enterre ses œufs dans le substrat.',
+  repro_incubation: '4 à 8 mois, parfois plus, dans un substrat légèrement humide.',
+  repro_juveniles: 'Croissance lente : souvent plus de 6 mois avant l’adulte.',
+  repro_pitfalls: 'Substrat sec, œufs jetés avec le substrat usagé.'
+};
+
+module.exports = [
+  // Phasmes bâtons du feuillage
+  { ...BRANCH, common_name: 'Phasme géant de Grenade', scientific_name: 'Diapherodes gigantea', difficulty: 2, humidity_min: 60, humidity_max: 80, temp_min: 22, temp_max: 28,
+    presentation: "Grand phasme de l'île de Grenade (Antilles) : femelle vert vif et massive (15 cm), mâle plus fin et brun. Il secoue le feuillage pour se défendre.", lifespan: '1 an à 1 an et demi', size_class: 'grand',
+    repro_incubation: '5 à 8 mois.' },
+  { ...BRANCH, common_name: 'Phasme ailé de Malaisie', scientific_name: 'Necroscia annulipes', difficulty: 2, humidity_min: 60, humidity_max: 80, temp_min: 22, temp_max: 28,
+    presentation: "Phasme fin et ailé d'Asie du Sud-Est, aux pattes annelées et aux ailes colorées. Les adultes volent.", lifespan: 'environ 1 an', size_class: 'moyen', vigilance: 'Les adultes volent' },
+  { ...BRANCH, common_name: 'Phasme du Pérou des fougères', scientific_name: 'Oreophoetes peruana', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 18, temp_max: 25,
+    presentation: "Phasme du Pérou noir rayé de jaune et de rouge, qui ne mange que des fougères. Superbe et calme.", lifespan: 'environ 1 an', size_class: 'moyen',
+    diet_summary: 'Herbivore : fougères uniquement', vigilance: 'Ne mange que des fougères',
+    feeding_detail: "Fougères (néphrolépis, polypode, fougère des bois) : prévoir une source toute l'année avant d'adopter." },
+  { ...BRANCH, common_name: 'Phasme géant ailé', scientific_name: 'Phasma gigas', difficulty: 3, humidity_min: 60, humidity_max: 80, temp_min: 24, temp_max: 28,
+    presentation: "Très grand phasme ailé de Nouvelle-Guinée et des Moluques (plus de 20 cm). Il faut un très grand bac.", lifespan: 'environ 1 an', size_class: 'grand',
+    habitat: "Très grand bac aéré (au moins 60 cm de haut), feuillage en bouquet, brumisation légère." },
+  { ...BRANCH, common_name: 'Phasme de Peleng', scientific_name: 'Myronides glaucus', difficulty: 2, humidity_min: 70, humidity_max: 85, temp_min: 20, temp_max: 25,
+    presentation: "Phasme de l'île de Peleng (Sulawesi), élevé en France depuis 2006 et décrit en 2021. Femelle de 10 cm, calme, qui se fige quand on la touche.", lifespan: 'environ 1 an',
+    feeding_detail: "Ronce, acceptée dès le premier stade.", repro_incubation: '3 à 4 mois sur du sable à peine humide, à 20-23 °C.',
+    repro_pitfalls: "Humidité sous 65 % (mues ratées chez les jeunes), œufs qui moisissent." },
+  { ...BRANCH, common_name: 'Phasme rouge et noir du Honduras', scientific_name: 'Autolyca herculeana', difficulty: 2, humidity_min: 50, humidity_max: 70, temp_min: 20, temp_max: 25,
+    presentation: "Phasme des environs de Tegucigalpa (Honduras), appelé « chilincoco » là-bas. Il se nourrit de troène et projette un liquide qui pique les yeux.", lifespan: 'environ 1 an',
+    diet_summary: 'Herbivore : troène surtout', vigilance: 'Projette un liquide irritant pour les yeux',
+    feeding_detail: "Troène ; certains acceptent le chèvrefeuille et le lilas." },
+  { ...BRANCH, common_name: 'Phasme épineux de Papouasie', scientific_name: 'Eurycantha horrida', difficulty: 2, humidity_min: 70, humidity_max: 80, temp_min: 22, temp_max: 28,
+    presentation: "Grand phasme trapu et épineux de Nouvelle-Guinée, proche d'Eurycantha calcarata. Nocturne ; le mâle pince avec ses pattes arrière.", lifespan: '1 an et demi à 2 ans', size_class: 'grand',
+    vigilance: 'Le mâle pince avec ses pattes arrière',
+    habitat: "Bac aéré avec écorces creuses pour se cacher le jour et substrat humide pour la ponte.",
+    repro_mating: 'La femelle enterre ses œufs dans le substrat humide.', repro_incubation: '4 à 6 mois.' },
+  { ...BRANCH, common_name: 'Phasme de Scheire', scientific_name: 'Lobofemora scheirei', difficulty: 2, humidity_min: 60, humidity_max: 80, temp_min: 20, temp_max: 26,
+    presentation: "Phasme du Vietnam aux pattes ornées de lobes, vert ou brun selon les individus.", lifespan: 'environ 1 an' },
+  { ...BRANCH, common_name: "Phasme feuille épineux 'Lichen'", scientific_name: 'Extatosoma tiaratum "Lichen"', difficulty: 2, humidity_min: 50, humidity_max: 70, temp_min: 22, temp_max: 28,
+    presentation: "Forme du phasme feuille épineux d'Australie aux couleurs de lichen (gris-vert marbré).", lifespan: '1 an à 1 an et demi', size_class: 'grand',
+    habitat: "Même élevage que le phasme feuille épineux : " + TALL, feeding_detail: "Ronce, eucalyptus, chêne, rosier.", repro_incubation: '4 à 8 mois.' },
+  { ...BRANCH, common_name: 'Phasme du Vietnam bleu', scientific_name: 'Medauroidea extradentata "Bleu"', difficulty: 1, humidity_min: 50, humidity_max: 70, temp_min: 20, temp_max: 25,
+    presentation: "Forme bleutée du phasme du Vietnam, aussi facile que la forme brune.", lifespan: 'environ 1 an' },
+  { ...BRANCH, common_name: 'Phasme de Zompro', scientific_name: 'Parapachymorpha zomproi', difficulty: 1, humidity_min: 60, humidity_max: 75, temp_min: 20, temp_max: 26,
+    presentation: "Petit phasme bâton brun de Thaïlande, facile et prolifique.", lifespan: 'environ 1 an', size_class: 'moyen' },
+  { ...BRANCH, common_name: 'Phasme géant de Malaisie', scientific_name: 'Tirachoidea biceps', difficulty: 3, humidity_min: 60, humidity_max: 80, temp_min: 22, temp_max: 28,
+    presentation: "Un des plus longs phasmes d'Asie (femelle de plus de 20 cm), vert ou brun, parfois rayé (« zebra »). Il lui faut un grand bac.", lifespan: 'environ 1 an', size_class: 'grand',
+    habitat: "Grand bac aéré (au moins 60 cm de haut), feuillage en bouquet, brumisation légère." },
+  { ...BRANCH, common_name: 'Phasme de Nui Chua', scientific_name: 'Nuichua rabaeyae', difficulty: 1, humidity_min: 60, humidity_max: 80, temp_min: 20, temp_max: 26,
+    presentation: "Phasme connu seulement du parc national de Núi Chúa (Vietnam), décrit en 2018 et soutenu par des programmes de conservation. Facile, actif la nuit.", lifespan: 'environ 1 an',
+    feeding_detail: "Ronce, millepertuis, salal ; noisetier pour les adultes." },
+  { ...BRANCH, common_name: 'Phasme de Guadeloupe', scientific_name: 'Lamponius guerini', difficulty: 2, humidity_min: 60, humidity_max: 80, temp_min: 22, temp_max: 26,
+    presentation: "Phasme bâton de Guadeloupe, brun, robuste.", lifespan: 'environ 1 an (estimation)' },
+  // Phyllies
+  { ...LEAFY, common_name: 'Phyllie géante', scientific_name: 'Phyllium giganteum', difficulty: 4, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "La plus grande phyllie (femelle de 10 cm) de Malaisie, reproduite presque uniquement sans mâle. Croissance lente, à réserver aux éleveurs expérimentés.", lifespan: 'environ 1 an et demi' },
+  { ...LEAFY, common_name: 'Phyllie élégante', scientific_name: 'Phyllium elegans', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie de Nouvelle-Guinée, verte ou brune, aux bords finement dentelés.", lifespan: 'environ 1 an' },
+  { ...LEAFY, common_name: 'Phyllie de Letiranti', scientific_name: 'Phyllium letiranti', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie des Philippines, plate et verte.", lifespan: 'environ 1 an' },
+  { ...LEAFY, common_name: "Phyllie d'Ericori", scientific_name: 'Phyllium ericoriai', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie des Philippines, verte, proche de Phyllium philippinicum.", lifespan: 'environ 1 an' },
+  { ...LEAFY, common_name: 'Phyllie de Tobelo', scientific_name: 'Phyllium tobeloense', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie de l'île d'Halmahera (Indonésie).", lifespan: 'environ 1 an (estimation)' },
+  { ...LEAFY, common_name: 'Phyllie de Westwood', scientific_name: 'Cryptophyllium westwoodii', difficulty: 2, humidity_min: 65, humidity_max: 80, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie d'Asie du Sud-Est (longtemps appelée Phyllium westwoodii), parmi les plus faciles à élever.", lifespan: 'environ 1 an' },
+  { ...LEAFY, common_name: "Phyllie d'Oya", scientific_name: 'Cryptophyllium oyae', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie du nord de la Thaïlande (souche « Chiang Rai »).", lifespan: 'environ 1 an' },
+  { ...LEAFY, common_name: 'Phyllie de Limoges', scientific_name: 'Cryptophyllium limogesi', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 28,
+    presentation: "Phyllie du Vietnam (souche « Thac Krong Kmar »), décrite récemment.", lifespan: 'environ 1 an' },
+  // Phasmes trapus du sol
+  { ...GROUND, common_name: 'Phasme de Luzon', scientific_name: 'Sungaya aeta', difficulty: 1, humidity_min: 60, humidity_max: 80, temp_min: 20, temp_max: 26,
+    presentation: "Phasme trapu des Philippines, proche du phasme des Philippines (S. inexpectata). Facile.", lifespan: 'environ 1 an', size_class: 'moyen', niche: 'litiere' },
+  { ...GROUND, common_name: 'Phasme épineux de Bornéo', scientific_name: 'Aretaon asperrimus', difficulty: 1, humidity_min: 60, humidity_max: 80, temp_min: 20, temp_max: 26,
+    presentation: "Phasme trapu et épineux de Bornéo, brun, facile et prolifique : une bonne introduction aux phasmes du sol.", lifespan: 'environ 1 an', size_class: 'moyen', niche: 'litiere' },
+  { ...GROUND, common_name: 'Phasme de Carmela', scientific_name: 'Trachyaretaon carmelae', difficulty: 2, humidity_min: 60, humidity_max: 80, temp_min: 20, temp_max: 26,
+    presentation: "Phasme trapu des Philippines, brun et rugueux.", lifespan: 'environ 1 an', size_class: 'moyen', niche: 'litiere' },
+  { ...GROUND, common_name: 'Phasme nain des Philippines', scientific_name: 'Dares philippinensis', difficulty: 2, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 26,
+    presentation: "Petit phasme trapu et épineux des Philippines, qui vit dans la litière.", lifespan: 'environ 1 an et demi', size_class: 'petit', niche: 'litiere' },
+  { ...GROUND, common_name: 'Phasme « ne me touche pas »', scientific_name: 'Epidares nolimetangere', difficulty: 2, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 26,
+    presentation: "Petit phasme très épineux de Bornéo, dont le nom latin signifie « ne me touche pas ». Vit dans la litière.", lifespan: 'environ 1 an et demi', size_class: 'petit', niche: 'litiere' },
+  { ...GROUND, common_name: 'Phasme de Mearns', scientific_name: 'Mearnsiana bullosa', difficulty: 2, humidity_min: 60, humidity_max: 80, temp_min: 20, temp_max: 26,
+    presentation: "Phasme trapu des Philippines, couvert de bosses.", lifespan: 'environ 1 an (estimation)', size_class: 'moyen', niche: 'litiere' },
+  { ...GROUND, common_name: 'Phasme géant épineux de Gray', scientific_name: 'Haaniella grayii', difficulty: 3, humidity_min: 70, humidity_max: 85, temp_min: 22, temp_max: 27,
+    presentation: "Grand phasme trapu et épineux de Bornéo, qui stridule et pince pour se défendre. Croissance et incubation très longues.", lifespan: '2 ans et plus', size_class: 'grand', niche: 'litiere',
+    vigilance: 'Pince et pique avec ses pattes épineuses', repro_incubation: '8 à 12 mois dans un substrat légèrement humide.' }
+];

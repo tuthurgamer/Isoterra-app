@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('node:path');
+const zlib = require('node:zlib');
 
 const app = express();
 
@@ -19,6 +20,23 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads'), {
   immutable: true
 }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Pages and JSON go out gzipped: the species guide alone is several hundred
+// kilobytes of HTML, a lot to bring to the phone. (Static files are kept on
+// the phone by the service worker, so they are left as they are.)
+app.use((req, res, next) => {
+  if (!/\bgzip\b/.test(req.get('Accept-Encoding') || '')) return next();
+  const send = res.send.bind(res);
+  res.send = (body) => {
+    const type = res.get('Content-Type') || 'text/html; charset=utf-8';
+    if (typeof body !== 'string' || body.length < 2048 || res.get('Content-Encoding') || !/^(text\/|application\/json)/.test(type)) {
+      return send(body);
+    }
+    res.set({ 'Content-Type': type, 'Content-Encoding': 'gzip', Vary: 'Accept-Encoding' });
+    return send(zlib.gzipSync(body, { level: 5 }));
+  };
+  next();
+});
 
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;

@@ -53,6 +53,7 @@
 </section>
 
 <section class="catalogue" id="catalogue">
+  <%- icons.categorySprite() %>
   <div class="catalogue__head">
     <h2>Catalogue</h2>
     <p>Des fiches pour choisir tes prochaines espèces, rangées par groupe et par famille.</p>
@@ -94,13 +95,13 @@
           <% family.items.forEach(function (sp) { %>
             <a href="/especes/<%= sp.id %>" class="cat-row" data-diff="<%= sp.difficulty %>"
                data-search="<%= (sp.scientific_name + ' ' + sp.common_name + ' ' + (sp.family || '')).toLowerCase() %>">
-              <span class="cat-row__icon"><%- icons.species(sp, 44) %></span>
+              <span class="cat-row__icon"><%- icons.speciesLite(sp, 32) %></span>
               <span class="cat-row__text">
                 <span class="cat-row__name"><%= sp.scientific_name %></span>
                 <span class="cat-row__common"><%= sp.common_name %></span>
               </span>
               <span class="cat-row__facts">
-                <span class="cat-row__diff"><%- icons.ratingDiamonds(sp.difficulty) %></span>
+                <span class="cat-row__diff"><%- icons.difficultyDots(sp.difficulty) %></span>
                 <span class="cat-row__climate"><% if (sp.temp_min) { %><%= sp.temp_min %>–<%= sp.temp_max %> °C<% } %><% if (sp.temp_min && sp.humidity_min) { %> · <% } %><% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %> %<% } %></span>
               </span>
             </a>

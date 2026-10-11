@@ -45,6 +45,9 @@ const BY_CATEGORY = {
   reduve: { diet_type: 'predateur', size_class: 'moyen', niche: 'surface', substrate_type: 'sec' },
   mante: { diet_type: 'predateur', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' },
   phasme: { diet_type: 'herbivore', size_class: 'grand', niche: 'surface', substrate_type: 'humide' },
+  orthoptere: { diet_type: 'herbivore', size_class: 'moyen', niche: 'surface', substrate_type: 'sec' },
+  araignee: { diet_type: 'predateur', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' },
+  scorpion: { diet_type: 'predateur', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'humide' },
   arachnide: { diet_type: 'predateur', size_class: 'moyen', niche: 'fouisseur', substrate_type: 'humide' },
   scolopendre: { diet_type: 'predateur', size_class: 'grand', niche: 'fouisseur', substrate_type: 'humide' },
   autre: { diet_type: 'omnivore', size_class: 'moyen', niche: 'surface', substrate_type: 'humide' }
