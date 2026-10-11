@@ -129,6 +129,30 @@ function leaf() {
   return svg('<path d="M5 19c8 0 14-6 14-14-8 0-14 6-14 14z"/>', { size: 18, stroke: 1.8 });
 }
 
+// The pictures of the customer sheet's headings and facts.
+const SHEET_ICONS = {
+  thermometre: '<path d="M14 14.5V5a2 2 0 1 0-4 0v9.5a4 4 0 1 0 4 0z"/><path d="M12 9v7"/>',
+  humidite: '<path d="M12 3c3.5 4.6 5.5 7.7 5.5 10.5a5.5 5.5 0 0 1-11 0C6.5 10.7 8.5 7.6 12 3z"/>',
+  taille: '<path d="M3 15l12-12 6 6-12 12z"/><path d="M7 11l2 2M10 8l2 2M13 5l2 2"/>',
+  vie: '<path d="M7 3h10M7 21h10"/><path d="M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9"/>',
+  groupe: '<circle cx="8" cy="9" r="3"/><circle cx="16.5" cy="10" r="2.5"/><path d="M3 19c.6-3.2 2.6-5 5-5s4.4 1.8 5 5M13.5 18c.5-2.4 1.6-3.8 3-3.8s2.8 1.4 3.5 3.8"/>',
+  difficulte: '<path d="M12 3l9 9-9 9-9-9z"/><path d="M12 8l4 4-4 4-4-4z"/>',
+  bac: '<path d="M3 8h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 8l2-4h14l2 4"/><path d="M3 14c3-1.5 6 1.5 9 0s6 1.5 9 0"/>',
+  repas: '<path d="M5 19c8 0 14-6 14-14-8 0-14 6-14 14z"/><path d="M5 19c3-6 6-9 11-11"/>',
+  calendrier: '<rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  oeuf: '<path d="M12 3c3.6 0 6.5 5.4 6.5 10a6.5 6.5 0 0 1-13 0C5.5 8.4 8.4 3 12 3z"/>',
+  amis: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  attention: '<path d="M12 4l9.5 16h-19z"/><path d="M12 10v4M12 17v.01"/>',
+  eviter: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
+  idee: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  lire: '<path d="M12 6c-2-1.5-5-2-9-1v13c4-1 7-.5 9 1 2-1.5 5-2 9-1V5c-4-1-7-.5-9 1z"/><path d="M12 6v13"/>',
+  coche: '<rect x="4" y="4" width="16" height="16" rx="2"/>'
+};
+
+function sheet(name, size = 20) {
+  return SHEET_ICONS[name] ? svg(SHEET_ICONS[name], { size, stroke: 1.6 }) : '';
+}
+
 function warning(color = 'var(--stampred)', size = 18) {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l10 17H2z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.6" fill="${color}" stroke="none"/></svg>`;
 }
@@ -151,4 +175,4 @@ function gear(size = 20) {
   return svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', { size, stroke: 1.6 });
 }
 
-module.exports = { nav, species, speciesLite, categorySprite, difficultyDots, pic, categoryIcons, action, diamond, droplet, thermometer, group, leaf, warning, ratingDiamonds, humidityDroplets, gear };
+module.exports = { sheet, nav, species, speciesLite, categorySprite, difficultyDots, pic, categoryIcons, action, diamond, droplet, thermometer, group, leaf, warning, ratingDiamonds, humidityDroplets, gear };

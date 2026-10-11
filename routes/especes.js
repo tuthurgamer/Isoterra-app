@@ -15,6 +15,7 @@ const { noteForBac } = require('../lib/bac-log');
 const { CATEGORY_LABELS, CATEGORY_TAXA, FAMILY_NOTES } = require('../views/helpers/format');
 const { allSpecies } = require('../lib/species-list');
 const { familyOf } = require('../db/taxonomy');
+const ficheClient = require('../lib/fiche-client');
 
 const iconDir = path.join(__dirname, '..', 'public', 'uploads', 'species-icons');
 const iconOriginalsDir = path.join(__dirname, '..', 'data', 'icon-originals');
@@ -272,6 +273,17 @@ router.get('/:id/fiche-client', (req, res) => {
     sp, fiche, traitOptions: TRAIT_OPTIONS, settings: getSettings(),
     partners: sp.diet_type === 'predateur' ? null : goodPartners(sp, others),
     selfUrl: '/especes/' + sp.id + '/fiche-client' + (fiche ? '?fiche=' + fiche.id : ''),
+    sheet: {
+      ...ficheClient.splitLead(sp.presentation),
+      difficulty: ficheClient.DIFFICULTY_WORDS[sp.difficulty] || '',
+      temp: ficheClient.gauge(sp.temp_min, sp.temp_max, 10, 35),
+      humidity: ficheClient.gauge(sp.humidity_min, sp.humidity_max, 0, 100),
+      equipment: ficheClient.equipment(sp),
+      care: ficheClient.careDays(sp),
+      steps: ficheClient.breedingSteps(sp),
+      fact: ficheClient.funFact(sp.category),
+      group: [CATEGORY_LABELS[sp.category], sp.family].filter(Boolean).join(' · ')
+    },
     backUrl: fiche ? '/fiches/' + fiche.id : '/especes/' + sp.id
   });
 });
