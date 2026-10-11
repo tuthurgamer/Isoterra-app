@@ -1,14 +1,15 @@
-const SHELL_CACHE = 'isoterra-shell-v6';
+const SHELL_CACHE = 'isoterra-shell-v7';
 const ICON_CACHE = 'isoterra-icones-v1';
 const THUMB_CACHE = 'isoterra-vignettes-v1';
 const SHELL_ASSETS = [
   '/css/style.css',
   '/manifest.json',
-  '/icons/favicon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-192-maskable.png',
-  '/icons/icon-512-maskable.png'
+  '/icons/favicon-logo-64.png',
+  '/icons/logo.png',
+  '/icons/logo-192.png',
+  '/icons/logo-512.png',
+  '/icons/logo-192-maskable.png',
+  '/icons/logo-512-maskable.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -111,8 +112,8 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(self.registration.showNotification(data.title || 'Isoterra', {
     body: data.body || '',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/badge-96.png',
+    icon: '/icons/logo-192.png',
+    badge: '/icons/badge-logo-96.png',
     tag: data.tag || 'isoterra',
     renotify: true,
     data: { url: data.url || '/' }

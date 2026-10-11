@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><%= title %></title>
 <meta name="theme-color" content="#2a2018">
-<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/css/style.css?v=20261022">
+<link rel="icon" href="/icons/favicon-logo-64.png" type="image/png">
+<link rel="stylesheet" href="/css/style.css?v=20261023">
 </head>
 <body class="client-sheet-page">
 <%
@@ -79,7 +79,7 @@
 
 <article class="client-sheet">
   <header class="client-sheet__head">
-    <span class="client-sheet__brand"><%= breederName || "Fiche d'élevage" %></span>
+    <span class="client-sheet__brand"><img src="/icons/logo.png" alt="" class="client-sheet__logo" width="640" height="443"><%= breederName || "Fiche d'élevage" %></span>
     <% if (breederName) { %><span class="client-sheet__kind">Fiche d'élevage</span><% } %>
   </header>
 

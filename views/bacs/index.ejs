@@ -1,9 +1,12 @@
 <%- include('../partials/header', { title, active }) %>
 
 <div class="masthead masthead--home">
-  <div>
+  <div class="brand-block">
+    <img src="/icons/logo.png" alt="" class="brand-logo" width="640" height="443">
+    <div>
     <div class="wordmark brand">ISOTERRA</div>
     <div class="subtitle tagline">Carnet d'élevage et registre professionnel</div>
+    </div>
   </div>
   <div class="home-tools">
     <a href="/rappels" class="server-link" aria-label="Rappels sur le téléphone"><%- icons.nav('rappels') %><span>Rappels</span></a>

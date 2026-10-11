@@ -2349,3 +2349,18 @@ html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
 .reminder-phones li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
 .reminder-phones li > span { display: flex; flex-direction: column; }
 .reminder-phones small { font-size: 12px; color: var(--ink-muted); }
+
+/* The brand logo (home page, customer sheets). */
+.brand-block { display: flex; align-items: center; gap: 14px; }
+.brand-logo { width: auto; height: 58px; }
+.client-sheet__brand { display: inline-flex; align-items: center; gap: 10px; }
+.client-sheet__logo { width: auto; height: 40px; }
+@media (max-width: 700px) {
+  .brand-block { gap: 10px; }
+  .brand-logo { height: 42px; }
+}
+/* On a phone the logo and the two buttons take the header's width: the date
+   (also shown elsewhere on the phone) gives way. */
+@media (max-width: 560px) {
+  .masthead--home .date-stamp { display: none; }
+}
