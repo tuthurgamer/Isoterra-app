@@ -1,0 +1,190 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">RAPPELS</div>
+    <h1>Rappels sur le téléphone</h1>
+    <div class="subtitle">Chaque jour, la liste des bacs à nourrir et à pulvériser</div>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<div class="reminders">
+  <section class="reminder-card reminder-card--phone" data-push>
+    <h2><%- icons.nav('rappels') %> Sur ce téléphone</h2>
+    <p class="reminder-state" data-state>Vérification…</p>
+    <div class="reminder-actions">
+      <button type="button" class="btn" data-on data-show="off" hidden>Activer les rappels sur ce téléphone</button>
+      <button type="button" class="btn" data-test data-show="on" hidden>Envoyer un rappel maintenant</button>
+      <button type="button" class="btn-quiet" data-off data-show="on" hidden>Désactiver sur ce téléphone</button>
+    </div>
+  </section>
+
+  <section class="reminder-card">
+    <h2>Heure du rappel</h2>
+    <form method="POST" action="/rappels/reglages" class="reminder-time">
+      <label for="heure">Chaque jour à</label>
+      <select name="heure" id="heure">
+        <% times.forEach(function (t) { %><option value="<%= t %>"<%= t === time ? ' selected' : '' %>><%= t.replace(':', ' h ') %></option><% }); %>
+      </select>
+      <button type="submit" class="btn-quiet">Enregistrer</button>
+    </form>
+    <p class="reminder-note">Rien n'est envoyé les jours où tous les bacs sont à jour. Un bac est à soigner quand le nombre de jours de son rythme (celui de l'espèce, ou celui réglé dans le bac) est passé depuis le dernier nourrissage ou la dernière pulvérisation notés.</p>
+  </section>
+
+  <section class="reminder-card">
+    <h2>Le rappel d'aujourd'hui</h2>
+    <% if (preview) { %>
+      <div class="reminder-preview">
+        <img src="/icons/icon-192.png" alt="" width="36" height="36">
+        <div>
+          <strong><%= preview.title %></strong>
+          <% preview.body.split('\n').forEach(function (line) { %><span><%= line %></span><% }); %>
+        </div>
+      </div>
+    <% } else { %>
+      <p class="reminder-note">Rien à faire aujourd'hui : tous les bacs sont à jour, aucun rappel ne sera envoyé.</p>
+    <% } %>
+  </section>
+
+  <section class="reminder-card">
+    <h2>Téléphones qui reçoivent les rappels</h2>
+    <% if (!phones.length) { %>
+      <p class="reminder-note">Aucun pour l'instant.</p>
+    <% } %>
+    <ul class="reminder-phones">
+      <% phones.forEach(function (p) { %>
+        <li>
+          <span>
+            <strong><%= p.label || 'Téléphone' %></strong>
+            <small>Ajouté <%= fmt.relative(p.created_at) %><%= p.last_sent_at ? ' · dernier rappel ' + fmt.relative(p.last_sent_at) : '' %></small>
+          </span>
+          <form method="POST" action="/rappels/<%= p.id %>/retirer" onsubmit="return confirm('Ne plus envoyer de rappels à ce téléphone ?')">
+            <button type="submit" class="btn-quiet">Retirer</button>
+          </form>
+        </li>
+      <% }); %>
+    </ul>
+  </section>
+</div>
+
+<script>
+  (function () {
+    var KEY = <%- JSON.stringify(publicKey) %>;
+    var box = document.querySelector('[data-push]');
+    var state = box.querySelector('[data-state]');
+    var current = null;
+
+    function say(text) {
+      var toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = text;
+      toast.hidden = false;
+      clearTimeout(say.timer);
+      say.timer = setTimeout(function () { toast.hidden = true; }, 3200);
+    }
+    function show(name, text) {
+      state.textContent = text;
+      box.querySelectorAll('[data-show]').forEach(function (el) { el.hidden = el.getAttribute('data-show') !== name; });
+    }
+    function post(url, body) {
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'fetch' },
+        body: JSON.stringify(body)
+      }).then(function (r) { return r.json(); });
+    }
+    // The server's key, as the browser wants it (bytes from base64url).
+    function keyBytes() {
+      var b64 = (KEY + '==='.slice((KEY.length + 3) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+      return Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+    }
+    function sameKey(sub) {
+      var key = sub.options && sub.options.applicationServerKey;
+      if (!key) return true;
+      var a = new Uint8Array(key), b = keyBytes();
+      return a.length === b.length && a.every(function (v, i) { return v === b[i]; });
+    }
+    // "Nothing A059" rather than a whole browser signature.
+    function label() {
+      var model = /Android [\d.]+; ([^;)]+)/.exec(navigator.userAgent);
+      if (model && model[1] !== 'K') return model[1].trim();
+      return /Android/.test(navigator.userAgent) ? 'Téléphone Android' : /iPhone|iPad/.test(navigator.userAgent) ? 'iPhone' : 'Ordinateur';
+    }
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      show('none', "Ce navigateur ne sait pas recevoir les rappels. Sur ton téléphone, ouvre l'app Isoterra installée.");
+      return;
+    }
+
+    function refresh() {
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return reg.pushManager.getSubscription().then(function (sub) {
+          if (sub && !sameKey(sub)) return sub.unsubscribe().then(function () { return null; });
+          return sub;
+        });
+      }).then(function (sub) {
+        current = sub;
+        if (Notification.permission === 'denied') {
+          show('denied', "Les notifications sont bloquées pour Isoterra. Pour les autoriser : appui long sur l'icône de l'app, « Infos sur l'appli », puis « Notifications ».");
+        } else if (sub) {
+          show('on', 'Les rappels arrivent sur ce téléphone.');
+          // Keeps the Pi's list right, even if it lost this phone.
+          post('/rappels/abonnement', { subscription: sub.toJSON(), label: label() }).catch(function () {});
+        } else {
+          show('off', "Ce téléphone ne reçoit pas encore les rappels.");
+        }
+      });
+    }
+
+    box.querySelector('[data-on]').addEventListener('click', function () {
+      var button = this;
+      button.disabled = true;
+      Notification.requestPermission().then(function (permission) {
+        if (permission !== 'granted') throw new Error('refus');
+        return navigator.serviceWorker.ready;
+      }).then(function (reg) {
+        return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes() });
+      }).then(function (sub) {
+        return post('/rappels/abonnement', { subscription: sub.toJSON(), label: label() });
+      }).then(function (answer) {
+        if (!answer.ok) throw new Error('serveur');
+        location.href = '/rappels?notice=' + encodeURIComponent('Rappels activés sur ce téléphone');
+      }).catch(function (err) {
+        button.disabled = false;
+        refresh();
+        say(err.message === 'refus' ? 'Notifications refusées : les rappels ne peuvent pas arriver.' : "L'activation n'a pas marché, réessaie.");
+      });
+    });
+
+    box.querySelector('[data-test]').addEventListener('click', function () {
+      if (!current) return;
+      var button = this;
+      button.disabled = true;
+      post('/rappels/essai', { endpoint: current.endpoint }).then(function (answer) {
+        say(answer.ok ? 'Rappel envoyé : il arrive dans quelques secondes.' : "Le rappel n'a pas pu partir.");
+      }).catch(function () {
+        say("Le rappel n'a pas pu partir.");
+      }).then(function () { button.disabled = false; });
+    });
+
+    box.querySelector('[data-off]').addEventListener('click', function () {
+      if (!current) return;
+      var endpoint = current.endpoint;
+      current.unsubscribe().then(function () {
+        return post('/rappels/desabonnement', { endpoint: endpoint });
+      }).then(function () {
+        location.href = '/rappels?notice=' + encodeURIComponent('Rappels désactivés sur ce téléphone');
+      });
+    });
+
+    refresh();
+    <% if (notice) { %>
+    say(<%- JSON.stringify(notice).replace(/</g, '\\u003c') %>);
+    history.replaceState(null, '', location.pathname);
+    <% } %>
+  })();
+</script>
+
+<%- include('../partials/footer') %>

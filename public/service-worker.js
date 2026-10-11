@@ -99,6 +99,36 @@ async function shellResponse(event, url) {
   return fresh.catch(() => cache.match(url.pathname, { ignoreSearch: true }));
 }
 
+// The daily care reminder sent by the Pi (lib/rappels.js), shown even when
+// the app is closed. A tap opens the page it points to, in the app if it is
+// already open.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (err) {
+    data = { body: event.data ? event.data.text() : '' };
+  }
+  event.waitUntil(self.registration.showNotification(data.title || 'Isoterra', {
+    body: data.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/badge-96.png',
+    tag: data.tag || 'isoterra',
+    renotify: true,
+    data: { url: data.url || '/' }
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || '/', self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+    const open = windows.find((w) => w.url.startsWith(self.location.origin));
+    if (open) return open.navigate(url).then((w) => (w || open).focus());
+    return self.clients.openWindow(url);
+  }));
+});
+
 // Everything else (pages, forms, full-size photos) goes straight to the
 // network, since the data changes constantly and staleness would be
 // misleading in a log.

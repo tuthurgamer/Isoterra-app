@@ -115,6 +115,18 @@ CREATE TABLE IF NOT EXISTS photo_species (
   PRIMARY KEY (photo_id, species_id)
 );
 
+-- Phones that get the daily care reminders (Web Push subscriptions, see
+-- lib/rappels.js).
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  endpoint TEXT NOT NULL UNIQUE,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  label TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+  last_sent_at TEXT
+);
+
 -- App-wide preferences, e.g. the breeder's name printed on customer sheets.
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,

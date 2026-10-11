@@ -63,6 +63,7 @@ app.use('/serveur', require('./routes/serveur'));
 app.use('/photos', require('./routes/photos'));
 app.use('/appareil', require('./routes/appareil'));
 app.use('/envois', require('./routes/envois'));
+app.use('/rappels', require('./routes/rappels'));
 
 app.use((req, res) => {
   res.status(404).render('404', { path: req.path });
@@ -86,4 +87,6 @@ app.listen(PORT, HOST, () => {
   console.log(`Isoterra tourne sur http://${HOST}:${PORT}`);
   // Photos stored before fingerprints existed get theirs, in the background.
   require('./lib/empreinte').backfill();
+  // The daily care reminder sent to the phones (Rappels page).
+  require('./lib/rappels').startReminderClock();
 });
