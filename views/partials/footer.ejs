@@ -91,6 +91,7 @@
           var last = card && card.querySelector('[data-last-obs]');
           if (last) last.textContent = "obs. aujourd'hui";
           showToast('Enregistré : ' + form.dataset.label);
+          form.dispatchEvent(new CustomEvent('quicklog:done', { bubbles: true }));
           setTimeout(function () { button.classList.remove('done'); button.disabled = false; }, 900);
           if ((response.headers.get('content-type') || '').indexOf('application/json') !== -1) {
             response.json().then(applyCare).catch(function () {});

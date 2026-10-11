@@ -10,6 +10,7 @@ const { groupEntries, PHOTO_COLUMNS } = require('../lib/journal');
 const { uploadPhotos } = require('../lib/uploads');
 const { savePhotos, removeUnusedPhotos, listPhotos, attachSpecies, card } = require('../lib/photos');
 const { numTag } = require('../views/helpers/format');
+const { todaysCare, todoByBac } = require('../lib/rappels');
 
 router.get('/', (req, res) => {
   const rows = db.prepare(`
@@ -64,7 +65,10 @@ router.get('/', (req, res) => {
     attention: bacsNeedingAttention(care.values())
   };
 
-  res.render('bacs/index', { title: 'Registre des bacs', active: 'bacs', bacs: rows, groups, stats, notice: req.query.notice || null });
+  // What the bacs need today, as the daily reminder announces it.
+  const todo = todoByBac(todaysCare()).map((t) => ({ ...t, fiches: (byBac.get(t.bac) || { fiches: [] }).fiches }));
+
+  res.render('bacs/index', { title: 'Registre des bacs', active: 'bacs', bacs: rows, groups, stats, todo, notice: req.query.notice || null });
 });
 
 // A bac's own page: everything about it in one place — care and quick

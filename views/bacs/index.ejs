@@ -22,6 +22,44 @@
   <script>history.replaceState(null, '', location.pathname);</script>
 <% } %>
 
+<% if (bacs.length > 0) { %>
+<section class="todo" id="a-faire" data-todo>
+  <div class="todo__head">
+    <h2>À faire aujourd'hui</h2>
+    <span class="todo__count" data-todo-count><%= todo.length ? todo.length + ' bac' + (todo.length > 1 ? 's' : '') : '' %></span>
+  </div>
+  <p class="todo__empty" data-todo-empty<%= todo.length ? ' hidden' : '' %>>Tout est à jour : rien à faire aujourd'hui.</p>
+  <% if (todo.length) { %>
+    <p class="todo__hint" data-todo-hint>Touche une action une fois faite pour la noter.</p>
+    <ul class="todo__list">
+      <% todo.forEach(function (t, i) { %>
+        <li class="todo__row" data-todo-row<%= i >= 5 ? ' data-todo-more hidden' : '' %>>
+          <a href="/bacs/<%= t.bac %>" class="todo__bac">
+            <span class="todo__pics"><% t.fiches.slice(0, 2).forEach(function (f) { %><%- icons.species(f, 40) %><% }); %></span>
+            <span class="todo__name">
+              <strong>Bac <%= t.label %></strong>
+              <small><%= t.residents %></small>
+            </span>
+          </a>
+          <div class="todo__actions">
+            <% [['feed', 'nourrissage', 'Nourrir', 'Nourri'], ['mist', 'pulverisation', 'Pulvériser', 'Pulvérisé']].forEach(function (a) { var need = t[a[0]]; if (!need) return; %>
+              <form method="POST" action="/bacs/<%= t.bac %>/log/quick?type=<%= a[1] %>" data-quicklog data-label="<%= fmt.LOG_TYPE_LABELS[a[1]] %>" data-todo-action data-done-text="<%= a[3] %>">
+                <button type="submit" class="todo__btn<%= need.late ? ' todo__btn--late' : '' %>">
+                  <%- icons.action(a[1]) %><span><%= a[2] %></span><% if (need.late) { %><em>en retard</em><% } %>
+                </button>
+              </form>
+            <% }); %>
+          </div>
+        </li>
+      <% }); %>
+    </ul>
+    <% if (todo.length > 5) { %>
+      <button type="button" class="todo__more" data-todo-show>Voir les <%= todo.length - 5 %> autres bacs</button>
+    <% } %>
+  <% } %>
+</section>
+<% } %>
+
 <div class="stat-row">
   <div class="label-tag" style="transform:rotate(-1deg);">
     <div class="pin"></div>
@@ -75,5 +113,61 @@
     <% } %>
   <% }); %>
 </div>
+
+<script>
+  // "À faire aujourd'hui": an action noted (by the cards' quick-action
+  // script) is ticked; a bac with nothing left goes, and the count follows.
+  (function () {
+    var box = document.querySelector('[data-todo]');
+    if (!box) return;
+    var more = box.querySelector('[data-todo-show]');
+    if (more) {
+      more.addEventListener('click', function () {
+        box.querySelectorAll('[data-todo-more]').forEach(function (row) { row.hidden = false; });
+        more.remove();
+      });
+    }
+    // A bac done makes room: the next hidden one shows.
+    function showNext() {
+      var visible = box.querySelectorAll('[data-todo-row]:not([hidden])').length;
+      var next = box.querySelector('[data-todo-more][hidden]');
+      if (visible < 5 && next) next.hidden = false;
+      var hiddenLeft = box.querySelectorAll('[data-todo-more][hidden]').length;
+      if (more && more.isConnected) {
+        if (hiddenLeft) more.textContent = 'Voir les ' + hiddenLeft + ' autres bacs';
+        else more.remove();
+      }
+    }
+    box.addEventListener('quicklog:done', function (event) {
+      var form = event.target.closest('[data-todo-action]');
+      if (!form) return;
+      // The button becomes a plain mark, so it can't be noted twice.
+      var button = form.querySelector('button');
+      var done = document.createElement('span');
+      done.className = 'todo__btn todo__btn--done';
+      done.innerHTML = button.innerHTML;
+      done.querySelector('span').textContent = form.dataset.doneText;
+      var late = done.querySelector('em');
+      if (late) late.remove();
+      button.replaceWith(done);
+      var row = form.closest('[data-todo-row]');
+      if (row.querySelector('button')) return;
+      setTimeout(function () {
+        row.classList.add('todo__row--gone');
+        setTimeout(function () {
+          row.remove();
+          showNext();
+          var left = box.querySelectorAll('[data-todo-row]').length;
+          box.querySelector('[data-todo-count]').textContent = left ? left + ' bac' + (left > 1 ? 's' : '') : '';
+          if (!left) {
+            box.querySelector('[data-todo-empty]').hidden = false;
+            var hint = box.querySelector('[data-todo-hint]');
+            if (hint) hint.hidden = true;
+          }
+        }, 350);
+      }, 700);
+    });
+  })();
+</script>
 
 <%- include('../partials/footer') %>
