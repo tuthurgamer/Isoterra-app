@@ -424,6 +424,7 @@
         else if (event.key === 'ArrowLeft') go(-1);
       });
       window.addEventListener('popstate', function () { if (opened) close(true); });
+      window.addEventListener('resize', function () { if (opened && zoom.s === 1) fit(); });
     }
 
     function pics(p) {
@@ -463,12 +464,37 @@
       view.querySelector('[data-v="next"]').hidden = index === list.length - 1;
     }
 
-    // The thumbnail at once, then the copy made for viewing; the original,
-    // in full detail, once the photo is zoomed in (sharpen).
+    // The photo takes its final size at once (from its dimensions), so the
+    // thumbnail shown while the sharp copy arrives fills the same place
+    // instead of showing small, then jumping.
+    function fit() {
+      var p = list[index];
+      if (!p || p.video || !p.w || !p.h) {
+        img.style.width = img.style.height = '';
+        return;
+      }
+      var stage = img.parentNode.getBoundingClientRect();
+      var s = Math.min(stage.width / p.w, stage.height / p.h);
+      img.style.width = Math.round(p.w * s) + 'px';
+      img.style.height = Math.round(p.h * s) + 'px';
+    }
+
+    // The copy made for viewing is 2048 px at most: a screen that shows the
+    // photo bigger than that (a large or sharp computer screen) gets the
+    // original straight away.
+    function bestSource(p) {
+      if (!p.view || p.view === p.full) return p.full;
+      var shown = Math.max(img.offsetWidth, img.offsetHeight) * (window.devicePixelRatio || 1);
+      return shown > 2048 * 1.1 ? p.full : p.view;
+    }
+
+    // The thumbnail at once, then the copy that suits the screen; the
+    // original, in full detail, once the photo is zoomed in (sharpen).
     function load() {
       var p = list[index];
       reset();
       delete img.dataset.sharp;
+      fit();
       var player = view.querySelector('.viewer__video');
       view.classList.toggle('is-video', Boolean(p.video));
       img.hidden = Boolean(p.video);
@@ -491,8 +517,9 @@
         if (list[index] !== p || img.dataset.sharp) return;
         img.src = shown.src;
         img.classList.remove('is-loading');
+        if (shown.src.endsWith(p.full)) img.dataset.sharp = '1';
       };
-      shown.src = p.view || p.full;
+      shown.src = bestSource(p);
       [list[index + 1], list[index - 1]].forEach(function (n) { if (n && !n.video) new Image().src = n.view || n.full; });
       render();
     }

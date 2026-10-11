@@ -2512,3 +2512,9 @@ button.todo__btn:active { transform: scale(0.96); }
 .icon-current__turn .btn-quiet { padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--paper); }
 .icon-current__turn .btn-quiet:disabled { opacity: 0.5; }
 .field input[type="file"] + .field-hint { margin: 8px 0 0; }
+
+/* The photo viewer: no will-change while still (Chrome would keep drawing the
+   photo at one resolution, pixelated once zoomed or shrunk on a computer
+   screen); only during a gesture, then it is drawn again sharp. */
+.viewer__img { will-change: auto; }
+.viewer__img.is-dragging { will-change: transform; }
