@@ -1,12 +1,12 @@
 // The species catalogue: fiches of species the breeder doesn't keep (yet),
 // to help choose the next ones. Each version is added to the guide once —
 // never again, so a fiche deleted from the guide doesn't come back. The next
-// batch gets `since: 6` and CATALOGUE_VERSION goes up to 6.
+// batch gets `since: 7` and CATALOGUE_VERSION goes up to 7.
 const { defaultCare } = require('../care-defaults');
 const { defaultTraits } = require('../trait-defaults');
 const { familyOf, CATEGORY_OF_FAMILY } = require('../taxonomy');
 
-const CATALOGUE_VERSION = 5;
+const CATALOGUE_VERSION = 6;
 
 const ENTRIES = [
   'iules', 'cloportes', 'blattes', 'cetoines', 'coleopteres', 'escargots', 'crabes',
@@ -20,7 +20,9 @@ const ENTRIES = [
   // Version 4: many more isopods, European and tropical.
   'cloportes-europe', 'cloportes-tropicaux',
   // Version 5: land snails and slugs sold by breeders.
-  'escargots-boutiques'
+  'escargots-boutiques',
+  // Version 6: millipedes sold by breeders.
+  'iules-boutiques'
 ].flatMap((file) => require('./' + file));
 
 const COLUMNS = [
