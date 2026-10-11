@@ -26,11 +26,18 @@
     <label>Icône personnalisée <span style="font-weight:normal;">(sinon icône générique par catégorie)</span></label>
     <% if (sp.icon_path) { %>
       <div class="icon-current">
-        <img src="<%= sp.icon_path %>" alt="" class="icon-current__img">
-        <label class="icon-current__remove"><input type="checkbox" name="remove_icon" value="1"> Retirer cette icône</label>
+        <img src="<%= sp.icon_path %>" alt="" class="icon-current__img" data-icon-img>
+        <div class="icon-current__tools">
+          <div class="icon-current__turn">
+            <button type="submit" form="icone-gauche" class="btn-quiet" data-turn="gauche" aria-label="Tourner l'icône d'un quart de tour vers la gauche">↺ Tourner</button>
+            <button type="submit" form="icone-droite" class="btn-quiet" data-turn="droite" aria-label="Tourner l'icône d'un quart de tour vers la droite">↻ Tourner</button>
+          </div>
+          <label class="icon-current__remove"><input type="checkbox" name="remove_icon" value="1"> Retirer cette icône</label>
+        </div>
       </div>
     <% } %>
     <input type="file" name="icon" accept="image/*">
+    <p class="field-hint">Une photo détourée (fond transparent, en PNG) : le Pi la recadre au plus près de l'animal, et couche un animal photographié en hauteur pour qu'il remplisse les cadres de l'app. Les flèches le tournent autrement.</p>
   </div>
 
   <div class="field">
@@ -120,5 +127,36 @@
 
   <button type="submit" class="btn"><%= isNew ? 'Créer la fiche' : 'Enregistrer' %></button>
 </form>
+
+<% if (!isNew && sp.icon_path) { %>
+  <%# The icon's turn buttons belong to these forms (a form can't hold another). %>
+  <% ['gauche', 'droite'].forEach(function (sens) { %>
+    <form id="icone-<%= sens %>" method="POST" action="/especes/<%= sp.id %>/icone/tourner" hidden><input type="hidden" name="sens" value="<%= sens %>"></form>
+  <% }); %>
+  <script>
+    // Turning the icon in place, without leaving the form (and what was typed).
+    document.querySelectorAll('[data-turn]').forEach(function (button) {
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
+        var img = document.querySelector('[data-icon-img]');
+        var buttons = document.querySelectorAll('[data-turn]');
+        buttons.forEach(function (b) { b.disabled = true; });
+        fetch(button.form.action, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'fetch', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'sens=' + button.dataset.turn
+        }).then(function (r) { return r.json().then(function (answer) { if (!r.ok) throw new Error(answer.message); return answer; }); })
+          .then(function (answer) { img.src = answer.icon; })
+          .catch(function (err) {
+            var toast = document.getElementById('toast');
+            toast.textContent = err.message || 'Le Pi n\'a pas répondu.';
+            toast.hidden = false;
+            setTimeout(function () { toast.hidden = true; }, 3500);
+          })
+          .then(function () { buttons.forEach(function (b) { b.disabled = false; }); });
+      });
+    });
+  </script>
+<% } %>
 
 <%- include('../partials/footer') %>

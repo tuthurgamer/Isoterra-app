@@ -94,4 +94,6 @@ app.listen(PORT, HOST, () => {
   require('./lib/empreinte').backfill();
   // The daily care reminder sent to the phones (Rappels page).
   require('./lib/rappels').startReminderClock();
+  // Upright species icons laid down once, to fill their frames.
+  require('./lib/icones-couchees').layDownUprightIcons().catch((err) => console.error(err));
 });

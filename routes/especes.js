@@ -7,7 +7,7 @@ const db = require('../db/db');
 const { computeCompatibility, evaluateGroup, bestGroups } = require('../lib/compatibility');
 const { TRAIT_OPTIONS, defaultTraits, binomial } = require('../db/trait-defaults');
 const { getSettings, setSetting } = require('../lib/settings');
-const { processIconInBackground, thumbPath } = require('../lib/icon-image');
+const { processIconInBackground, rotateInBackground, thumbPath } = require('../lib/icon-image');
 const { listPhotos, card, savePhotos, photosOfSpecies, removeUnusedPhotos } = require('../lib/photos');
 const { uploadPhotos } = require('../lib/uploads');
 const { noteForBac } = require('../lib/bac-log');
@@ -221,6 +221,27 @@ router.get('/:id/edit', (req, res) => {
   const sp = db.prepare('SELECT * FROM species WHERE id = ?').get(req.params.id);
   if (!sp) return res.status(404).render('404', { path: req.path });
   res.render('especes/form', { title: 'Modifier ' + sp.scientific_name, active: 'especes', sp, isNew: false, traitOptions: TRAIT_OPTIONS });
+});
+
+// The species' icon turned a quarter (an animal laid down that should stand,
+// or facing the wrong way): "gauche" counter-clockwise, "droite" clockwise.
+// From the form's script, the new address comes back; without it, the form
+// shows again.
+router.post('/:id/icone/tourner', async (req, res) => {
+  const id = Number(req.params.id);
+  const sp = db.prepare('SELECT icon_path FROM species WHERE id = ?').get(id);
+  const byScript = req.get('X-Requested-With') === 'fetch';
+  if (!sp || !sp.icon_path) return byScript ? res.status(404).json({ message: "Pas d'icône à tourner." }) : res.redirect('/especes/' + id + '/edit');
+  const turns = (req.body || {}).sens === 'gauche' ? -1 : 1;
+  const fresh = await rotateInBackground(sp.icon_path, turns, iconOriginalsDir);
+  if (!fresh) {
+    const message = "Cette icône n'est pas un PNG : renvoie-la pour pouvoir la tourner.";
+    return byScript ? res.status(400).json({ message }) : res.redirect('/especes/' + id + '/edit');
+  }
+  db.prepare("UPDATE species SET icon_path = ?, updated_at = datetime('now', 'localtime') WHERE id = ?").run(fresh, id);
+  deleteIconFile(sp.icon_path);
+  if (byScript) return res.json({ icon: fresh });
+  res.redirect('/especes/' + id + '/edit');
 });
 
 // Good tankmates named on a customer sheet: the guide's best matches, one per
