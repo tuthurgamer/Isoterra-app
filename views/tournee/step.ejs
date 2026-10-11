@@ -9,16 +9,16 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="/icons/favicon-logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="/icons/logo-192.png">
-<link rel="stylesheet" href="/css/style.css?v=20261027">
+<link rel="stylesheet" href="/css/style.css?v=20261028">
 </head>
 <body>
 <div class="tour-screen">
 
   <div class="tour-top">
     <a href="/">&times;&nbsp;&nbsp;Quitter la tournée</a>
-    <span>BAC <%= position %> / <%= total %></span>
+    <span data-tour-count>BAC <%= position %> / <%= total %></span>
   </div>
-  <div class="tour-progress"><div style="width:<%= Math.round((position - 1) / total * 100) %>%;"></div></div>
+  <div class="tour-progress"><div data-tour-progress style="width:<%= Math.round((position - 1) / total * 100) %>%;"></div></div>
 
   <div class="tour-stack">
     <% if (total - position >= 2) { %><div class="tour-stack__back" style="transform:rotate(3deg) translateY(10px);"></div><% } %>
@@ -86,11 +86,28 @@
 
   <div class="tour-foot">
     <span>Coche une ou plusieurs actions, puis valide</span>
-    <a href="<%= nextUrl %>" class="tour-skip">Passer ce bac</a>
+    <a href="<%= nextUrl %>" class="tour-skip" data-tour-skip>Passer ce bac</a>
   </div>
 </div>
 
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="/js/hors-ligne.js?v=1"></script>
 <script>
+  // Without network this page may be the copy kept for this bac (see
+  // public/service-worker.js), made for another order of the tournée: its
+  // place in the tournée comes from its own address.
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var bacs = (params.get('bacs') || '').split(',').filter(Boolean);
+    var i = parseInt(params.get('i'), 10) || 0;
+    if (location.pathname !== '/tournee/step' || !bacs.length || i >= bacs.length) return;
+    var order = 'bacs=' + bacs.join(',') + '&i=';
+    document.querySelector('.tour-form').setAttribute('action', '/tournee/step/log?' + order + i);
+    document.querySelector('[data-tour-skip]').setAttribute('href', '/tournee/step?' + order + (i + 1));
+    document.querySelector('[data-tour-count]').textContent = 'BAC ' + (i + 1) + ' / ' + bacs.length;
+    document.querySelector('[data-tour-progress]').style.width = Math.round(i / bacs.length * 100) + '%';
+  })();
+
   (function () {
     var form = document.querySelector('.tour-form');
     var submit = form.querySelector('.tour-submit');

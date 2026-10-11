@@ -127,6 +127,14 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   last_sent_at TEXT
 );
 
+-- Actions noted on a phone without network and sent once it came back (see
+-- lib/hors-ligne.js): the reference of each one received, so one that
+-- reaches the Pi twice is written once.
+CREATE TABLE IF NOT EXISTS actions_recues (
+  ref TEXT PRIMARY KEY,
+  recue_le TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 -- App-wide preferences, e.g. the breeder's name printed on customer sheets.
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,

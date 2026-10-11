@@ -156,6 +156,17 @@
     }
     chips('data-cat-diff', 'diff');
     chips('data-cat-group', 'group');
+
+    // Back from a fiche (footer script): the filters as they were left.
+    window.isoRetourState = function () { return { text: state.text, diff: state.diff, group: state.group }; };
+    document.addEventListener('retour:etat', function (event) {
+      var s = event.detail || {};
+      state = { text: s.text || '', diff: s.diff || '', group: s.group || '' };
+      search.value = state.text;
+      document.querySelectorAll('[data-cat-diff]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-cat-diff') === state.diff); });
+      document.querySelectorAll('[data-cat-group]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-cat-group') === state.group); });
+      apply();
+    });
     search.addEventListener('input', function () { state.text = search.value; apply(); });
     document.querySelector('[data-cat-reset]').addEventListener('click', function () {
       search.value = '';

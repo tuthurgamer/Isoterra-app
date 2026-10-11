@@ -26,6 +26,9 @@
   var noteTypes = [['observation', 'Observation'], ['ponte', 'Ponte'], ['vente', 'Vente'], ['nourrissage', 'Nourrissage'], ['nettoyage', 'Nettoyage'], ['pulverisation', 'Pulvérisation']];
 %>
 
+<%# Back to the list this page was opened from, where it was left (footer script). %>
+<div class="back-bar"><a href="/" class="back-link" data-retour><span aria-hidden="true">←</span> <span data-retour-label>Registre des bacs</span></a></div>
+
 <div class="masthead">
   <div>
     <div class="eyebrow">REGISTRE DES BACS &gt; <%= fmt.numTag(bac.id).toUpperCase() %><%= bac.name ? ' — ' + bac.name.toUpperCase() : '' %></div>

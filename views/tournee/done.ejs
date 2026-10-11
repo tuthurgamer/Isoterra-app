@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="/icons/favicon-logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="/icons/logo-192.png">
-<link rel="stylesheet" href="/css/style.css?v=20261027">
+<link rel="stylesheet" href="/css/style.css?v=20261028">
 </head>
 <body>
 <div class="tour-screen tour-screen--center">
@@ -22,11 +22,21 @@
       <% if (empty) { %>
         Aucun bac pour l'instant. Ajoute ta première fiche pour commencer.
       <% } else { %>
-        <%= total %> bac<%= total > 1 ? 's' : '' %> vérifié<%= total > 1 ? 's' : '' %>. À demain.
+        <span data-tour-total><%= total %> bac<%= total > 1 ? 's' : '' %> vérifié<%= total > 1 ? 's' : '' %></span>. À demain.
       <% } %>
     </div>
     <a href="/" class="btn">Retour au registre</a>
   </div>
 </div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="/js/hors-ligne.js?v=1"></script>
+<script>
+  // The copy of this page kept for no network counts the bacs of this tournée.
+  (function () {
+    var el = document.querySelector('[data-tour-total]');
+    var n = (new URLSearchParams(location.search).get('bacs') || '').split(',').filter(Boolean).length;
+    if (el && n) el.textContent = n + ' bac' + (n > 1 ? 's' : '') + ' vérifié' + (n > 1 ? 's' : '');
+  })();
+</script>
 </body>
 </html>

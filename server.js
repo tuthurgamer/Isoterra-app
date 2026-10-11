@@ -11,6 +11,10 @@ app.locals.fmt = require('./views/helpers/format');
 
 app.use(express.urlencoded({ extended: true }));
 
+// Actions noted on the phone without network, sent once it came back: each
+// is written once, at the time it was done (lib/hors-ligne.js).
+app.use(require('./lib/hors-ligne').replayed);
+
 // Uploads (species icons, journal photos) get a fresh, unique filename on
 // every upload — the same URL never changes content, so it's safe to tell
 // browsers to keep it forever instead of re-checking with the Pi on every
@@ -64,6 +68,7 @@ app.use('/photos', require('./routes/photos'));
 app.use('/appareil', require('./routes/appareil'));
 app.use('/envois', require('./routes/envois'));
 app.use('/rappels', require('./routes/rappels'));
+app.use('/hors-ligne', require('./routes/hors-ligne'));
 
 app.use((req, res) => {
   res.status(404).render('404', { path: req.path });

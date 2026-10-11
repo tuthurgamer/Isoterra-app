@@ -5,7 +5,10 @@
     <div class="eyebrow">GESTION COMMERCIALE — ISOTERRA</div>
     <h1>Stock &amp; ventes</h1>
   </div>
-  <div class="stamp stamp--muted"><%= fmt.dateFr(new Date().toISOString()) %></div>
+  <div class="masthead-actions">
+    <a href="/vente/annonce" class="stamp stamp--rust">Faire une annonce</a>
+    <div class="stamp stamp--muted date-stamp"><%= fmt.dateFr(new Date().toISOString()) %></div>
+  </div>
 </div>
 <div class="rule-double"></div>
 <div class="rule-thin"></div>
@@ -38,7 +41,7 @@
   <div class="stock-row">
     <div>
       <div style="font-weight:600; font-style:italic;"><a href="/fiches/<%= bac.id %>" style="color:inherit;"><%= bac.scientific_name %><%= bac.morph ? " '" + bac.morph + "'" : '' %></a></div>
-      <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px;">bac <%= fmt.numTag(bac.bac_id) %> · <a href="/especes/<%= bac.species_id %>/fiche-client?fiche=<%= bac.id %>">fiche client</a></div>
+      <div style="font-style:italic; color:var(--ink-muted); font-size:11.5px;">bac <%= fmt.numTag(bac.bac_id) %> · <a href="/especes/<%= bac.species_id %>/fiche-client?fiche=<%= bac.id %>">fiche client</a> · <a href="/vente/annonce?fiche=<%= bac.id %>">annonce</a></div>
     </div>
     <div><%= bac.for_sale_quantity %></div>
     <div><%= bac.unit_price ? bac.unit_price + ' €' : '—' %></div>

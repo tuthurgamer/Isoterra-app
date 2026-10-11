@@ -1,0 +1,135 @@
+<%- include('../partials/header', { title, active }) %>
+
+<div class="back-bar"><a href="/vente" class="back-link"><span aria-hidden="true">←</span> <span>Stock &amp; ventes</span></a></div>
+
+<div class="masthead">
+  <div>
+    <div class="eyebrow">VENTE &gt; ANNONCE</div>
+    <h1>Faire une annonce</h1>
+    <div class="subtitle">Choisis les photos, vérifie le texte, puis partage-la où tu veux.</div>
+  </div>
+</div>
+<div class="rule-double"></div>
+<div class="rule-thin"></div>
+
+<% if (!fiche) { %>
+  <p class="annonce__empty">Aucun bac pour l'instant : l'annonce se fait à partir d'une population de tes bacs.</p>
+<% } else {
+  var forSale = fiches.filter(function (f) { return f.for_sale_quantity > 0; });
+  var others = fiches.filter(function (f) { return !(f.for_sale_quantity > 0); });
+  var label = function (f) { return f.scientific_name + (f.morph ? " '" + f.morph + "'" : '') + ' · bac ' + fmt.numTag(f.bac_id); };
+  var best = photos.filter(function (p) { return p.rating >= 4; });
+  var rest = photos.filter(function (p) { return p.rating < 4; });
+  var tile = function (p) {
+    return '<button type="button" class="annonce-pic" aria-pressed="false" data-pic="' + fmt.escape(JSON.stringify({ id: p.id, thumb: p.thumb, view: p.view, rating: p.rating })) + '">'
+      + '<img src="' + fmt.escape(p.thumb) + '" alt="" loading="lazy" decoding="async">'
+      + (p.rating ? '<span class="annonce-pic__stars">' + p.rating + '★</span>' : '')
+      + '<span class="annonce-pic__n" hidden></span></button>';
+  };
+%>
+<form class="annonce" data-annonce onsubmit="return false">
+  <section class="annonce__step">
+    <h2><span class="annonce__num">1</span>Ce que tu vends</h2>
+    <select data-picker data-annonce-fiche aria-label="Population à vendre">
+      <% [['En vente', forSale], ['Autres bacs', others]].forEach(function (g) { if (!g[1].length) return; %>
+        <optgroup label="<%= g[0] %>">
+          <% g[1].forEach(function (f) { %>
+            <option value="<%= f.id %>" data-pics="<%= icons.pic(f) %>"<%= f.id === fiche.id ? ' selected' : '' %>><%= label(f) %></option>
+          <% }); %>
+        </optgroup>
+      <% }); %>
+    </select>
+  </section>
+
+  <section class="annonce__step">
+    <h2><span class="annonce__num">2</span>Les photos</h2>
+    <% if (!photos.length) { %>
+      <p class="annonce__hint">Aucune photo de <em><%= ad.name %></em> dans la galerie. Ajoute-en, ou indique l'espèce sur une photo existante (bouton « Espèces » quand elle est ouverte en grand) : elle apparaîtra ici.</p>
+      <a href="/photos" class="btn-quiet">Ouvrir la galerie</a>
+    <% } else { %>
+      <p class="annonce__hint">Seulement les photos où l'on voit <em><%= ad.name %></em>, les mieux notées d'abord. Touche-les dans l'ordre voulu : la première est la principale.</p>
+      <p class="annonce__picked" data-annonce-picked></p>
+      <% if (best.length) { %>
+        <div class="annonce__group">Les mieux notées</div>
+        <div class="annonce__photos"><%- best.map(tile).join('') %></div>
+      <% } %>
+      <% if (rest.length) { %>
+        <div class="annonce__group"><%= best.length ? 'Les autres' : 'Toutes les photos' %></div>
+        <div class="annonce__photos"><%- rest.map(tile).join('') %></div>
+      <% } %>
+    <% } %>
+  </section>
+
+  <section class="annonce__step">
+    <h2><span class="annonce__num">3</span>Prix et remise</h2>
+    <div class="annonce__fields">
+      <div class="field"><label for="a-prix">Prix (€)</label><input id="a-prix" type="number" name="prix" min="0" step="0.5" inputmode="decimal" value="<%= ad.price || '' %>"></div>
+      <div class="field">
+        <label for="a-unite">Pour</label>
+        <select id="a-unite" name="unite"><option value="unite">l'unité</option><option value="lot">un lot</option></select>
+      </div>
+      <div class="field" data-annonce-lot hidden><label for="a-lot">Animaux par lot</label><input id="a-lot" type="number" name="lot" min="2" step="1" inputmode="numeric" value="10"></div>
+      <div class="field"><label for="a-quantite">Disponibles</label><input id="a-quantite" type="number" name="quantite" min="0" step="1" inputmode="numeric" value="<%= ad.quantity || '' %>"></div>
+      <div class="field">
+        <label for="a-stade">Âge</label>
+        <select id="a-stade" name="stade">
+          <option value="">Non précisé</option>
+          <option value="juvéniles">Juvéniles</option>
+          <option value="subadultes">Subadultes</option>
+          <option value="adultes">Adultes</option>
+          <option value="tous âges">Tous âges</option>
+        </select>
+      </div>
+    </div>
+    <div class="annonce__checks">
+      <label class="sheet-toggle"><input type="checkbox" name="envoi"<%= prefs.envoi ? ' checked' : '' %>><span>Envoi en colis</span></label>
+      <label class="sheet-toggle"><input type="checkbox" name="main"<%= prefs.main ? ' checked' : '' %>><span>Remise en main propre</span></label>
+    </div>
+    <div class="annonce__fields">
+      <div class="field"><label for="a-lieu">Lieu de remise</label><input id="a-lieu" type="text" name="lieu" maxlength="80" placeholder="ex. Lyon et alentours" value="<%= prefs.lieu %>"></div>
+      <div class="field"><label for="a-signe">Signé</label><input id="a-signe" type="text" name="breeder" maxlength="80" placeholder="ton nom ou celui de l'élevage" value="<%= ad.breeder %>"></div>
+      <div class="field"><label for="a-contact">Contact</label><input id="a-contact" type="text" name="contact" maxlength="160" placeholder="téléphone, mail, Instagram…" value="<%= ad.contact %>"></div>
+    </div>
+    <p class="annonce__hint">Le lieu, la remise et le style restent pour la prochaine annonce ; la signature et le contact sont ceux des fiches client.</p>
+  </section>
+
+  <section class="annonce__step">
+    <h2><span class="annonce__num">4</span>L'image</h2>
+    <div class="annonce__checks" role="radiogroup" aria-label="Format">
+      <label class="sheet-toggle"><input type="radio" name="format" value="carre" checked><span>Carrée (Instagram, Facebook)</span></label>
+      <label class="sheet-toggle"><input type="radio" name="format" value="portrait"><span>Portrait</span></label>
+      <label class="sheet-toggle"><input type="radio" name="format" value="seules"><span>Photos séparées (Leboncoin, Vinted)</span></label>
+    </div>
+    <div class="annonce__checks">
+      <label class="sheet-toggle"><input type="checkbox" name="bandeau" checked><span>Bandeau : nom, prix et logo</span></label>
+    </div>
+    <p class="annonce__hint" data-annonce-format-hint></p>
+    <div class="annonce__preview"><canvas data-annonce-canvas width="1080" height="1080" aria-label="Aperçu de l'image de l'annonce"></canvas></div>
+  </section>
+
+  <section class="annonce__step">
+    <h2><span class="annonce__num">5</span>Le texte</h2>
+    <div class="annonce__checks" role="radiogroup" aria-label="Style du texte">
+      <label class="sheet-toggle"><input type="radio" name="style" value="sobre"<%= prefs.style === 'sobre' ? ' checked' : '' %>><span>Sobre (Leboncoin, Vinted)</span></label>
+      <label class="sheet-toggle"><input type="radio" name="style" value="reseaux"<%= prefs.style === 'reseaux' ? ' checked' : '' %>><span>Réseaux sociaux (emojis, hashtags)</span></label>
+    </div>
+    <textarea class="annonce__text" data-annonce-text rows="14" aria-label="Texte de l'annonce"></textarea>
+    <div class="annonce__text-foot">
+      <span class="annonce__hint" data-annonce-edited hidden>Texte modifié à la main : il ne change plus tout seul.</span>
+      <button type="button" class="btn-quiet" data-annonce-regen hidden>Refaire le texte</button>
+    </div>
+  </section>
+
+  <div class="annonce__share">
+    <button type="button" class="btn" data-annonce-share>Partager l'annonce</button>
+    <button type="button" class="btn-quiet" data-annonce-copy>Copier le texte</button>
+    <button type="button" class="btn-quiet" data-annonce-save>Enregistrer l'image</button>
+  </div>
+  <p class="annonce__hint annonce__share-hint">Le partage envoie l'image et le texte à l'appli choisie ; le texte est aussi copié, à coller si l'appli ne le reprend pas.</p>
+</form>
+
+<script>window.isoAnnonce = <%- JSON.stringify({ fiche: fiche.id, ad: ad }).replace(/</g, '\\u003c') %>;</script>
+<script src="/js/annonce.js?v=1"></script>
+<% } %>
+
+<%- include('../partials/footer') %>

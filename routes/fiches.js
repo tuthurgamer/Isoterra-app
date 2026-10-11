@@ -6,6 +6,7 @@ const { evaluateGroup } = require('../lib/compatibility');
 const { careStatuses, bacCareStatus, bacsNeedingAttention } = require('../lib/care');
 const { moveFiches } = require('../lib/bac-move');
 const { removeUnusedPhotos } = require('../lib/photos');
+const { stamp, LATEST } = require('../lib/bac-log');
 const { numTag } = require('../views/helpers/format');
 
 // Deletes fiches — their journal goes with them (ON DELETE CASCADE, and
@@ -222,8 +223,9 @@ router.post('/:id/delete-bac', (req, res) => {
 router.post('/:id/log/quick', (req, res) => {
   const type = req.query.type || (req.body || {}).type;
   if (!type) return res.status(400).send('Type manquant');
-  db.prepare('INSERT INTO log_entries (bac_species_id, type) VALUES (?, ?)').run(req.params.id, type);
-  db.prepare("UPDATE bac_species SET last_checked_at = datetime('now', 'localtime') WHERE id = ?").run(req.params.id);
+  const at = stamp(req.doneAt);
+  db.prepare('INSERT INTO log_entries (bac_species_id, type, created_at) VALUES (?, ?, ?)').run(req.params.id, type, at);
+  db.prepare(`UPDATE bac_species SET last_checked_at = ${LATEST} WHERE id = ?`).run(at, req.params.id);
 
   // The bacs page updates itself from this: the refreshed status of every
   // fiche sharing the bac (feeding/misting count for the whole bac), the

@@ -1,5 +1,8 @@
 <%- include('../partials/header', { title, active }) %>
 
+<%# Back to the list this page was opened from, where it was left (footer script). %>
+<div class="back-bar"><a href="/especes" class="back-link" data-retour><span aria-hidden="true">←</span> <span data-retour-label>Guide des espèces</span></a></div>
+
 <div class="masthead">
   <div>
     <div class="eyebrow">ESPÈCES &gt; <%= sp.scientific_name.toUpperCase() %></div>

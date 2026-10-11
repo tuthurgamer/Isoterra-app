@@ -3,6 +3,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script src="/js/photo-prep.js?v=3"></script>
 <script src="/js/envois.js?v=2"></script>
+<script src="/js/hors-ligne.js?v=1"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -78,7 +79,14 @@
       if (button.disabled) return;
       button.disabled = true;
 
-      fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'fetch' } })
+      // Without network the action waits in the phone (service worker): it is
+      // listed there under the card's name.
+      var headers = { 'X-Requested-With': 'fetch' };
+      var named = form.closest('.specimen-card, .bac-card');
+      named = named && named.querySelector('.card-name-link, .bac-card__title');
+      if (named) headers['X-Isoterra-Quoi'] = encodeURIComponent(named.textContent.replace(/\s+/g, ' ').trim() + ' : ' + form.dataset.label.toLowerCase());
+
+      fetch(form.action, { method: 'POST', headers: headers })
         .then(function (response) {
           if (!response.ok) throw new Error('HTTP ' + response.status);
           return response;
@@ -90,7 +98,7 @@
           var card = form.closest('.specimen-card');
           var last = card && card.querySelector('[data-last-obs]');
           if (last) last.textContent = "obs. aujourd'hui";
-          showToast('Enregistré : ' + form.dataset.label);
+          showToast(response.status === 202 ? 'Pas de réseau : gardé dans le téléphone (' + form.dataset.label + ')' : 'Enregistré : ' + form.dataset.label);
           form.dispatchEvent(new CustomEvent('quicklog:done', { bubbles: true }));
           setTimeout(function () { button.classList.remove('done'); button.disabled = false; }, 900);
           if ((response.headers.get('content-type') || '').indexOf('application/json') !== -1) {
@@ -809,6 +817,116 @@
       event.preventDefault();
       open(thumb);
     });
+  })();
+
+  // Retour à la liste. Toucher un bac ou une espèce dans une liste retient où
+  // on en était (le lien touché, sa place à l'écran, les filtres du
+  // catalogue). Le bouton « ← » de la page ouverte y ramène : la liste revient
+  // à ce même endroit, la carte quittée brille un instant.
+  (function () {
+    var KEY = 'isoterra.retour';
+    var DETAIL = /^\/(bacs|especes|fiches)\/\d+$/;
+    var here = location.pathname + location.search;
+    var NAMES = [
+      [/^\/$/, 'Registre des bacs'], [/^\/especes$/, 'Guide des espèces'], [/^\/especes\/compatibilite/, 'Comparateur'],
+      [/^\/especes\/\d+$/, "Fiche de l'espèce"], [/^\/bacs\/\d+$/, 'Page du bac'], [/^\/journal/, 'Journal'],
+      [/^\/photos/, 'Photos'], [/^\/pontes/, 'Pontes'], [/^\/vente/, 'Vente'], [/^\/tournee/, 'Tournée']
+    ];
+    var stack = [];
+    try { stack = JSON.parse(sessionStorage.getItem(KEY) || '[]'); } catch (e) {}
+    function save() {
+      try { sessionStorage.setItem(KEY, JSON.stringify(stack.slice(-8))); } catch (e) {}
+    }
+    function nameOf(url) {
+      var path = url.split('?')[0];
+      for (var k = 0; k < NAMES.length; k++) if (NAMES[k][0].test(path)) return NAMES[k][1];
+      return 'Retour';
+    }
+    function linksTo(href) {
+      return document.querySelectorAll('a[href="' + href.replace(/["\\]/g, '\\$&') + '"]');
+    }
+
+    // Back on a list (with the phone's own back too): the trips that left
+    // from here are over.
+    while (stack.length && stack[stack.length - 1].from === here) stack.pop();
+
+    // Back with the button: the list where it was left.
+    var go = null;
+    try {
+      go = JSON.parse(sessionStorage.getItem(KEY + '.go') || 'null');
+      sessionStorage.removeItem(KEY + '.go');
+    } catch (e) {}
+    if (go && go.from === here) {
+      if (go.state) document.dispatchEvent(new CustomEvent('retour:etat', { detail: go.state }));
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      var placedAt = null;
+      var place = function () {
+        if (placedAt !== null && Math.abs(window.scrollY - placedAt) > 4) return null; // moved meanwhile
+        var links = linksTo(go.link);
+        var a = links[go.idx] || links[0];
+        if (a && a.offsetParent) window.scrollTo(0, a.getBoundingClientRect().top + window.scrollY - go.top);
+        else window.scrollTo(0, go.y);
+        placedAt = window.scrollY;
+        return a && a.offsetParent ? a : null;
+      };
+      var left = place();
+      // Pictures and fonts arriving may move the list: placed again.
+      window.addEventListener('load', place);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+      var card = left && (left.closest('.specimen-card, .bac-card, .cat-card, .kept-card, .todo__row, .kanban__card, .journal-entry') || left);
+      if (card) {
+        card.classList.add('is-retour');
+        setTimeout(function () { card.classList.remove('is-retour'); }, 1800);
+      }
+    }
+
+    // Leaving a list for a bac or a species: where it was, remembered.
+    document.addEventListener('click', function (event) {
+      var a = event.target.closest && event.target.closest('a[href]');
+      if (!a || a.hasAttribute('data-retour') || a.target === '_blank' || event.ctrlKey || event.metaKey) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || !DETAIL.test(url.pathname) || url.pathname === location.pathname) return;
+      var href = a.getAttribute('href');
+      stack.push({
+        from: here,
+        at: Date.now(),
+        y: window.scrollY,
+        link: href,
+        idx: Array.prototype.indexOf.call(linksTo(href), a),
+        top: a.getBoundingClientRect().top,
+        state: window.isoRetourState ? window.isoRetourState() : null
+      });
+      save();
+    }, true);
+
+    // The button of this page: back to the list it was opened from, where it
+    // was left; to the page it came from otherwise (the tournée...); to the
+    // bac registry or the guide when opened from nowhere (a notification).
+    var back = document.querySelector('[data-retour]');
+    if (back && DETAIL.test(location.pathname)) {
+      var ref = '';
+      try {
+        var r = new URL(document.referrer);
+        if (r.origin === location.origin) ref = r.pathname + r.search;
+      } catch (e) {}
+      var refPath = ref.split('?')[0];
+      // Reloaded, or back from this page's own forms: still the same trip.
+      var same = refPath === location.pathname || refPath.indexOf(location.pathname + '/') === 0;
+      var trip = stack[stack.length - 1];
+      if (trip && (ref === trip.from || same || (!ref && Date.now() - trip.at < 30 * 60 * 1000))) {
+        back.setAttribute('href', trip.from);
+        back.querySelector('[data-retour-label]').textContent = nameOf(trip.from);
+        back.addEventListener('click', function () {
+          stack.pop();
+          save();
+          try { sessionStorage.setItem(KEY + '.go', JSON.stringify(trip)); } catch (e) {}
+        });
+      } else if (ref && !same) {
+        back.setAttribute('href', ref);
+        back.querySelector('[data-retour-label]').textContent = nameOf(ref);
+      }
+    }
+    save();
   })();
 
   // Menus d'espèces avec icônes : un <select> natif ne sait pas afficher

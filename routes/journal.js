@@ -50,7 +50,7 @@ router.post('/', uploadPhotos, (req, res) => {
     removeUnusedPhotos(photos);
     return res.status(400).send('Fiche et type requis');
   }
-  noteForBac(fiche.bac_id, { type: b.type, note: String(b.note || '').trim() || null, photos, ficheId: fiche.id });
+  noteForBac(fiche.bac_id, { type: b.type, note: String(b.note || '').trim() || null, photos, ficheId: fiche.id, at: req.doneAt });
   res.redirect('/fiches/' + fiche.id);
 });
 

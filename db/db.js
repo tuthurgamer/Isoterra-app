@@ -143,4 +143,8 @@ if (!ficheColumns.includes('feed_every_days')) {
   db.exec('ALTER TABLE bac_species ADD COLUMN mist_every_days INTEGER');
 }
 
+// References of actions sent from the phones: a month is far more than the
+// week an action can wait in a phone.
+db.exec("DELETE FROM actions_recues WHERE recue_le < datetime('now', 'localtime', '-30 days')");
+
 module.exports = db;

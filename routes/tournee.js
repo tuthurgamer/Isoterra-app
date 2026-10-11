@@ -3,16 +3,7 @@ const router = express.Router();
 const db = require('../db/db');
 const { bacCareStatus } = require('../lib/care');
 const { logForBac } = require('../lib/bac-log');
-
-// One step per bac: a mixed bac is fed, misted and cleaned in one go, so its
-// species are visited together. Bacs looked at longest ago come first.
-function buildQueue() {
-  return db.prepare(`
-    SELECT bac_id FROM bac_species
-    GROUP BY bac_id
-    ORDER BY MAX(last_checked_at) IS NOT NULL, MAX(last_checked_at) ASC, bac_id ASC
-  `).all().map((r) => r.bac_id);
-}
+const { buildQueue } = require('../lib/tournee-queue');
 
 function parseIds(value) {
   return String(value || '').split(',').filter(Boolean).map(Number);
@@ -88,7 +79,7 @@ router.post('/step/log', (req, res) => {
   const body = req.body || {}; // Express 5 leaves req.body undefined when nothing was ticked
   const requested = [].concat(body.types || req.query.type || body.type || []);
   const types = ACTION_TYPES.filter((t) => requested.includes(t));
-  if (bacId) logForBac(bacId, types);
+  if (bacId) logForBac(bacId, types, req.doneAt);
 
   // An old page whose fiche has since been deleted hasn't shown bacs[i] yet.
   res.redirect(stepUrl(bacs, legacy && bacId === undefined ? i : i + 1));

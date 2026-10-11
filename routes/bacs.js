@@ -156,7 +156,7 @@ router.post('/bacs/:id/note', uploadPhotos, (req, res) => {
   }
   const written = noteForBac(bacId, {
     type: NOTE_TYPES.includes(b.type) ? b.type : 'observation',
-    note, photos, ficheId: Number(b.fiche_id) || null
+    note, photos, ficheId: Number(b.fiche_id) || null, at: req.doneAt
   });
   if (!written) {
     removeUnusedPhotos(photos);
@@ -183,7 +183,7 @@ router.post('/bacs/:id/log/quick', (req, res) => {
   const type = req.query.type || (req.body || {}).type;
   if (!QUICK_TYPES.includes(type)) return res.status(400).send('Type manquant');
   const bacId = Number(req.params.id);
-  if (!logForBac(bacId, [type])) return res.status(404).send('Bac introuvable');
+  if (!logForBac(bacId, [type], req.doneAt)) return res.status(404).send('Bac introuvable');
 
   if (req.get('X-Requested-With') === 'fetch') {
     const all = [...careStatuses().values()];
