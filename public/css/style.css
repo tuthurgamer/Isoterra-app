@@ -2519,76 +2519,50 @@ button.todo__btn:active { transform: scale(0.96); }
 .viewer__img { will-change: auto; }
 .viewer__img.is-dragging { will-change: transform; }
 
-/* --- Customer sheet (especes/fiche-client.ejs), made to be read to the end:
-   a hero with the animal, its hook, the essentials at a glance with gauges,
-   then the care as short, illustrated sections. --- */
-.cs { padding: 30px 40px 24px; }
+/* --- Customer sheet (especes/fiche-client.ejs): an A5 handout for the
+   stand, good basics at a glance. On screen it shows at about the size it
+   prints. --- */
+.cs-toolbar { max-width: 600px; }
+.cs { max-width: 600px; padding: 24px 28px 20px; font-size: 13.5px; line-height: 1.5; }
 .cs .is-off { display: none; }
-.cs-hero { display: grid; grid-template-columns: 210px minmax(0, 1fr) auto; align-items: center; gap: 22px; margin: 20px 0 12px; }
-.cs-hero__plate { display: flex; align-items: center; justify-content: center; height: 150px; padding: 8px; border-radius: 10px; background: radial-gradient(ellipse at center, oklch(97% 0.015 85) 0%, var(--paper-alt) 100%); color: var(--rust); }
+.cs .client-sheet__head { align-items: center; }
+.cs-contact { font-family: 'Special Elite', monospace; font-size: 11px; color: var(--ink-muted); text-align: right; }
+.cs-hero { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; align-items: center; gap: 16px; margin: 14px 0 10px; }
+.cs-hero__plate { display: flex; align-items: center; justify-content: center; height: 108px; padding: 6px; border-radius: 8px; background: radial-gradient(ellipse at center, oklch(97% 0.015 85) 0%, var(--paper-alt) 100%); color: var(--rust); }
 .cs-hero__plate .species-icon-img { width: 100%; height: 100%; object-fit: contain; }
-.cs-hero__plate--drawn svg { width: 90px; height: 90px; }
-.cs-kicker { font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rust); }
-.cs-hero__names h1 { margin: 4px 0 0; font-family: 'IM Fell English', Georgia, serif; font-weight: normal; font-size: 34px; line-height: 1.1; }
-.cs-sci { margin-top: 4px; font-size: 17px; font-style: italic; color: var(--ink-muted); }
-.cs-level { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; padding: 4px 12px 4px 10px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--moss); }
+.cs-hero__plate--drawn svg { width: 70px; height: 70px; }
+.cs-kicker { font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rust); }
+.cs-hero__names h1 { margin: 3px 0 0; font-family: 'IM Fell English', Georgia, serif; font-weight: normal; font-size: 26px; line-height: 1.1; }
+.cs-sci { margin-top: 3px; font-size: 15px; font-style: italic; color: var(--ink-muted); }
+.cs-level { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 3px 10px 3px 8px; border: 1.3px solid currentColor; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--moss); }
 .cs-level .rating-icons { margin: 0; }
 .cs-level--3 { color: var(--ochre); }
 .cs-level--4, .cs-level--5 { color: var(--stampred); }
-.cs-polaroid { width: 150px; margin: 0; padding: 7px 7px 6px; background: #fff; box-shadow: 0 6px 16px oklch(24% 0.035 55 / 0.25); transform: rotate(2.5deg); text-align: center; }
+.cs-polaroid { width: 104px; margin: 0; padding: 5px 5px 4px; background: #fff; box-shadow: 0 4px 12px oklch(24% 0.035 55 / 0.22); transform: rotate(2.5deg); text-align: center; }
 .cs-polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
-.cs-polaroid figcaption { margin-top: 5px; font-family: 'Special Elite', monospace; font-size: 10px; color: var(--ink-muted); }
+.cs-polaroid figcaption { margin-top: 3px; font-family: 'Special Elite', monospace; font-size: 9px; color: var(--ink-muted); }
 
-.cs-welcome { margin: 4px 0 10px; font-style: italic; color: var(--ink-muted); text-align: center; }
-.cs-lead { margin: 0 0 18px; padding: 2px 0 2px 16px; border-left: 4px solid var(--rust); font-family: 'IM Fell English', Georgia, serif; font-size: 20px; line-height: 1.4; }
+.cs-intro { margin: 0 0 12px; }
+.cs-intro__lead { font-family: 'IM Fell English', Georgia, serif; font-size: 16.5px; line-height: 1.35; }
 
-.cs-glance { margin: 0 0 20px; padding: 12px 16px 14px; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--paper-alt); break-inside: avoid; }
-.cs-glance__title { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-family: 'Special Elite', monospace; font-size: 11px; font-weight: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
-.cs-glance__title::before, .cs-glance__title::after { content: ""; flex: 1; border-top: 1px solid var(--line-strong); }
-.cs-glance__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 20px; }
-.cs-fact { display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-areas: "icon label" "icon value" "gauge gauge" "scale scale"; column-gap: 8px; align-items: center; }
-.cs-fact__icon { grid-area: icon; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--paper); color: var(--rust); }
-.cs-fact__icon--heat { color: var(--stampred); }
-.cs-fact__icon--water { color: oklch(52% 0.12 240); }
-.cs-fact__label { grid-area: label; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); }
-.cs-fact__value { grid-area: value; font-weight: 600; font-size: 14px; line-height: 1.25; }
-.cs-gauge { grid-area: gauge; position: relative; height: 8px; margin-top: 8px; border-radius: 4px; }
-.cs-gauge--heat { background: linear-gradient(90deg, oklch(78% 0.08 240), oklch(88% 0.1 95), oklch(68% 0.15 35)); }
-.cs-gauge--water { background: linear-gradient(90deg, oklch(88% 0.05 80), oklch(80% 0.08 200), oklch(58% 0.13 245)); }
-.cs-gauge i { position: absolute; top: -4px; bottom: -4px; border: 2px solid var(--ink); border-radius: 6px; box-shadow: 0 0 0 2px var(--paper-alt); }
-.cs-gauge__scale { grid-area: scale; display: flex; justify-content: space-between; margin-top: 3px; font-family: 'Special Elite', monospace; font-size: 9px; color: var(--ink-faint); }
+.cs-essentials { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; margin: 0 0 14px; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--paper-alt); break-inside: avoid; }
+.cs-fact { display: grid; grid-template-columns: 24px minmax(0, 1fr); grid-template-areas: "icon label" "icon value"; column-gap: 7px; align-items: center; }
+.cs-fact__icon { grid-area: icon; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--paper); color: var(--rust); }
+.cs-fact__label { grid-area: label; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); }
+.cs-fact__value { grid-area: value; font-weight: 600; font-size: 12.5px; line-height: 1.25; }
 
-.cs-body { column-count: 2; column-gap: 30px; }
-.cs-section { margin: 0 0 16px; break-inside: avoid; }
-.cs-section h2, .cs-callout h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-family: 'IM Fell English SC', Georgia, serif; font-weight: normal; font-size: 17px; letter-spacing: 0.05em; color: var(--rust); }
-.cs-section h2 { padding-bottom: 3px; border-bottom: 1px solid var(--line-strong); }
+.cs-body { column-count: 2; column-gap: 20px; }
+.cs-section { margin: 0 0 11px; break-inside: avoid; }
+.cs-section h2, .cs-callout h2 { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-family: 'IM Fell English SC', Georgia, serif; font-weight: normal; font-size: 15px; letter-spacing: 0.04em; color: var(--rust); }
+.cs-section h2 { padding-bottom: 2px; border-bottom: 1px solid var(--line-strong); }
 .cs-section h2 svg, .cs-callout h2 svg { flex-shrink: 0; }
-.cs-section p, .cs-callout p { margin: 0 0 6px; }
-.cs-dropcap::first-letter { float: left; margin: 2px 6px 0 0; font-family: 'IM Fell English', Georgia, serif; font-size: 3.1em; line-height: 0.85; color: var(--rust); }
+.cs-section p, .cs-callout p { margin: 0 0 4px; }
 
 .cs-checklist ul { margin: 0; padding: 0; list-style: none; }
-.cs-checklist li { position: relative; margin: 4px 0; padding-left: 24px; }
-.cs-checklist li::before { content: ""; position: absolute; left: 0; top: 4px; width: 13px; height: 13px; border: 1.5px solid var(--ink); border-radius: 3px; background: var(--paper); }
+.cs-checklist li { position: relative; margin: 2px 0; padding-left: 18px; }
+.cs-checklist li::before { content: ""; position: absolute; left: 0; top: 4px; width: 10px; height: 10px; border: 1.3px solid var(--ink); border-radius: 2px; }
 
-.cs-calendar__intro { font-size: 13px; color: var(--ink-muted); }
-.cs-calendar__grid { display: grid; grid-template-columns: auto repeat(var(--days), minmax(0, 1fr)); gap: 4px 3px; align-items: center; margin-top: 6px; }
-.cs-calendar__day { font-family: 'Special Elite', monospace; font-size: 9px; color: var(--ink-faint); text-align: center; }
-.cs-calendar__label { display: flex; align-items: center; gap: 4px; padding-right: 6px; font-size: 12px; white-space: nowrap; }
-.cs-calendar__label svg { width: 16px; height: 16px; color: var(--rust); }
-.cs-calendar__cell { aspect-ratio: 1; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--paper); }
-.cs-calendar__cell--nourrissage.is-on { border-color: var(--moss); background: var(--moss); }
-.cs-calendar__cell--pulverisation.is-on { border-color: oklch(52% 0.12 240); background: oklch(52% 0.12 240); }
-
-.cs-cohab__intro { margin-bottom: 4px; }
-.cs-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.cs-chips li { padding: 3px 10px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--paper-alt); font-size: 13px; }
-
-.cs-steps { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: step; }
-.cs-steps li { position: relative; margin: 0 0 9px; padding-left: 34px; counter-increment: step; }
-.cs-steps li::before { content: counter(step); position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1.5px solid var(--rust); border-radius: 50%; font-family: 'IM Fell English', Georgia, serif; font-size: 14px; color: var(--rust); }
-.cs-steps strong { display: block; font-size: 13.5px; }
-
-.cs-callout { margin: 0 0 16px; padding: 10px 14px 8px; border-left: 4px solid; border-radius: 0 8px 8px 0; break-inside: avoid; }
+.cs-callout { margin: 0 0 11px; padding: 7px 10px 5px; border-left: 3px solid; border-radius: 0 6px 6px 0; break-inside: avoid; }
 .cs-callout--care { border-color: var(--ochre); background: oklch(55% 0.12 75 / 0.1); }
 .cs-callout--care h2 { color: oklch(45% 0.11 70); }
 .cs-callout--avoid { border-color: var(--stampred); background: oklch(46% 0.14 25 / 0.07); }
@@ -2596,37 +2570,47 @@ button.todo__btn:active { transform: scale(0.96); }
 .cs-callout--fact { border-color: var(--moss); background: oklch(46% 0.11 145 / 0.09); }
 .cs-callout--fact h2 { color: var(--moss); }
 
-.cs-foot { display: flex; align-items: center; gap: 14px; margin-top: 10px; padding-top: 12px; border-top: 3px double var(--ink); }
-.cs-foot__logo { width: auto; height: 46px; flex-shrink: 0; }
-.cs-foot__text p { margin: 0; }
-.cs-foot__sign { font-style: italic; }
-.cs-foot__meta { margin-top: 2px; font-family: 'Special Elite', monospace; font-size: 11px; color: var(--ink-muted); }
-.cs-foot__meta:empty { display: none; }
-
 @media screen and (max-width: 700px) {
-  .cs { padding: 20px 16px 16px; }
-  .cs-hero { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .cs-hero__plate { height: 170px; }
-  .cs-hero__names h1 { font-size: 28px; }
-  .cs-polaroid { justify-self: center; width: 62%; transform: rotate(-2deg); }
-  .cs-lead { font-size: 18px; }
-  .cs-glance__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cs-fact--gauge { grid-column: 1 / -1; }
+  .cs { padding: 18px 14px 14px; }
+  .cs-hero { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .cs-hero__plate { height: 150px; }
+  .cs-polaroid { justify-self: center; width: 55%; transform: rotate(-2deg); }
+  .cs-essentials { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cs-body { column-count: 1; }
 }
 
+/* Printed: one A5 page (or two per A4 sheet with the printer's option). */
 @media print {
-  .cs { padding: 0; font-size: 10pt; }
-  .cs-hero { grid-template-columns: 52mm minmax(0, 1fr) auto; gap: 6mm; margin: 4mm 0 3mm; }
-  .cs-hero__plate { height: 36mm; }
-  .cs-hero__names h1 { font-size: 24pt; }
-  .cs-polaroid { width: 36mm; box-shadow: 0 0 0 0.3mm oklch(24% 0.035 55 / 0.25); }
-  .cs-lead { font-size: 13.5pt; margin-bottom: 4mm; }
-  .cs-glance { margin-bottom: 4mm; padding: 3mm 4mm; }
-  .cs-body { column-gap: 7mm; }
-  .cs-section, .cs-callout { margin-bottom: 3.5mm; }
+  @page { size: A5; margin: 8mm; }
+  .cs { max-width: none; padding: 0; font-size: 9.2pt; line-height: 1.4; }
+  .cs .client-sheet__head { padding-bottom: 1.5mm; }
+  .cs .client-sheet__brand { font-size: 12pt; }
+  .cs .client-sheet__logo { height: 8mm; }
+  .cs-contact { font-size: 7.5pt; }
+  .cs-hero { grid-template-columns: 34mm minmax(0, 1fr) auto; gap: 4mm; margin: 3mm 0 2.5mm; }
+  .cs-hero__plate { height: 24mm; padding: 1.5mm; }
+  .cs-kicker { font-size: 6.5pt; }
+  .cs-hero__names h1 { font-size: 16pt; }
+  .cs-sci { font-size: 9.5pt; }
+  .cs-level { margin-top: 1.5mm; padding: 0.5mm 2.5mm 0.5mm 2mm; font-size: 7.5pt; }
+  .cs-polaroid { width: 24mm; padding: 1.2mm 1.2mm 1mm; box-shadow: 0 0 0 0.25mm oklch(24% 0.035 55 / 0.3); }
+  .cs-polaroid figcaption { font-size: 5.5pt; }
+  .cs-intro { margin-bottom: 2.5mm; }
+  .cs-intro__lead { font-size: 10.5pt; }
+  .cs-essentials { gap: 1.6mm 3mm; margin-bottom: 3mm; padding: 2mm 3mm; }
+  .cs-fact { grid-template-columns: 5mm minmax(0, 1fr); column-gap: 1.5mm; }
+  .cs-fact__icon { width: 5mm; height: 5mm; }
+  .cs-fact__icon svg { width: 3mm; height: 3mm; }
+  .cs-fact__label { font-size: 6pt; }
+  .cs-fact__value { font-size: 8pt; }
+  .cs-body { column-gap: 5mm; }
+  .cs-section h2, .cs-callout h2 { font-size: 10pt; }
+  .cs-section h2 svg, .cs-callout h2 svg { width: 3.5mm; height: 3.5mm; }
+  .cs-section, .cs-callout { margin-bottom: 2.4mm; }
+  .cs-callout { padding: 1.5mm 2.5mm 1mm; }
+  /* The longest fiches: slightly smaller type, to stay on one page. */
+  .cs--dense { font-size: 8.5pt; line-height: 1.36; }
+  .cs--denser { font-size: 7.9pt; line-height: 1.32; }
+  .cs--dense .cs-hero__plate, .cs--denser .cs-hero__plate { height: 20mm; }
+  .cs--denser .cs-intro__lead { font-size: 9.5pt; }
 }
-/* Long sections may continue in the next column, between their items. */
-.cs-checklist, .cs-section[data-section="repro"] { break-inside: auto; }
-.cs-checklist li, .cs-steps li, .cs-section h2 { break-inside: avoid; break-after: avoid; }
-.cs-checklist li, .cs-steps li { break-after: auto; }

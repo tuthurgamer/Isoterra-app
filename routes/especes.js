@@ -276,11 +276,9 @@ router.get('/:id/fiche-client', (req, res) => {
     sheet: {
       ...ficheClient.splitLead(sp.presentation),
       difficulty: ficheClient.DIFFICULTY_WORDS[sp.difficulty] || '',
-      temp: ficheClient.gauge(sp.temp_min, sp.temp_max, 10, 35),
-      humidity: ficheClient.gauge(sp.humidity_min, sp.humidity_max, 0, 100),
+      repro: ficheClient.briefly(sp.repro_conditions || sp.repro_mating, 2),
+      density: ficheClient.density(sp, ficheClient.briefly(sp.repro_conditions || sp.repro_mating, 2)),
       equipment: ficheClient.equipment(sp),
-      care: ficheClient.careDays(sp),
-      steps: ficheClient.breedingSteps(sp),
       fact: ficheClient.funFact(sp.category),
       group: [CATEGORY_LABELS[sp.category], sp.family].filter(Boolean).join(' · ')
     },

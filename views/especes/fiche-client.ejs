@@ -6,10 +6,11 @@
 <title><%= title %></title>
 <meta name="theme-color" content="#2a2018">
 <link rel="icon" href="/icons/favicon-logo-64.png" type="image/png">
-<link rel="stylesheet" href="/css/style.css?v=20261031">
+<link rel="stylesheet" href="/css/style.css?v=20261032">
 </head>
 <body class="client-sheet-page">
 <%
+  // An A5 handout for the stand: good basics, quick to read.
   var traitLabel = function (key) {
     var o = traitOptions[key].find(function (x) { return x[0] === sp[key]; });
     return o ? o[1] : null;
@@ -21,34 +22,33 @@
   var hasVigilance = sp.vigilance && sp.vigilance !== 'Aucune';
   var breederName = settings.breeder_name || '';
   var breederContact = settings.breeder_contact || '';
-  var careText = sheet.care.map(function (r) { return r.label.toLowerCase() + ' tous les ' + r.every + ' jours'; }).join(', ');
+  var care = [];
+  if (sp.feed_every_days) care.push('nourrir tous les ' + sp.feed_every_days + ' j');
+  if (sp.mist_every_days) care.push('pulvériser tous les ' + sp.mist_every_days + ' j');
 
-  // Rubriques de la fiche, dans l'ordre de la barre ; celles décochées ne
-  // sont ni affichées ni imprimées.
+  // Rubriques de la fiche ; celles décochées ne sont ni affichées ni imprimées.
   var sections = [
-    { key: 'accueil', title: "Mot d'accueil", on: true, has: true },
     { key: 'presentation', title: 'Présentation', on: true, has: Boolean(sp.presentation) },
     { key: 'habitat', title: 'Installation', on: true, has: Boolean(sp.habitat) },
-    { key: 'materiel', title: 'Matériel', on: true, has: sheet.equipment.length > 0 },
     { key: 'feeding', title: 'Alimentation', on: true, has: Boolean(sp.feeding_detail) },
-    { key: 'care', title: 'Rythme des soins', on: true, has: sheet.care.length > 0 },
+    { key: 'repro', title: 'Reproduction', on: true, has: Boolean(sheet.repro) },
     { key: 'cohab', title: 'Cohabitation', on: true, has: true },
-    { key: 'repro', title: 'Reproduction', on: true, has: Boolean(sp.repro_conditions) || sheet.steps.length > 0 },
     { key: 'vigilance', title: 'Précautions', on: true, has: Boolean(hasVigilance) },
-    { key: 'pitfalls', title: 'Erreurs à éviter', on: false, has: Boolean(sp.repro_pitfalls) },
-    { key: 'fact', title: 'Le saviez-vous ?', on: true, has: Boolean(sheet.fact) }
+    { key: 'fact', title: 'Le saviez-vous ?', on: true, has: Boolean(sheet.fact) },
+    { key: 'materiel', title: 'Matériel à prévoir', on: false, has: sheet.equipment.length > 0 },
+    { key: 'pitfalls', title: 'Erreurs à éviter', on: false, has: Boolean(sp.repro_pitfalls) }
   ].filter(function (x) { return x.has; });
   var on = {};
   sections.forEach(function (x) { on[x.key] = x.on; });
   var off = function (key) { return on[key] === false ? ' is-off' : ''; };
 %>
 
-<div class="sheet-toolbar">
+<div class="sheet-toolbar cs-toolbar">
   <div class="sheet-toolbar__row">
     <a href="<%= backUrl %>" class="sheet-toolbar__back">&larr; Retour</a>
     <button type="button" class="btn" data-print>Imprimer / PDF</button>
   </div>
-  <p class="sheet-toolbar__hint">Sur le téléphone : Imprimer, puis « Enregistrer au format PDF », et envoie le PDF à ton client.</p>
+  <p class="sheet-toolbar__hint">Fiche au format A5, pour ton stand. Sur le téléphone : Imprimer, puis « Enregistrer au format PDF ». Pour deux fiches par feuille A4, choisis « 2 pages par feuille » à l'impression.</p>
 
   <div class="sheet-toolbar__label">Rubriques sur la fiche</div>
   <div class="sheet-toggles">
@@ -78,10 +78,10 @@
   </details>
 </div>
 
-<article class="client-sheet cs">
+<article class="client-sheet cs<%= sheet.density ? ' cs--' + sheet.density : '' %>">
   <header class="client-sheet__head">
     <span class="client-sheet__brand"><img src="/icons/logo.png" alt="" class="client-sheet__logo" width="640" height="443"><%= breederName || "Fiche d'élevage" %></span>
-    <span class="client-sheet__kind"><%= breederName ? "Fiche d'élevage · " : '' %><%= fmt.dateFr(new Date().toISOString()) %></span>
+    <% if (breederContact) { %><span class="cs-contact"><%= breederContact %></span><% } %>
   </header>
 
   <div class="cs-hero">
@@ -102,151 +102,91 @@
     <% } %>
   </div>
 
-  <p class="cs-welcome" data-section="accueil" data-editable><%= breederName ? "Merci d'avoir choisi " + breederName + ' ! ' : 'Merci pour votre confiance ! ' %>Cette fiche rassemble tout ce qu'il faut savoir pour bien installer vos animaux et les voir se plaire chez vous.</p>
-
-  <% if (sheet.lead) { %>
-    <p class="cs-lead<%= off('presentation') %>" data-section="presentation" data-editable><%= sheet.lead %></p>
+  <% if (sp.presentation) { %>
+    <p class="cs-intro<%= off('presentation') %>" data-section="presentation" data-editable><span class="cs-intro__lead"><%= sheet.lead %></span><% if (sheet.rest) { %> <%= sheet.rest %><% } %></p>
   <% } %>
 
-  <section class="cs-glance" aria-label="En un coup d'œil">
-    <h2 class="cs-glance__title">En un coup d'œil</h2>
-    <div class="cs-glance__grid">
-      <div class="cs-fact cs-fact--gauge">
-        <span class="cs-fact__icon cs-fact__icon--heat"><%- icons.sheet('thermometre') %></span>
-        <span class="cs-fact__label">Température</span>
-        <span class="cs-fact__value"><%= range(sp.temp_min, sp.temp_max, ' °C') %></span>
-        <% if (sheet.temp) { %>
-          <span class="cs-gauge cs-gauge--heat" aria-hidden="true"><i style="left:<%= sheet.temp.left %>%;width:<%= sheet.temp.width %>%"></i></span>
-          <span class="cs-gauge__scale" aria-hidden="true"><span>10 °C</span><span>35 °C</span></span>
-        <% } %>
-      </div>
-      <div class="cs-fact cs-fact--gauge">
-        <span class="cs-fact__icon cs-fact__icon--water"><%- icons.sheet('humidite') %></span>
-        <span class="cs-fact__label">Humidité de l'air</span>
-        <span class="cs-fact__value"><%= range(sp.humidity_min, sp.humidity_max, ' %') %></span>
-        <% if (sheet.humidity) { %>
-          <span class="cs-gauge cs-gauge--water" aria-hidden="true"><i style="left:<%= sheet.humidity.left %>%;width:<%= sheet.humidity.width %>%"></i></span>
-          <span class="cs-gauge__scale" aria-hidden="true"><span>sec</span><span>très humide</span></span>
-        <% } %>
-      </div>
-      <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('taille') %></span><span class="cs-fact__label">Taille adulte</span><span class="cs-fact__value"><%= traitLabel('size_class') || '—' %></span></div>
-      <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('vie') %></span><span class="cs-fact__label">Espérance de vie</span><span class="cs-fact__value"><%= sp.lifespan || '—' %></span></div>
-      <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('groupe') %></span><span class="cs-fact__label">Vie en groupe</span><span class="cs-fact__value"><%= sp.sociability || '—' %></span></div>
-      <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('repas') %></span><span class="cs-fact__label">Alimentation</span><span class="cs-fact__value"><%= sp.diet_summary || '—' %></span></div>
-    </div>
-  </section>
+  <div class="cs-essentials" aria-label="L'essentiel">
+    <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('thermometre', 14) %></span><span class="cs-fact__label">Température</span><span class="cs-fact__value"><%= range(sp.temp_min, sp.temp_max, ' °C') %></span></div>
+    <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('humidite', 14) %></span><span class="cs-fact__label">Humidité</span><span class="cs-fact__value"><%= range(sp.humidity_min, sp.humidity_max, ' %') %></span></div>
+    <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('taille', 14) %></span><span class="cs-fact__label">Taille adulte</span><span class="cs-fact__value"><%= traitLabel('size_class') || '—' %></span></div>
+    <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('vie', 14) %></span><span class="cs-fact__label">Espérance de vie</span><span class="cs-fact__value"><%= sp.lifespan || '—' %></span></div>
+    <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('groupe', 14) %></span><span class="cs-fact__label">Vie en groupe</span><span class="cs-fact__value"><%= sp.sociability || '—' %></span></div>
+    <div class="cs-fact"><span class="cs-fact__icon"><%- icons.sheet('calendrier', 14) %></span><span class="cs-fact__label">Soins</span><span class="cs-fact__value"><%= care.length ? care.join(', ') : '—' %></span></div>
+  </div>
 
   <div class="cs-body">
-    <% if (sheet.rest) { %>
-      <section class="cs-section<%= off('presentation') %>" data-section="presentation">
-        <h2><%- icons.sheet('lire') %>Présentation</h2>
-        <p class="cs-dropcap" data-editable><%= sheet.rest %></p>
-      </section>
-    <% } %>
-
     <% if (sp.habitat) { %>
       <section class="cs-section<%= off('habitat') %>" data-section="habitat">
-        <h2><%- icons.sheet('bac') %>Installer son bac</h2>
+        <h2><%- icons.sheet('bac', 16) %>Installation</h2>
         <p data-editable><%= sp.habitat %></p>
       </section>
     <% } %>
 
+    <% if (sp.feeding_detail) { %>
+      <section class="cs-section<%= off('feeding') %>" data-section="feeding">
+        <h2><%- icons.sheet('repas', 16) %>Alimentation</h2>
+        <p data-editable><%= sp.feeding_detail %></p>
+      </section>
+    <% } %>
+
+    <% if (sheet.repro) { %>
+      <section class="cs-section<%= off('repro') %>" data-section="repro">
+        <h2><%- icons.sheet('oeuf', 16) %>Reproduction</h2>
+        <p data-editable><%= sheet.repro %></p>
+      </section>
+    <% } %>
+
+    <section class="cs-section<%= off('cohab') %>" data-section="cohab">
+      <h2><%- icons.sheet('amis', 16) %>Cohabitation</h2>
+      <% if (partners === null) { %>
+        <p data-editable>Prédateur : à maintenir seul dans son bac.</p>
+      <% } else if (partners.length) { %>
+        <p data-editable>S'entend bien avec <%- partners.map(function (n) { return '<em>' + fmt.escape(n) + '</em>'; }).join(', ') %>.</p>
+      <% } else { %>
+        <p data-editable>Pas de compagnon de bac conseillé : demandez conseil avant tout mélange d'espèces.</p>
+      <% } %>
+    </section>
+
     <% if (sheet.equipment.length) { %>
       <section class="cs-section cs-checklist<%= off('materiel') %>" data-section="materiel">
-        <h2><%- icons.sheet('coche') %>Le matériel à prévoir</h2>
+        <h2><%- icons.sheet('coche', 16) %>Matériel à prévoir</h2>
         <ul>
           <% sheet.equipment.forEach(function (item) { %><li data-editable><%= item %></li><% }); %>
         </ul>
       </section>
     <% } %>
 
-    <% if (sp.feeding_detail) { %>
-      <section class="cs-section<%= off('feeding') %>" data-section="feeding">
-        <h2><%- icons.sheet('repas') %>Le nourrir</h2>
-        <p data-editable><%= sp.feeding_detail %></p>
-      </section>
-    <% } %>
-
-    <% if (sheet.care.length) { %>
-      <section class="cs-section cs-calendar<%= off('care') %>" data-section="care">
-        <h2><%- icons.sheet('calendrier') %>Le rythme des soins</h2>
-        <p class="cs-calendar__intro" data-editable>Sur deux semaines, à titre de repère : <%= careText %>.</p>
-        <div class="cs-calendar__grid" style="--days: <%= sheet.care[0].days.length %>">
-          <span class="cs-calendar__corner"></span>
-          <% sheet.care[0].days.forEach(function (d, k) { %><span class="cs-calendar__day"><%= k + 1 %></span><% }); %>
-          <% sheet.care.forEach(function (row) { %>
-            <span class="cs-calendar__label"><%- icons.action(row.type) %><%= row.label %></span>
-            <% row.days.forEach(function (d) { %><span class="cs-calendar__cell<%= d ? ' is-on cs-calendar__cell--' + row.type : '' %>"></span><% }); %>
-          <% }); %>
-        </div>
-      </section>
-    <% } %>
-
-    <section class="cs-section<%= off('cohab') %>" data-section="cohab">
-      <h2><%- icons.sheet('amis') %>Cohabitation</h2>
-      <% if (partners === null) { %>
-        <p data-editable>Prédateur : à maintenir seul dans son bac.</p>
-      <% } else if (partners.length) { %>
-        <p class="cs-cohab__intro">S'entend bien avec :</p>
-        <ul class="cs-chips"><% partners.forEach(function (n) { %><li><em><%= n %></em></li><% }); %></ul>
-      <% } else { %>
-        <p data-editable>Pas de compagnon de bac conseillé : demander conseil avant tout mélange d'espèces.</p>
-      <% } %>
-    </section>
-
-    <% if (sp.repro_conditions || sheet.steps.length) { %>
-      <section class="cs-section<%= off('repro') %>" data-section="repro">
-        <h2><%- icons.sheet('oeuf') %>La reproduction</h2>
-        <% if (sp.repro_conditions) { %><p data-editable><%= sp.repro_conditions %></p><% } %>
-        <% if (sheet.steps.length) { %>
-          <ol class="cs-steps">
-            <% sheet.steps.forEach(function (step) { %>
-              <li><strong><%= step.title %></strong><span data-editable><%= step.text %></span></li>
-            <% }); %>
-          </ol>
-        <% } %>
-      </section>
-    <% } %>
-
     <% if (hasVigilance) { %>
       <aside class="cs-callout cs-callout--care<%= off('vigilance') %>" data-section="vigilance">
-        <h2><%- icons.sheet('attention') %>Précautions</h2>
+        <h2><%- icons.sheet('attention', 16) %>Précautions</h2>
         <p data-editable><%= sp.vigilance %></p>
       </aside>
     <% } %>
 
     <% if (sp.repro_pitfalls) { %>
       <aside class="cs-callout cs-callout--avoid<%= off('pitfalls') %>" data-section="pitfalls">
-        <h2><%- icons.sheet('eviter') %>Erreurs à éviter</h2>
+        <h2><%- icons.sheet('eviter', 16) %>Erreurs à éviter</h2>
         <p data-editable><%= sp.repro_pitfalls %></p>
       </aside>
     <% } %>
 
     <% if (sheet.fact) { %>
       <aside class="cs-callout cs-callout--fact<%= off('fact') %>" data-section="fact">
-        <h2><%- icons.sheet('idee') %>Le saviez-vous ?</h2>
+        <h2><%- icons.sheet('idee', 16) %>Le saviez-vous ?</h2>
         <p data-editable><%= sheet.fact %></p>
       </aside>
     <% } %>
   </div>
-
-  <footer class="cs-foot">
-    <img src="/icons/logo.png" alt="" class="cs-foot__logo" width="640" height="443">
-    <div class="cs-foot__text">
-      <p class="cs-foot__sign" data-editable><%= breederName ? 'Élevé avec soin par ' + breederName + '.' : 'Élevé avec soin.' %> Une question sur vos animaux ? N'hésitez pas à me contacter.</p>
-      <p class="cs-foot__meta"><%= breederContact %><%= breederContact && fiche && fiche.lineage ? ' · ' : '' %><%= fiche && fiche.lineage ? 'Lignée ' + fiche.lineage : '' %></p>
-    </div>
-  </footer>
 </article>
 
 <script>
   (function () {
-    var KEY = 'isoterra.ficheClient.rubriques';
+    // The sections last chosen are remembered on this device (A5 layout).
+    var KEY = 'isoterra.ficheClient.rubriques.a5';
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
 
-    // A section may show in more than one place (the presentation's hook
-    // and the rest of it): all of them follow.
     function apply(input) {
       document.querySelectorAll('[data-section="' + input.dataset.toggle + '"]').forEach(function (section) {
         section.classList.toggle('is-off', !input.checked);
@@ -255,7 +195,6 @@
 
     var toggles = document.querySelectorAll('[data-toggle]');
     toggles.forEach(function (input) {
-      // The sections you last chose are remembered on this device.
       if (saved && Object.prototype.hasOwnProperty.call(saved, input.dataset.toggle)) input.checked = saved[input.dataset.toggle];
       apply(input);
       input.addEventListener('change', function () {
