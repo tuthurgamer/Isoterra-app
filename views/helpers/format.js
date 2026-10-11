@@ -93,6 +93,7 @@ const FAMILY_NOTES = {
   Armadillidae: 'cloportes boules tropicaux',
   Porcellionidae: 'cloportes plats et rapides',
   Oniscidae: 'cloportes des murs',
+  Trachelipodidae: "cloportes des forêts d'Europe centrale et orientale",
   Platyarthridae: 'cloportes nains',
   Tylidae: 'cloportes fouisseurs',
   Blaberidae: 'blattes qui donnent naissance aux petits',

@@ -21,12 +21,15 @@ const FAMILIES = {
   Sphaerotherium: 'Sphaerotheriidae',
   Zephronia: 'Zephroniidae',
   // Cloportes
-  Armadillidium: 'Armadillidiidae', Cristarmadillidium: 'Armadillidiidae',
+  Armadillidium: 'Armadillidiidae', Cristarmadillidium: 'Armadillidiidae', Schizidium: 'Armadillidiidae',
+  Trichodillidium: 'Armadillidiidae',
   Armadillo: 'Armadillidae', Cubaris: 'Armadillidae', Venezillo: 'Armadillidae', Merulanella: 'Armadillidae',
   Nesodillo: 'Armadillidae', Sinodillo: 'Armadillidae', Laureola: 'Armadillidae',
+  Ardentiella: 'Armadillidae', Caribodillo: 'Armadillidae', Spherillo: 'Armadillidae', Troglodillo: 'Armadillidae',
   Helleria: 'Tylidae',
   Porcellio: 'Porcellionidae', Porcellionides: 'Porcellionidae',
   Oniscus: 'Oniscidae',
+  Trachelipus: 'Trachelipodidae',
   Trichorhina: 'Platyarthridae',
   // Blattes
   Gromphadorhina: 'Blaberidae', Elliptorhina: 'Blaberidae', Princisia: 'Blaberidae', Blaptica: 'Blaberidae',
