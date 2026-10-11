@@ -1,16 +1,18 @@
 // The species catalogue: fiches of species the breeder doesn't keep (yet),
 // to help choose the next ones. Each version is added to the guide once —
-// never again, so a fiche deleted from the guide doesn't come back. A later
-// addition gets `since: 2` and CATALOGUE_VERSION goes up to 2.
+// never again, so a fiche deleted from the guide doesn't come back. The next
+// batch gets `since: 3` and CATALOGUE_VERSION goes up to 3.
 const { defaultCare } = require('../care-defaults');
 const { defaultTraits } = require('../trait-defaults');
 const { familyOf } = require('../taxonomy');
 
-const CATALOGUE_VERSION = 1;
+const CATALOGUE_VERSION = 2;
 
 const ENTRIES = [
   'iules', 'cloportes', 'blattes', 'cetoines', 'coleopteres', 'escargots', 'crabes',
-  'reduves', 'mantes', 'phasmes', 'arachnides', 'scolopendres', 'autres'
+  'reduves', 'mantes', 'phasmes', 'arachnides', 'scolopendres', 'autres',
+  // Version 2: isopods and millipedes sold in France.
+  'cloportes-france', 'iules-france'
 ].flatMap((file) => require('./' + file));
 
 const COLUMNS = [
