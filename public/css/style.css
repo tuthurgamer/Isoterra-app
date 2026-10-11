@@ -2279,20 +2279,8 @@ html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
 .catalogue__count { min-height: 1em; margin: 2px 0 0; font-size: 12.5px; font-style: italic; color: var(--ink-muted); }
 .catalogue__empty { font-style: italic; color: var(--ink-muted); }
 .catalogue__taxon { font-size: 13px; font-style: italic; color: var(--ink-faint); }
-.catalogue__family-name { margin: 14px 0 2px; font-size: 12.5px; color: var(--ink-muted); }
-.catalogue__family-name b { font-weight: 600; color: var(--ink); }
 
-.cat-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--ink); }
-.cat-row[hidden], .catalogue__family[hidden], .catalogue__group[hidden] { display: none; }
-.cat-row__icon { display: flex; align-items: center; justify-content: center; height: 40px; color: var(--ink-faint); }
-.cat-row__icon svg { width: 32px; height: 32px; }
-.cat-row__icon .species-icon-img { width: 48px; height: 40px; object-fit: contain; }
-.cat-row__text { display: flex; min-width: 0; flex-direction: column; }
-.cat-row__name { font-size: 13.5px; font-style: italic; font-weight: 600; overflow-wrap: anywhere; }
-.cat-row__common { font-size: 12px; color: var(--ink-muted); }
-.cat-row__facts { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-.cat-row__diff .rating-icons { margin: 0; }
-.cat-row__climate { font-family: 'Special Elite', monospace; font-size: 10.5px; color: var(--ink-muted); white-space: nowrap; }
+.cat-card[hidden], .catalogue__group[hidden] { display: none; }
 
 @media (max-width: 700px) {
   .guide-jump { margin-top: -18px; }
@@ -2300,9 +2288,6 @@ html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
   .breeding__head h2, .catalogue__head h2 { font-size: 23px; }
   .breeding__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .kept-card__pic { height: 96px; }
-  .cat-row { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; }
-  .cat-row__icon svg { width: 28px; height: 28px; }
-  .cat-row__diff .d { width: 9px; height: 9px; }
 }
 
 /* "In breeding" mark next to a species name in lists. */
@@ -2393,3 +2378,36 @@ html:has(.cam), html:has(.cam) body { overflow: hidden; background: #000; }
 button.todo__btn:active { transform: scale(0.96); }
 .todo__row[hidden] { display: none; }
 .todo__more { display: block; width: 100%; margin: 4px 0 2px; padding: 9px; border: none; border-top: 1px solid var(--line); background: none; color: var(--rust); font-family: 'Special Elite', monospace; font-size: 12px; cursor: pointer; }
+
+/* Catalogue: each category in its own panel, species as cards like the
+   breeding ones, with difficulty and climate under the name. */
+.catalogue__group { margin-top: 18px; padding: 14px 14px 16px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--paper-alt); }
+.catalogue__group-head { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--line-strong); color: var(--ink-muted); }
+.catalogue__group-head h3 { margin: 0; font-family: 'IM Fell English SC', Georgia, serif; font-size: 21px; font-weight: normal; letter-spacing: 0.06em; color: var(--ink); }
+.catalogue__group-head em { font-size: 13px; color: var(--ink-faint); }
+.catalogue__group-count { margin-left: auto; font-family: 'Special Elite', monospace; font-size: 12px; }
+.catalogue__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+.cat-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line-strong); border-top: 3px solid var(--ink-faint); border-radius: 6px; background: var(--paper); color: var(--ink); text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; }
+@media (hover: hover) { .cat-card:hover { color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 16px oklch(24% 0.035 55 / 0.15); } }
+.cat-card:active { transform: scale(0.98); }
+.cat-card__pic { display: flex; align-items: center; justify-content: center; height: 84px; padding: 6px; background: radial-gradient(ellipse at center, var(--paper) 0%, var(--paper-alt) 100%); }
+.cat-card__pic .species-icon-img { width: 100%; height: 100%; object-fit: contain; }
+.cat-card__pic--drawn { color: var(--ink-faint); }
+.cat-card__pic--drawn svg { width: 48px; height: 48px; }
+.cat-card__body { display: flex; flex: 1; flex-direction: column; gap: 2px; padding: 7px 9px 9px; border-top: 1px solid var(--line); }
+.cat-card__name { font-size: 13.5px; font-style: italic; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.cat-card__common { font-size: 12px; line-height: 1.3; color: var(--ink-muted); }
+.cat-card__facts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: auto; padding-top: 6px; }
+.cat-card__climate { font-family: 'Special Elite', monospace; font-size: 10.5px; color: var(--ink-muted); white-space: nowrap; }
+@media (max-width: 700px) {
+  .catalogue__group { padding: 12px 10px 14px; }
+  .catalogue__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cat-card__pic { height: 72px; }
+}
+.catalogue__group-head { margin-bottom: 12px; }
+.cat-card__family { font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
+.cat-card__pic--drawn { height: 58px; }
+@media (max-width: 700px) {
+  .cat-card__pic--drawn { height: 52px; }
+  .cat-card__pic--drawn svg { width: 40px; height: 40px; }
+}

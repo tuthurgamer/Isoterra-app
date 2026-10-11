@@ -56,7 +56,7 @@
   <%- icons.categorySprite() %>
   <div class="catalogue__head">
     <h2>Catalogue</h2>
-    <p>Des fiches pour choisir tes prochaines espèces, rangées par groupe et par famille.</p>
+    <p>Des fiches pour choisir tes prochaines espèces, rangées par groupe.</p>
   </div>
 
   <div class="catalogue__filters">
@@ -78,36 +78,30 @@
 
   <% catalogue.forEach(function (group) { %>
     <div class="catalogue__group" data-group="<%= group.key %>">
-      <div class="section-title">
-        <%- icons.species(group.key, 24) %>
-        <h2><%= group.label %></h2>
-        <% if (group.taxon) { %><span class="catalogue__taxon"><%= group.taxon %></span><% } %>
-        <div class="rule"></div>
-        <div class="count" data-group-count><%= group.items.length %></div>
+      <div class="catalogue__group-head">
+        <%- icons.species(group.key, 26) %>
+        <h3><%= group.label %></h3>
+        <% if (group.taxon) { %><em><%= group.taxon %></em><% } %>
+        <span class="catalogue__group-count" data-group-count><%= group.items.length %></span>
       </div>
-      <% (group.families || [{ name: null, items: group.items }]).forEach(function (family) { %>
-        <div class="catalogue__family" data-family>
-          <% if (family.name) { %>
-            <div class="catalogue__family-name"><b><%= family.name %></b><% if (family.note) { %> — <%= family.note %><% } %></div>
-          <% } else if (group.families) { %>
-            <div class="catalogue__family-name">Famille à préciser</div>
-          <% } %>
-          <% family.items.forEach(function (sp) { %>
-            <a href="/especes/<%= sp.id %>" class="cat-row" data-diff="<%= sp.difficulty %>"
-               data-search="<%= (sp.scientific_name + ' ' + sp.common_name + ' ' + (sp.family || '')).toLowerCase() %>">
-              <span class="cat-row__icon"><%- icons.speciesLite(sp, 32) %></span>
-              <span class="cat-row__text">
-                <span class="cat-row__name"><%= sp.scientific_name %></span>
-                <span class="cat-row__common"><%= sp.common_name %></span>
+      <%# Cards follow one another, by family (named on each card) then name. %>
+      <div class="catalogue__grid">
+        <% (group.families ? group.families.flatMap(function (f) { return f.items; }) : group.items).forEach(function (sp) { %>
+          <a href="/especes/<%= sp.id %>" class="cat-card" data-diff="<%= sp.difficulty %>"
+             data-search="<%= (sp.scientific_name + ' ' + sp.common_name + ' ' + (sp.family || '')).toLowerCase() %>">
+            <span class="cat-card__pic<%= sp.icon_path ? '' : ' cat-card__pic--drawn' %>"><%- icons.speciesLite(sp, 120) %></span>
+            <span class="cat-card__body">
+              <% if (sp.family) { %><span class="cat-card__family" title="<%= fmt.FAMILY_NOTES[sp.family] || '' %>"><%= sp.family.replace(/ \(.*\)$/, '') %></span><% } %>
+              <span class="cat-card__name"><%= sp.scientific_name %></span>
+              <span class="cat-card__common"><%= sp.common_name %></span>
+              <span class="cat-card__facts">
+                <%- icons.difficultyDots(sp.difficulty) %>
+                <span class="cat-card__climate"><% if (sp.temp_min) { %><%= sp.temp_min %>–<%= sp.temp_max %> °C<% } %><% if (sp.temp_min && sp.humidity_min) { %> · <% } %><% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %> %<% } %></span>
               </span>
-              <span class="cat-row__facts">
-                <span class="cat-row__diff"><%- icons.difficultyDots(sp.difficulty) %></span>
-                <span class="cat-row__climate"><% if (sp.temp_min) { %><%= sp.temp_min %>–<%= sp.temp_max %> °C<% } %><% if (sp.temp_min && sp.humidity_min) { %> · <% } %><% if (sp.humidity_min) { %><%= sp.humidity_min %>–<%= sp.humidity_max %> %<% } %></span>
-              </span>
-            </a>
-          <% }); %>
-        </div>
-      <% }); %>
+            </span>
+          </a>
+        <% }); %>
+      </div>
     </div>
   <% }); %>
   <p class="catalogue__empty" data-cat-empty hidden>Aucune fiche ne correspond. <button type="button" class="btn-quiet" data-cat-reset>Tout afficher</button></p>
@@ -117,7 +111,7 @@
   // Catalogue filters: text, difficulty and category, all together.
   (function () {
     var search = document.querySelector('[data-cat-search]');
-    var rows = Array.prototype.slice.call(document.querySelectorAll('.cat-row'));
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.cat-card'));
     var state = { text: '', diff: '', group: '' };
     // Accents ignored, so "blatte geante" finds "Blatte géante".
     function plain(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
@@ -140,11 +134,8 @@
         row.hidden = !ok;
         if (ok) shown++;
       });
-      document.querySelectorAll('[data-family]').forEach(function (family) {
-        family.hidden = !family.querySelector('.cat-row:not([hidden])');
-      });
       document.querySelectorAll('[data-group]').forEach(function (group) {
-        var n = group.querySelectorAll('.cat-row:not([hidden])').length;
+        var n = group.querySelectorAll('.cat-card:not([hidden])').length;
         group.hidden = n === 0;
         group.querySelector('[data-group-count]').textContent = n;
       });
